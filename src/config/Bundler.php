@@ -73,28 +73,44 @@ if (!class_exists('Bundler')) {
     class Bundler {
         private static ?Bundler $_instance = null;
         private array $config;
-        private array $default;
         private function __construct()
         {
-            $this->default = ZOD_DEFAULT_MODEL;
             $this->assignPriority();
         }
         private function assignPriority() {
-            foreach ($this->default as $key => $value) {
-                $this->config[$key] = $value;
-            }
             foreach ($this->config as $key => $value) {
                 $value->cal_priority($this->config);
             }
         }
+        static function assign_parser_config($new_config, $before_config) {
+            if (!isset($before_config)) {
+                return $new_config;
+            }
+            if ($new_config->_priority > $before_config->_priority) {
+                return $new_config;
+            }
+            return $before_config;
+        }
         static function valid_parser_config(string $key, array $value, int $priority = 10) {
-            return (new Config($key))
-                ->set_accept($value[FK\ACCEPT])
-                ->set_init_state($value[FK\IS_INIT_STATE])
-                ->set_parser_arguments($value[FK\PARSER_ARGUMENTS])
-                ->set_default_argument($value[FK\DEFAULT_ARGUMENT])
-                ->set_parser($value[FK\PARSER])
-                ->set_priority_of_parser($priority);
+            self::$config[$key] = self::assign_parser_config(
+                (new Config($key))
+                    ->set_accept($value[FK\ACCEPT])
+                    ->set_init_state($value[FK\IS_INIT_STATE])
+                    ->set_parser_arguments($value[FK\PARSER_ARGUMENTS])
+                    ->set_default_argument($value[FK\DEFAULT_ARGUMENT])
+                    ->set_parser($value[FK\PARSER])
+                    ->set_priority_of_parser($priority),
+                self::$config[$key]
+            );
+        }
+        static function getConfig(string $key): Config {
+            return self::$config[$key];
+        }
+        static function getInstance(): Bundler {
+            if (!isset(self::$_instance)) {
+                self::$_instance = new Bundler();
+            }
+            return self::$_instance;
         }
     }
 }
