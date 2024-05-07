@@ -8,8 +8,8 @@ use Zod\PARSER\KEY as PK; // Parser key
 if (!defined('ZOD_DEFAULT_MODEL')) {
     define('ZOD_DEFAULT_MODEL', [
         Bundler::valid_parser_config(PK\EMAIL, [
-            [FK\ACCEPT] => [],
-            [FK\IS_INIT_STATE] => true,
+            FK\ACCEPT => [],
+            FK\IS_INIT_STATE => true,
             [FK\PARSER_ARGUMENTS] => function () {
                 return null;
             },
