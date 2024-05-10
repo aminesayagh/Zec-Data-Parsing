@@ -69,7 +69,7 @@ if(!class_exists('ZodErrors')) {
          */
         public function __construct(array $errors = []) {
             foreach ($errors as $error) {
-                $this->setError($error);
+                $this->_set_error($error);
             }
             $this->errors = $errors;
         }
@@ -80,7 +80,7 @@ if(!class_exists('ZodErrors')) {
          * @param ZodError $error The ZodError object to set.
          * @throws \Exception If the provided error is not an instance of ZodError.
          */
-        private function setError(ZodError $error): void {
+        private function _set_error(ZodError $error): void {
             if (!(is_a($error, 'ZodError'))) {
                 throw new \Exception('Error must be an instance of ZodError');
             }

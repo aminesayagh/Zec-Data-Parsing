@@ -6,6 +6,8 @@ if (!defined('ZOD_PATH')) {
 
 require_once ZOD_PATH . '/src/const/KEY.php';
 
+require_once ZOD_PATH . '/src/CaretakerParsers.php';
+
 require_once ZOD_PATH . '/src/parsers/Parser.php';
 
 require_once ZOD_PATH . '/src/config/Bundler.php';

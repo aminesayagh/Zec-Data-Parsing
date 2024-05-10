@@ -5,69 +5,85 @@ namespace Zod;
 use Zod\FIELD\KEY as FK;
 
 require_once ZOD_PATH . '/src/config/init.php';
+require_once ZOD_PATH . '/src/CaretakerParsers.php';
 
-if (!class_exists('CaretakerParsers')) {
-    class CaretakerParsers {
-        private function __construct() {
-
+if (!class_exists('ZodType')) {
+    /**
+     * Class ZodType
+     * 
+     * This class represents a type in the Zod library.
+     */
+    class ZodTypeParsing {
+        private string $type;
+        public function __construct(string $type) {
+            $this->type = $type;
         }
+
     }
+
 }
 
 
 if (!class_exists('Bundler')) {
+    /**
+     * Class Bundler
+     * 
+     * This class extends the CaretakerParsers class and represents a bundler.
+     * It provides functionality for bundling and managing default parsers.
+     */
     class Bundler extends CaretakerParsers {
         private static ?Bundler $_instance = null;
-        private array $config;
+        private array $zod_types = [];
+        /**
+         * Class Bundler
+         * 
+         * This class represents a bundler for the Zod library.
+         * It extends the parent class and provides additional functionality.
+         */
         private function __construct()
         {
-            $this->config = [];
+            // class parent
+            parent::__construct();
         }
-        private function assign_path_of_parsing() {
-            foreach ($this->config as $value) {
-                $value->cal_order_of_parsing($this->config);
+        /**
+         * Assigns the path of parsing for each parser in the bundler.
+         */
+        public function assign_path_of_parsing() {
+            foreach ($this->parsers as $value) {
+                $value->calc_order_of_parsing($this);
             }
         }
-        static function assign_parser_config($new_config, $before_config) {
-            if (!isset($before_config)) {
-                return $new_config;
-            }
-            if ($new_config->_priority > $before_config->_priority) {
-                return $new_config;
-            }
-            return $before_config;
-        }
-        static function valid_parser_config(string $key, array $value, int $priority = 10) {
-            // TODO: Fist config is the default config, with the init value
-            $before_config = Bundler::get_parser($key);
+        /**
+         * Assigns a parser configuration to the bundler.
+         *
+         * @param string $key The key of the parser configuration.
+         * @param array $value The value of the parser configuration.
+         * @param int $priority The priority of the parser configuration (default is 10).
+         * @return $this The current instance of the Bundler.
+         */
+        public function assign_parser_config(string $key, array $value, int $priority = 10) {
+            $before_config = $this::get_parser($key);
             $new_parser = (new Parser($key))
-                    ->clone($before_config)
-                    ->set_accept($value[FK\ACCEPT])
-                    ->set_init_state($value[FK\IS_INIT_STATE])
-                    ->set_parser_arguments($value[FK\PARSER_ARGUMENTS])
-                    ->set_default_argument($value[FK\DEFAULT_ARGUMENT])
-                    ->set_parser($value[FK\PARSER])
-                    ->set_priority_of_parser($priority);
+                ->clone($before_config)
+                ->set_accept($value[FK\ACCEPT])
+                ->set_is_init_state($value[FK\IS_INIT_STATE])
+                ->set_parser_arguments($value[FK\PARSER_ARGUMENTS])
+                ->set_default_argument($value[FK\DEFAULT_ARGUMENT])
+                ->set_parser($value[FK\PARSER])
+                ->set_priority_of_parser($priority);
 
-            
-            $new_config = Bundler::assign_parser_config($new_parser, $before_config);
-            self::$config[] = $new_config;
-            return $new_config;
+            $this->add_parser($new_parser);
+
+            return $this;
         }
-        static function get_parser(string $key): Parser {
-            foreach (self::$config as $value) {
-                if ($value->_key === $key) {
-                    $selected_parser = $value;
-                }
-            }
-            // get the parser with the highest priority
-            foreach (self::$config as $value) {
-                if ($value->_key === $key && $value->_priority > $selected_parser->_priority) {
-                    $selected_parser = $value;
-                }
-            }
-            return $selected_parser;
+        public function assign_zod_type(string $type) {
+
         }
+        /**
+         * Returns an instance of the Bundler class.
+         *
+         * @return Bundler The instance of the Bundler class.
+         */
         static function get_instance(): Bundler {
             if (!isset(self::$_instance)) {
                 self::$_instance = new Bundler();
@@ -78,11 +94,15 @@ if (!class_exists('Bundler')) {
 }
 
 if(!function_exists('bundler')) {
+    /**
+     * Returns the instance of the Bundler class.
+     *
+     * @return Bundler The instance of the Bundler class.
+     */
     function bundler(): Bundler {
         return Bundler::get_instance();
     }
-}
-
+}    
 
 
 

@@ -15,8 +15,15 @@ if (!class_exists('Parser')) {
         public function __construct($key) {
             $this->_key = $key;
         }
-        public function clone(Parser $parser) {
-            $this->_accept = $parser->_accept;
+        public  function get_key() {
+            return $this->_key;
+        }
+        public function clone(?Parser $parser = null): Parser {
+            if (is_null($parser)) {
+                return $this;
+            }
+            $this->set_accept($parser->_accept);
+            
             $this->_priority = $parser->_priority;
             $this->_order_of_parsing = $parser->_order_of_parsing;
             $this->_is_init_state = $parser->_is_init_state;
@@ -36,7 +43,7 @@ if (!class_exists('Parser')) {
         public function get_accept() {
             return $this->_accept;
         }
-        public function set_init_state(bool $is_init_state): Parser {
+        public function set_is_init_state(bool $is_init_state): Parser {
             // if $this->_is_init_state is not nll, return an error
             if (isset($this->_is_init_state)) {
                 throw new ZodError('The is_init_state field is already set', 'is_init_state');
@@ -60,7 +67,6 @@ if (!class_exists('Parser')) {
         }
         // TODO: maybe a way to assign a new argument
         public function set_default_argument(array $default_argument): Parser {
-            // if $this->_default_argument is not null, return an error
             if (isset($this->_default_argument)) {
                 throw new ZodError('The default_argument field is already set', 'default_argument');
             }
@@ -88,28 +94,30 @@ if (!class_exists('Parser')) {
             return $this->_order_of_parsing;
         }
         // TODO: Continue here //
-        public function cal_order_of_parsing(CaretakerParsers &$parserRules, array $parents = []): ?int {
-            if (!isset($this->_accept)) {
-                return 0;
-            }
+        public function calc_order_of_parsing(CaretakerParsers &$parserRules, array $parents = []): ?int {
+            return null;
+            // if (!isset($this->_accept)) {
+            //     return 0;
+            // }
 
-            $priority_of_execution = 0;
+            // $priority_of_execution = 0;
 
-            foreach ($this->_accept as $a) {
-                // Check if the parser has a priority
-                if (isset($this->_order_of_parsing)) {
-                    $priority_of_execution = max($priority_of_execution, $this->_order_of_parsing);
-                } else {
-                    if (in_array($a, $parents)) {
-                        continue; // avoid infinite loop in case of circular dependency
-                    }
-                    $parents[] = $this->_key;
-                    $priority_of_execution = max($priority_of_execution, $parserRules->cal_priority($parserRules, $parents) + 1);
-                }
-            }
-            
-            $this->set_priority_of_parser($priority_of_execution + 1);
-            return $this->_order_of_parsing;
+            // foreach ($this->_accept as $a) {
+            //     // Check if the parser has a priority
+            //     if (isset($this->_order_of_parsing)) {
+            //         $priority_of_execution = max($priority_of_execution, $this->_order_of_parsing);
+            //     } else {
+            //         if (in_array($a, $parents)) {
+            //             continue; // avoid infinite loop in case of circular dependency
+            //         }
+            //         $parents[] = $this->_key;
+            //         $parser = $parserRules->get_parser($a);
+            //         $priority_of_execution = max($priority_of_execution, $parserRules->cal_priority($parserRules, $parents) + 1);
+            //     }
+            // }
+        
+            // $this->set_priority_of_parser($priority_of_execution + 1);
+            // return $this->_order_of_parsing;
         }
     }
 }
