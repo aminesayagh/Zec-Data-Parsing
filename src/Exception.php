@@ -128,7 +128,7 @@ if(!class_exists('ZodErrors')) {
         }
 
         /**
-         * Destructor method that cleans up the collection by unsetting all the ZodError objects and resetting the collection.
+         * Destructor method that cleans up the collection by un-setting all the ZodError objects and resetting the collection.
          */
         public function __destruct() {
             foreach ($this->errors as $error) {

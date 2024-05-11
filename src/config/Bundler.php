@@ -2,7 +2,7 @@
 
 
 namespace Zod;
-use Zod\FIELD\KEY as FK;
+use Zod\FIELD as FK;
 
 require_once ZOD_PATH . '/src/config/init.php';
 require_once ZOD_PATH . '/src/CaretakerParsers.php';
@@ -65,11 +65,11 @@ if (!class_exists('Bundler')) {
             $before_config = $this::get_parser($key);
             $new_parser = (new Parser($key))
                 ->clone($before_config)
-                ->set_accept($value[FK\ACCEPT])
-                ->set_is_init_state($value[FK\IS_INIT_STATE])
-                ->set_parser_arguments($value[FK\PARSER_ARGUMENTS])
-                ->set_default_argument($value[FK\DEFAULT_ARGUMENT])
-                ->set_parser($value[FK\PARSER])
+                ->set_accept($value[FK\KEY['ACCEPT']])
+                ->set_is_init_state($value[FK\KEY['IS_INIT_STATE']])
+                ->set_parser_arguments($value[FK\KEY['PARSER_ARGUMENTS']])
+                ->set_default_argument($value[FK\KEY['DEFAULT_ARGUMENT']])
+                ->set_parser_callback($value[FK\KEY['PARSER']])
                 ->set_priority_of_parser($priority);
 
             $this->add_parser($new_parser);
@@ -77,7 +77,8 @@ if (!class_exists('Bundler')) {
             return $this;
         }
         public function assign_zod_type(string $type) {
-
+            $this->zod_types[] = new ZodTypeParsing($type);
+            return $this;
         }
         /**
          * Returns an instance of the Bundler class.

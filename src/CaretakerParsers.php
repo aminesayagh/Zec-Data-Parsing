@@ -26,8 +26,15 @@ if (!class_exists('CaretakerParsers')) {
         {
             $this->parsers = $parsers;
         }
-        static function get_parser(string $key, ?array $parsers = null): Parser
-        {
+        /**
+         * Retrieves the parser with the specified key from the given array of parsers.
+         *
+         * @param string $key The key of the parser to retrieve.
+         * @param array|null $parsers The array of parsers to search in. If null, the default parsers will be used.
+         * @return Parser The parser with the specified key.
+         * @throws ZodError If the parser with the specified key is not found.
+         */
+        static function get_parser(string $key, ?array $parsers = null): ?Parser {
             if (is_null($parsers)) {
                 $parsers = self::$parsers;
             }
@@ -51,15 +58,39 @@ if (!class_exists('CaretakerParsers')) {
             }
 
             if (is_null($selected_parser)) {
-                throw new ZodError('The parser with the key ' . $key . ' is not found', 'key');
+                return null;
             }
 
             return $selected_parser;
         }
+        /**
+         * Checks if a parser is present in the list of parsers.
+         *
+         * @param Parser $parser The parser to check.
+         * @return bool Returns true if the parser is found, false otherwise.
+         */
         public function has_parser(Parser $parser): bool
         {
             return in_array($parser, $this->parsers);
         }
+        /**
+         * Checks if a parser key exists in the caretaker parsers.
+         *
+         * @param string $key The parser key to check.
+         * @return bool Returns true if the parser key exists, false otherwise.
+         */
+        public function has_parser_key(string $key): bool
+        {
+            return in_array($key, array_map(function ($value) {
+                return $value->get_key();
+            }, $this->parsers));
+        }
+        /**
+         * Adds a parser to the list of parsers.
+         *
+         * @param Parser $parser The parser to add.
+         * @return Parser|null The added parser, or null if the parser already exists.
+         */
         public function add_parser(Parser $parser): ?Parser
         {
             if ($this->has_parser($parser)) {

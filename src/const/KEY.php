@@ -14,8 +14,9 @@ namespace Zod\FIELD {
 namespace Zod\PARSER {
     // Get a list of all const element on Zod\PARSER\KEY
     const KEY = [
-        'EMAIL' => 'email',
         'REQUIRED' => 'required',
+        'OPTIONAL' => 'optional',
+        'EMAIL' => 'email',
         'DATE' => 'date',
         'BOOL' => 'bool',
         'INPUT' => 'input',
@@ -26,13 +27,3 @@ namespace Zod\PARSER {
         'EACH' => 'each'
     ];
 }
-
-
-namespace Zod\TYPE {
-    const KEY = [
-        'FIELD' => 'field',
-        'OPTIONS' => 'options',
-        'EACH' => 'each'
-    ];
-}
-

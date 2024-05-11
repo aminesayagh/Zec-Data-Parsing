@@ -6,8 +6,8 @@ if (!class_exists('Parser')) {
     class Parser {
         private ?string $_key = null;
         private ?array $_accept = null;
-        private int $_priority = 10; // calcul the priority of a parser on concurence with the other parser with the same key, using the field priority 
-        private int $_order_of_parsing = 0; // Calcul the order of executian of a parser on concurence with the other parsers
+        private int $_priority = 10; // calculate the priority of a parser on concurrency with the other parser with the same key, using the field priority 
+        private int $_order_of_parsing = 0; // Calculate the order of execution of a parser on concurrency with the other parsers
         private ?bool $_is_init_state = null;
         private $_parser_arguments = null;
         private array $_default_argument = [];
@@ -27,8 +27,10 @@ if (!class_exists('Parser')) {
             $this->_priority = $parser->_priority;
             $this->_order_of_parsing = $parser->_order_of_parsing;
             $this->_is_init_state = $parser->_is_init_state;
-            $this->_parser_arguments = $parser->_parser_arguments;
-            $this->_default_argument = $parser->_default_argument;
+            $this->set_parser_arguments($parser->_parser_arguments);
+            $this->set_default_argument($parser->_default_argument);
+            // $this->_default_argument = $parser->_default_argument;
+
             $this->_parser = $parser->_parser;
             return $this;
         }
@@ -55,9 +57,9 @@ if (!class_exists('Parser')) {
             return $this->_is_init_state;
         }
         public function set_parser_arguments($parser_arguments): Parser {
-            // if $this->_parser_arguments is not null, return an error
-            if (isset($this->_parser_arguments)) {
-                throw new ZodError('The parser_arguments field is already set', 'parser_arguments');
+            // if $parser_arguments in not a callback function
+            if (!is_callable($parser_arguments)) {
+                throw new ZodError('The parser_arguments field must be a callback function', 'parser_arguments');
             }
             $this->_parser_arguments = $parser_arguments;
             return $this;
@@ -67,8 +69,9 @@ if (!class_exists('Parser')) {
         }
         // TODO: maybe a way to assign a new argument
         public function set_default_argument(array $default_argument): Parser {
-            if (isset($this->_default_argument)) {
-                throw new ZodError('The default_argument field is already set', 'default_argument');
+            // if $this->_default_argument is not an array, return an error
+            if (!is_array($default_argument)) {
+                throw new ZodError('The default_argument field must be an array', 'default_argument');
             }
             $this->_default_argument = $default_argument;
             return $this;
@@ -76,7 +79,11 @@ if (!class_exists('Parser')) {
         public function get_default_argument() {
             return $this->_default_argument;
         }
-        public function set_parser($parser): Parser {
+        public function set_parser_callback(callable $parser): Parser {
+            // if $this->_parser is not a callback function, return an error
+            if (!is_callable($parser)) {
+                throw new ZodError('The parser field must be a callback function', 'parser');
+            }
             $this->_parser = $parser;
             return $this;
         }
@@ -94,6 +101,8 @@ if (!class_exists('Parser')) {
             return $this->_order_of_parsing;
         }
         // TODO: Continue here //
+        // TODO: Calculate the order of parsing of a parser
+        // TODO: Look for possible conflicts between parsers
         public function calc_order_of_parsing(CaretakerParsers &$parserRules, array $parents = []): ?int {
             return null;
             // if (!isset($this->_accept)) {
