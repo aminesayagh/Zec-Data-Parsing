@@ -40,6 +40,9 @@ if (!class_exists('ZodError')) {
             }
             throw new \Exception("Property $name not found");
         }
+        public function get_message() {
+            return $this->message;
+        }
     }
 }
 

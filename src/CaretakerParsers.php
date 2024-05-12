@@ -27,7 +27,7 @@ if (!class_exists('CaretakerParsers')) {
             $this->parsers = $parsers;
         }
         /**
-         * Retrieves the parser with the specified key from the given array of parsers.
+         * Retrieves the parser with the specified key from the given array of parsers, with the highest priority.
          *
          * @param string $key The key of the parser to retrieve.
          * @param array|null $parsers The array of parsers to search in. If null, the default parsers will be used.
@@ -99,6 +99,15 @@ if (!class_exists('CaretakerParsers')) {
 
             $this->parsers[] = $parser;
             return $parser;
+        }
+        /**
+         * Returns the number of parsers in the caretaker.
+         *
+         * @return int The number of parsers.
+         */
+        public function length(): int
+        {
+            return count($this->parsers);
         }
     }
 }

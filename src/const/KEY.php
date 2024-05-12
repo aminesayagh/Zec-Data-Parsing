@@ -1,29 +1,29 @@
 <?php 
 
-namespace Zod\FIELD {
-    const KEY = [
-        'ACCEPT' => 'accept',
-        'IS_INIT_STATE' => 'is_init_state',
-        'PARSER_ARGUMENTS' => 'parser_arguments',
-        'PRIORITY' => 'priority',
-        'DEFAULT_ARGUMENT' => 'default_argument',
-        'PARSER' => 'parser'
-    ];
+namespace Zod {
+    enum FIELD {
+        const ACCEPT = 'accept';
+        const IS_INIT_STATE = 'is_init_state';
+        const PARSER_ARGUMENTS = 'parser_arguments';
+        const PRIORITY = 'priority';
+        const DEFAULT_ARGUMENT = 'default_argument';
+        const PARSER_CALLBACK = 'parser_callback';
+    }
 }
 
-namespace Zod\PARSER {
+namespace Zod {
     // Get a list of all const element on Zod\PARSER\KEY
-    const KEY = [
-        'REQUIRED' => 'required',
-        'OPTIONAL' => 'optional',
-        'EMAIL' => 'email',
-        'DATE' => 'date',
-        'BOOL' => 'bool',
-        'INPUT' => 'input',
-        'STRING' => 'string',
-        'URL' => 'url',
-        'NUMBER' => 'number',
-        'OPTIONS' => 'options',
-        'EACH' => 'each'
-    ];
+    enum PARSER {
+        const REQUIRED = 'required';
+        const OPTIONAL = 'optional';
+        const EMAIL = 'email';
+        const DATE = 'date';
+        const BOOL = 'bool';
+        const INPUT = 'input';
+        const STRING = 'string';
+        const URL = 'url';
+        const NUMBER = 'number';
+        const OPTIONS = 'options';
+        const EACH = 'each';
+    }
 }
