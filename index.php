@@ -11,10 +11,10 @@ require_once ZOD_PATH . '/src/CaretakerParsers.php';
 require_once ZOD_PATH . '/src/parsers/Parser.php';
 
 require_once ZOD_PATH . '/src/config/Bundler.php';
-require_once ZOD_PATH . '/src/config/init.php';
 
 require_once ZOD_PATH . '/src/parsers/parsers.php';
 
 require_once ZOD_PATH . '/src/Zod.php';
 
+require_once ZOD_PATH . '/src/config/init.php';
 

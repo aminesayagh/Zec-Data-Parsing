@@ -4,7 +4,7 @@ namespace Zod;
 
 if (!class_exists('Parser')) {
     class Parser {
-        private ?string $_key = null;
+        private ?string $_name = null;
         private array $_accept_state = [];
         private int $_priority = 10; // calculate the priority of a parser on concurrency with the other parser with the same key, using the field priority 
         private int $_order_of_parsing = 0; // Calculate the order of execution of a parser on concurrency with the other parsers
@@ -14,7 +14,7 @@ if (!class_exists('Parser')) {
         private array $_argument = [];
         private callable|null $_parser_callback = null;
         
-        public function __construct(string $key, array $args = [
+        public function __construct(string $name, array $args = [
             'accept_state' => [],
             'priority' => 10,
             'is_init_state' => null,
@@ -22,7 +22,7 @@ if (!class_exists('Parser')) {
             'default_argument' => [],
             'parser_callback' => null
         ]) {
-            $this->_key = $key;
+            $this->_name = $name;
 
             $this->set_accept_state($args['accept_state']);
             $this->set_priority_of_parser($args['priority']);
@@ -67,6 +67,42 @@ if (!class_exists('Parser')) {
 
             $this->_parser_callback = $parser->_parser_callback;
             return $this;
+        }
+        public function parse(mixed $value, array $args) {
+            if (!is_callable($this->_parser_callback)) {
+                throw new ZodError('The parser_callback field must be a callback function', 'parser_callback');
+            }
+
+            $before_parser = $args['before_parser'];
+            $path = $args['path'] ?? [];
+
+            $response = call_user_func($this->_parser_callback, [
+                'value' => $value,
+                'argument' => $this->_argument,
+                'default_argument' => $this->_default_argument,
+                'before_valid_parser' => $before_parser,
+                'path' => $path
+            ]);
+            if (is_string($response)) {
+                return [
+                    'is_valid' => false,
+                    'errors' => [new ZodError($response, $this->_key)],
+                ];
+            } else if(is_array($response)) {
+                $errors = [];
+                foreach ($response as $key => $value) {
+                    $errors[] = new ZodError($value, $key);
+                }
+                return [
+                    'is_valid' => false,
+                    'errors' => $response,
+                ];
+            } else if (is_bool($response) && $response === true) {
+                return [
+                    'is_valid' => true
+                ];
+            }
+            throw new ZodError('The parser_callback field must return a string or a boolean', 'parser_callback');
         }
         public function set_accept_state(array $accept_state): Parser {
             // if $this->accept is not null, return an error

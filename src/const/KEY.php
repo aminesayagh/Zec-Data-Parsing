@@ -22,6 +22,8 @@ namespace Zod {
         const INPUT = 'input';
         const STRING = 'string';
         const URL = 'url';
+        const MIN = 'min';
+        const MAX = 'max';
         const NUMBER = 'number';
         const OPTIONS = 'options';
         const EACH = 'each';
