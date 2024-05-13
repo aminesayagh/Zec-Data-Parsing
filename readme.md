@@ -7,22 +7,23 @@ The Zod Data Parsing and schema declaration Library is designed to bring the rob
 **Note:** This library is currently in development. Official documentation and further resources will be available soon.
 
 **Author Information:**
+
 - [LinkedIn](https://www.linkedin.com/in/mohamedamine-sayagh/)
 - [GitHub](https://github.com/aminesayagh/)
 - [Portfolio](https://www.masayagh.com/)
 
 ## Table of Contents
+
 - [Introduction](#introduction)
 - [Installation](#installation)
 - [Collaboration](#collaboration)
 - [How to Contribute](#how-to-contribute)
 
-
-
 ## Introduction
+
 The Zod Data Parsing and schema declaration Library is designed to bring the robust schema definition and validation capabilities similar to those in the Zod library (JavaScript) to PHP applications. This library offers flexible, modular, and extensible data validation tools that empower developers to enforce strict data integrity rules easily and reliably.
 
-### Some other great aspects:
+### Some other great aspects
 
 - **Robust Schema Validation**: Provides strong typing and validation similar to the Zod library, ensuring accurate data handling.
 - **Modular and Extensible**: Easy to extend with custom parsers, accommodating diverse data validation needs.
@@ -57,6 +58,7 @@ We look forward to building a powerful data parsing tool with a vibrant communit
 ## Usage
 
 ### Basic Parsing
+
 Define and validate data types using simple schema definitions:
 
 ```php
@@ -67,7 +69,87 @@ Define and validate data types using simple schema definitions:
     $value = $response_valid->value; // Returns "Hello, World!"
 
     $response_invalid = $my_schema->parse(123); // Returns Zod data object
-    $error = $response_invalid->error; // Returns a Zod error object
+    $errors = $response_invalid->errors; // Returns an array of Zod error object
+```
+
+### Safe Parsing
+
+Use safe_parse for error-safe parsing, returning structured success/error responses:
+
+```php
+    $response = $my_schema->safe_parse("Hello, World!"); // Returns Zod data object
+    $value = $response->value; // Returns "Hello, World!"
+    $errors = $response->errors; // Returns null
+```
+
+### Validation
+
+Quickly validate data after parsing:
+
+```php
+    $is_valid = $my_schema->parse("Hello, World!")->is_valid(); // Returns true
+    $is_invalid = $my_schema->parse(123)->is_valid(); // Returns false
+```
+
+### Exception Handling with Parsing
+
+Handle exceptions using parse_or_throw for critical data validation:
+
+```php
+    try {
+        $response = $my_schema->parse_or_throw(123); // Throws ZodError
+    } catch (ZodError $error) {
+        $error_message = $error->message; // Returns "Invalid type: expected string, received integer"
+    }
+```
+
+### Parsing of an array of options
+
+You can enhance the schema definition by incorporating additional validation options. This allows for more detailed control over data conformity based on specific requirements.
+
+```php
+    use function Zod\z;
+
+    $user_schema = z()->options([
+        'name' => z()->string()->min(3)->max(50),
+        'email' => z()->email(),
+        'age' => z()->number()->min(18),
+        'isActive' => z()->boolean(),
+        'registrationDate' => z()->date()
+    ]);
+
+    // Parsing a valid user object
+    $valid_user = $user_schema->parse([
+        'name' => 'John Doe',
+        'email' => 'john.doe@example.com',
+        'age' => 30,
+        'isActive' => true,
+        'registrationDate' => '2021-01-01'
+    ]);
+
+    // Parsing an invalid user object
+    $invalid_user = $user_schema->parse([
+        'name' => 'JD', // Too short
+        'email' => 'john.doe@', // Invalid email format
+        'age' => 17, // Below minimum age requirement
+        'isActive' => 'yes', // Incorrect type (should be boolean)
+        'registrationDate' => '01-01-2021' // Wrong date format
+    ]);
+
+    // Handling validation results
+    if ($valid_user->is_valid()) {
+        echo 'User is valid.';
+    } else {
+        echo 'User is invalid. Errors: ';
+        var_dump($valid_user->get_errors());
+    }
+
+    if ($invalid_user->is_valid()) {
+        echo 'User is valid.';
+    } else {
+        echo 'User is invalid. Errors: ';
+        var_dump($invalid_user->get_errors());
+    }
 ```
 
 ## License
