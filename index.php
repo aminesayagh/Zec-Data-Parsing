@@ -25,6 +25,7 @@ $user_parser = z()->options([
     'name' => z()->required()->string()->min(3)->max(50),
     'email' => z()->url(['message' => 'Invalid email address', 'domain' => ['gmail.com']]),
     'age' => z()->number(),
+    
     'friends' => z()->each(
         function ($user) {
             return $user->nullable();
@@ -57,6 +58,7 @@ $user = $user_parser->parse([
 
 if ($user->is_valid()) {
     echo 'User is valid';
+    var_dump($user->get_value());
 } else {
     echo 'User is invalid';
     var_dump($user->get_errors());
