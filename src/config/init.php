@@ -99,7 +99,7 @@ Zod\bundler()->assign_parser_config(PK::EMAIL, [
     FK::PARSER_CALLBACK => function (array $par): string|bool {
         $value = $par['value'];
         if (!is_string($value)) {
-            return $par['argument']['message'] ?? $par['default_argument']['message'];
+            return $par['argument']['message'] ?? $par['default_argument']['message']; // TODO: Merge between default argument and argument before running the callback
         }
         return true;
     }

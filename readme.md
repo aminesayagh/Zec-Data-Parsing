@@ -272,4 +272,156 @@ This example demonstrates validating a user data structure that includes nested 
     }
 ```
 
+## Creating Custom Parser Methods
+
+To enhance flexibility and cater to specific validation needs, our library allows users to define custom parser methods. This section demonstrates how to create a `size` parser method, which validates that the size of an array, length of a string, or value of a number meets a specific requirement.
+
+The `size` method checks if:
+
+- An array's length equals a specified size.
+- A string's length equals a specified number of characters.
+- A numeric value is exactly equal to a specified number.
+
+Here is how you can implement this custom parser:
+
+```php
+    use function Zod\z;
+    use function Zod\bundler;
+    use Zod\FIELD as FK;
+    
+    // Define the custom size parser method
+    bundler->assign_parser_config('size', [
+        FK::IS_INIT_STATE => false, // we can't run parser with only size
+        FK::DEFAULT_ARGUMENT => [
+            'size' => 0,
+            'message' => 'Invalid size'
+        ]
+        FK::PARSER_ARGUMENTS => function () {
+            return z()->options([
+                'size' => z()->required()->number(),
+                'message' => z()->optional()->string(),
+            ]);
+        },
+        FK::PARSER_FUNCTION => function (array $args): string|bool { // return string if error, bool if success
+            $value = $args['value'];
+            $expected_size = $args['size'];
+            $message = $args['message'];
+
+            if (is_array($value)) {
+                $actual_size = count($value);
+            } elseif (is_string($value)) {
+                $actual_size = strlen($value);
+            } elseif (is_numeric($value)) {
+                $actual_size = $value;
+            } else {
+                return $message ?? 'Invalid data type';
+            }
+
+            if ($actual_size === $expected_size) {
+                return true;
+            }
+            return $message ?? 'Invalid size';
+        }
+    ], 
+        $priority = 4, // priority of the parser, the default priority of parser is 10, parser with 5 as priority will run before parser with 10 as priority if they have the same parser name
+    );
+```
+
+You can now use the custom `size` parser method in your schema definitions:
+
+```php
+    $my_schema = z()->options([
+        'username' => z()->string()->size(5),
+        'favorite_numbers' => z()->array()->size(5),
+        'lucky_number' => z()->number()->size(5)
+    ]);
+
+    $user_data = [
+        'username' => 'admin',
+        'favorite_numbers' => [1, 2, 3, 4, 5],
+        'lucky_number' => 5
+    ]; // Valid data
+
+    $parsed_data = $my_schema->parse($user_data); // Returns a Zod object
+
+    // Validate the parsed data
+    if ($parsed_data->is_valid()) { // Returns true if data is valid
+        echo 'All data is valid.';
+    } else {
+        echo 'Data validation failed. Errors: ';
+        var_dump($parsed_data->get_errors()); // Outputs validation errors
+    }
+```
+
+## Overriding A Parser Method
+
+You can override a parser method by redefining it with the same name, with inferior priority then the default one 10, This allows you to customize the behavior of existing parsers to suit your specific requirements.
+
+Here is an example of overriding the `email` Parser method:
+
+```php
+    use function Zod\z;
+    use function Zod\bundler;
+    use Zod\FIELD as FK;
+
+    // Override the email parser method
+    bundler->assign_parser_config('email', [
+        FK::IS_INIT_STATE => true, // we can run parser with email as a init state
+        FK::DEFAULT_ARGUMENT => [
+            'message' => 'Invalid email address',
+            'domain' => ['custom_domain.com'],
+            'pattern' => '/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/', // Custom pattern for email validation
+        ],
+        FK::PARSER_ARGUMENTS => function () {
+            return z()->options([
+                'message' => z()->string(),
+                'domain' => z()->array(),
+                'pattern' => z()->string()
+            ]);
+        },
+        FK::PARSER_FUNCTION => function (array $args): string|bool {
+            $value = $args['value'];
+            $message = $args['message']; // Custom error exist already from the default parser, we can update it from the argument
+            $domain = $args['domain'];
+
+            if (!filter_var($value, FILTER_VALIDATE_EMAIL)) {
+                return $message;
+            }
+
+            if ($domain && is_array($domain)) {
+                $email_domain = explode('@', $value)[1];
+                if (!in_array($email_domain, $domain)) {
+                    return $message;
+                }
+            }
+
+            return true;
+        }
+    ], 
+        $priority = 5, // priority of the parser, the default priority of parser is 10, parser with 5 as priority will run before parser with 10 as priority if they have the same parser name
+    );
+```
+
 ## License
+
+This project is licensed under the MIT License - see the LICENSE.md file for details.
+
+### MIT License
+Copyright (c) 2024 Mohamed Amine Sayagh
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
