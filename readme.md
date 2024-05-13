@@ -159,4 +159,114 @@ You can enhance the schema definition by incorporating additional validation opt
     }
 ```
 
+### Advanced Parser Configuration
+
+The library provides extensive configurability for data validation, allowing users to define complex validation rules with custom messages and conditions. Below is an example of how to configure a detailed schema for an email field with specific validation rules:
+
+```php
+    use function Zod\z;
+
+    // Define a configurable email schema
+    $my_configurable_email_schema = z()->string([
+        'message' => 'Invalid string data'
+    ])->min([
+        'min' => 3,
+        'message' => 'String data must be at least 3 characters long' // Custom message
+    ])->max([
+        'max' => 10,
+        'message' => 'String {{value}} must be at most ((max)) characters long' // Custom message with value interpolation
+    ]).email([
+        'message' => 'Invalid email',
+        'domain' => ['gmail.com', 'yahoo.com'] // Custom domain validation rules
+    ]);
+
+    // Define a user schema using the configurable email schema
+    $my_user = z()->options([
+        'email' => $my_configurable_email_schema->required()
+    ]);
+```
+
+### Complex Example: User Data Validation
+
+This example demonstrates validating a user data structure that includes nested arrays, optional fields, and union types, showcasing the library's capability to handle complex and realistic data models.
+
+```php
+    use function Zod\z;
+
+    // Define a user schema with various data validation rules
+    $user_parser = z()->options([
+        'name' => z()->required()->string()->min(3)->max(50),
+        'email' => z()->url([
+            'message' => 'Invalid email address', 
+            'domain' => ['gmail.com']
+        ]),
+        'age' => z()->number(),
+        'friends' => z()->each(
+            function ($user) {
+                return $user->nullable();
+            }
+        ),
+        'password' => z()->optional()->options([
+            'password' => z()->string(),  // Path: 'password.password'
+            'confirm_password' => z()->string(),
+            'created_at' => z()->date(),
+        ]),
+        'created_at' => z()->date(),
+        'updated_at' => z()->date(),
+        'document' => z()->union([
+            z()->options([
+                'type' => z()->enum(['student']),
+                'content' => z()->options([
+                    'school' => z()->string(),
+                    'grade' => z()->number(),
+                ]),
+            ]),
+            z()->options([
+                'type' => z()->enum(['teacher']),
+                'content' => z()->options([
+                    'school' => z()->string(),
+                    'subject' => z()->string(),
+                ]),
+            ]),
+        ])
+    ]);
+
+    // Parse a valid user object
+    $user = $user_parser->parse([
+        'name' => 'John Doe',
+        'email' => 'amine@gmail.com',
+        'age' => 25,
+        'friends' => [
+            [
+                'name' => 'Jane Doe',
+                'email' => 'john@gmail.com',
+                'age' => 30,
+            ],
+        ],
+        'password' => [
+            'password' => 'password',
+            'confirm_password' => 'password',
+            'created_at' => '2021-10-10'
+        ],
+        'created_at' => '2021-10-10',
+        'updated_at' => '2021-10-10',
+        'document' => [
+            'type' => 'student',
+            'content' => [
+                'school' => 'School',
+                'grade' => 10,
+            ]
+        ]
+    ]); // Returns a Zod object
+
+    // Validate the parsed data
+    if ($user->is_valid()) {
+        echo 'User is valid.';
+        var_dump($user->get_value()); // Outputs the validated data
+    } else {
+        echo 'User is invalid.';
+        var_dump($user->get_errors()); // Outputs validation errors
+    }
+```
+
 ## License

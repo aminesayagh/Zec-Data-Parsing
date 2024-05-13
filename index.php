@@ -53,6 +53,23 @@ try {
     echo $e->getMessage();
 }
 
+$my_configurable_email_schema = z()->string([
+    'message' => 'Invalid string data'
+])->min([
+    'min' => 3,
+    'message' => 'String data must be at least 3 characters long'
+])->max([
+    'max' => 10,
+    'message' => 'String {{value}} must be at most {{max}} characters long'
+])->email([
+    'message' => 'Invalid URL',
+    'domain' => ['gmail.com', 'yahoo.com']
+]);
+
+$my_user = z()->options([
+    'email' => $my_configurable_email_schema->required(),
+]);
+
 
 $user_parser = z()->options([
     'name' => z()->required()->string()->min(3)->max(50),
@@ -68,6 +85,24 @@ $user_parser = z()->options([
         'password' => z()->string(), // path: 'password.password'
         'confirm_password' => z()->string(),
         'created_at' => z()->date(),
+    ]),
+    'created_at' => z()->date(),
+    'updated_at' => z()->date(),
+    'document' => z()->union([
+        z()->options([
+            'type' => z()->enum(['student']),
+            'content' => z()->options([
+                'school' => z()->string(),
+                'grade' => z()->number(),
+            ]),
+        ]),
+        z()->options([
+            'type' => z()->enum(['teacher']),
+            'content' => z()->options([
+                'school' => z()->string(),
+                'subject' => z()->string(),
+            ]),
+        ]),
     ])
 ]);
 
@@ -86,6 +121,15 @@ $user = $user_parser->parse([
         'password' => 'password',
         'confirm_password' => 'password',
         'created_at' => '2021-10-10'
+    ],
+    'created_at' => '2021-10-10',
+    'updated_at' => '2021-10-10',
+    'document' => [
+        'type' => 'student',
+        'content' => [
+            'school' => 'School',
+            'grade' => 10,
+        ]
     ]
 ]); // This will return a Zod object
 
