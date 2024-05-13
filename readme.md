@@ -58,7 +58,8 @@ We look forward to building a powerful data parsing tool with a vibrant communit
 
 ### Basic Parsing
 Define and validate data types using simple schema definitions:
-    ```php
+
+```php
     use function Zod\z;
     $my_schema = z()->string();
     
@@ -67,6 +68,6 @@ Define and validate data types using simple schema definitions:
 
     $response_invalid = $my_schema->parse(123); // Returns Zod data object
     $error = $response_invalid->error; // Returns a Zod error object
-    ```
+```
 
 ## License
