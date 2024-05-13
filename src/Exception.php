@@ -95,7 +95,7 @@ if(!class_exists('ZodErrors')) {
          * 
          * @return array An array of ZodError objects.
          */
-        public function getErrors(): array {
+        public function get_errors(): array {
             return $this->errors;
         }
 
@@ -104,7 +104,7 @@ if(!class_exists('ZodErrors')) {
          * 
          * @return bool True if the collection has errors, false otherwise.
          */
-        public function hasErrors(): bool {
+        public function has_errors(): bool {
             return count($this->errors) > 0;
         }
 
@@ -114,7 +114,7 @@ if(!class_exists('ZodErrors')) {
          * @param string $key The key of the ZodError object to retrieve.
          * @return ZodError|null The ZodError object with the specified key, or null if not found.
          */
-        public function getError(string $key): ?ZodError {
+        public function get_error(string $key): ?ZodError {
             foreach ($this->errors as $error) {
                 if ($error->key === $key) {
                     return $error;
@@ -140,6 +140,9 @@ if(!class_exists('ZodErrors')) {
             $this->reset();
         }
 
+        public function is_empty() {
+            return count($this->errors) === 0;
+        }
         /**
          * Magic method to get the value of a property.
          * 
@@ -153,7 +156,7 @@ if(!class_exists('ZodErrors')) {
                     return $this->errors;
                 case 'length':
                     return count($this->errors);
-                case 'isEmpty':
+                case 'is_empty':
                     return count($this->errors) === 0;
                 case 'first':
                     return $this->errors[0] ?? null;

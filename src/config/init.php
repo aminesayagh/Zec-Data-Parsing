@@ -1,8 +1,6 @@
 <?php
 
-use Zod\Bundler;
-use Zod\z;
-
+use function Zod\z;
 use Zod\FIELD as FK; // FK: Field Key
 use Zod\PARSER as PK; // PK: Parser Key
 
@@ -16,12 +14,16 @@ Zod\bundler()->assign_parser_config(PK::EMAIL, [
     FK::ACCEPT => [],
     FK::IS_INIT_STATE => true,
     FK::PARSER_ARGUMENTS => function () {
-        return null;
+        return z()->options([
+            'message' => z()->required()->string(),
+            'pattern' => z()->required()->string(),
+            'domain' => z()->optional()->array()
+        ]);
     },
     FK::DEFAULT_ARGUMENT => [
         'message' => 'Invalid email address',
         'pattern' => '/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/',
-        'domain' => 'gmail.com'
+        'domain' => ['gmail.com', 'yahoo.com', 'hotmail.com']
     ],
     FK::PARSER_CALLBACK => function (array $args): string|bool {
         return true;
@@ -163,25 +165,38 @@ Zod\bundler()->assign_parser_config(PK::EMAIL, [
         ]);
     },
     FK::DEFAULT_ARGUMENT => [
-        'message' => 'Invalid option value',
+        'message' => 'Invalid option values',
         'options' => []
     ],
     FK::PARSER_CALLBACK => function (array $par): string|bool {
         $value = $par['value'];
         $options = $par['argument']['options'] ?? $par['default_argument']['options'];
+        $default_value = $par['default'];
+
         if (!in_array($value, $options)) {
             return $par['argument']['message'] ?? $par['default_argument']['message'];
         }
 
-        foreach ($options as $key => $option) {
-            if ($option instanceof Zod\Zod) {
-                $value_field = array_key_exists($key, $value) ? $value[$key] : null;
-                $response = $option->parse($value_field, [
-                    'path' => is_null($par['path']) ? $key : $par['path'] . '.' . $key,
-                    
-                ]);
+        $has_error = false;
 
+        foreach ($options as $key => $option) {
+            if (!($option instanceof Zod\Zod)) {
+                throw new Zod\ZodError('The options field must be an array of Zod instances', 'options');
             }
+            $default_of_option = null;
+            if (is_array($default_value) && array_key_exists($key, $default_value)) {
+                $default_of_option = $default_value[$key];
+            }
+            
+            $value_field = array_key_exists($key, $value) ? $value[$key] : null;
+            $zod_response = $option->parse($value_field, $default_of_option, $par['owner']);
+            if (!$zod_response->is_valid()) {
+                $has_error = true;
+            }
+        }
+
+        if ($has_error) {
+            return $par['argument']['message'] ?? $par['default_argument']['message'];
         }
 
         return true;
@@ -254,3 +269,5 @@ Zod\bundler()->assign_parser_config(PK::EMAIL, [
         return true;
     }
 ]);
+
+// over

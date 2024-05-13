@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace Zod;
 
@@ -16,6 +17,29 @@ if(!interface_exists('IZod')) {
     }
 }
 
+if(!class_exists('ZodPath')) {
+    class ZodPath {
+        private array $_path = [];
+        public function __construct(ZodPath $path = null) {
+            if (!is_null($path)) {
+                $this->_path = $path->get_path();
+            }
+        }
+        public function get_path(): array {
+            return $this->_path;
+        }
+        public function push(string $key): void {
+            $this->_path[] = $key;
+        }
+        public function pop(): void {
+            array_pop($this->_path);
+        }
+        public function get_path_string(): string {
+            return implode('.', $this->_path);
+        }
+    }
+}
+
 if(!class_exists('Zod')) {
     class Zod extends Parsers implements IZod {
         /**
@@ -24,11 +48,10 @@ if(!class_exists('Zod')) {
          * @var ZodErrors
          */
         private ZodErrors $_errors = new ZodErrors();
-        private string $type = 'field';
         private mixed $_value = null;
         private mixed $_default = null;
-        private bool $has_valid_parser_state = false;
-        private bool $has_valid_default = false;
+        private ZodPath $_path = new ZodPath();
+        private Zod|null $_parent = null;
         public function __construct(array $parsers = [], array $_errors = new ZodErrors()) {
             parent::__construct($parsers);
             $this->_errors = $_errors;
@@ -64,7 +87,7 @@ if(!class_exists('Zod')) {
             }
             throw new ZodError("Method $name not found");
         }
-        public function parse(mixed $value, mixed $default = null, array $path = null): Zod {
+        public function parse(mixed $value, mixed $default = null, Zod|null $parent = null): Zod {
             $this->_errors->reset();
 
             $this->_value = $value;
@@ -76,37 +99,46 @@ if(!class_exists('Zod')) {
                 return $this;
             } 
 
+            if (!is_null($parent)) {
+                $this->_parent = $parent;
+            }
+
             foreach ($this->get_parsers() as $parser) {
                 $response = $parser->parse($this->_value, [
                     'before_parser' => $before_parsers,
-                    'path' => $path,
-                ]);
+                    'default' => $this->_default,
+                ], $this);
 
                 if ($response->is_valid) {
-                    $before_parsers[] = $parser;
-                } else {
-                    $error = $response->error;
-                    $this->_errors->set_error($error);
+                    $before_parsers[] = $parser->name;
                 }
             }
 
             return $this;
         } 
         public function set_default(mixed $default): Zod {
-            if (!is_null($default)) {
-                return $this;
-            }
-            if ($this->has_valid_default) {
-                return $this;
-            }
-            if ($this->length() == 0) {
+            if(is_null($default)) {
                 return $this;
             }
             $parser_of_default = clone $this;
             $parser_of_default->parse_or_throw($default);
 
             $this->_default = $default;
-            $this->has_valid_default = true;
+            return $this;
+        }
+        public function is_valid(): bool {
+            return $this->_errors->is_empty();
+        }
+        public function get_errors(): ZodErrors {
+            return $this->_errors;
+        }
+        public function set_error(ZodError $error): Zod {
+            // set the same error to the parent
+            if (!is_null($this->_parent)) {
+                $this->_parent->set_error($error);
+            }
+
+            $this->_errors->set_error($error);
             return $this;
         }
     }

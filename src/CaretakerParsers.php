@@ -39,11 +39,10 @@ if (!class_exists('CaretakerParsers')) {
                 $parsers = self::$parsers;
             }
 
-            $selected_parsers = new ArrayObject(
-                array_filter($parsers, function ($value) use ($key) {
-                    return $value->get_key() === $key;
-                })
-            );
+            $selected_parsers = array_filter($parsers, function ($value) use ($key) {
+                return $value->get_key() === $key;
+            });
+
             $selected_parser = null;
 
             if (count($selected_parsers) === 0) {
@@ -52,7 +51,7 @@ if (!class_exists('CaretakerParsers')) {
 
             // get the parser with the highest priority
             foreach ($selected_parsers as $value) {
-                if ($value->get_key() === $key && (is_null($selected_parser) || $value->_priority > $selected_parser->_priority)) {
+                if ($value->name === $key && (is_null($selected_parser) || $value->_priority > $selected_parser->_priority)) {
                     $selected_parser = $value;
                 }
             }
