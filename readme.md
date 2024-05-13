@@ -24,6 +24,9 @@ The Zod Data Parsing and schema declaration Library is designed to bring the rob
   - [Validation](#validation)
   - [Exception Handling with Parsing](#exception-handling-with-parsing)
   - [Parsing of an array of options](#parsing-of-an-array-of-options)
+  - [Advanced Parser Configuration](#advanced-parser-configuration)
+  - [Complex Example: User Data Validation](#complex-example-user-data-validation)
+
 - [License](#license)
 
 ## Introduction
