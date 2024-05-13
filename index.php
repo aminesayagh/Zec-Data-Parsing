@@ -21,6 +21,39 @@ require_once ZOD_PATH . '/src/Zod.php';
 require_once ZOD_PATH . '/src/config/init.php';
 
 
+use function Zod\z;
+
+$my_schema = z()->string();
+
+// parsing 
+$response_valid = $my_schema->parse('hello'); // This will return a Zod object
+$value = $response_valid->value; // This will return the value of the parsed data (hello)
+
+$response_invalid = $my_schema->parse(123); // This will return a Zod object
+$errors = $response_invalid->errors; // This will return the errors of the parsed data, a ZodErrors object
+
+// safe parsing
+$response = $my_schema->safe_parse('hello'); // { success: true, data: 'hello' }
+$response = $my_schema->safe_parse(123); // { success: false, error: 'Invalid data' }
+
+// validation
+$valid = $my_schema->is_valid('hello'); // true
+$invalid = $my_schema->is_valid(123); // false
+
+// parsing try catch
+try {
+    $response = $my_schema->parse_or_throw('hello'); // This will return a the value of the parsed data (hello)
+} catch (Exception $e) {
+    echo $e->getMessage();
+}
+
+try {
+    $response = $my_schema->parse_or_throw(123); // This will throw an exception
+} catch (Exception $e) {
+    echo $e->getMessage();
+}
+
+
 $user_parser = z()->options([
     'name' => z()->required()->string()->min(3)->max(50),
     'email' => z()->url(['message' => 'Invalid email address', 'domain' => ['gmail.com']]),
