@@ -1,104 +1,71 @@
 <?php
 
-if (!class_exists('Parsers')) {
+namespace Zod;
+use Zod\CaretakerParsers;
+use Zod\Parser;
+require_once ZOD_PATH . '/src/CaretakerParsers.php';
+
+if(!class_exists('Parsers')) {
     /**
-     * Class Parsers manages a collection of Parser objects, allowing addition, sorting, and retrieval based on priority and key.
+     * Class Parsers
+     * 
+     * This class extends the CaretakerParsers class and represents a collection of parsers.
      */
-    class Parsers
-    {
-        /**
-         * @var Parser[] Array of parser objects.
-         */
-        private array $parsers = [];
+    class Parsers extends CaretakerParsers {
+        private bool $_is_sorted = false;
 
         /**
-         * @var bool Flag indicating whether the parsers are sorted by priority.
+         * Parsers constructor.
+         * 
+         * @param array $parsers An array of parsers.
          */
-        private bool $isSorted = false;
-
+        public function __construct(array $parsers = []) {
+            parent::__construct($parsers);
+        }
         /**
-         * Adds a parser to the collection. If the parser already exists, it updates the existing entry.
+         * Adds a parser to the parsers array.
          *
-         * @param Parser $parser The parser object to add.
-         * @return Parser The added or updated parser object.
+         * @param Parser $parser The parser to be added.
+         * @return Parser|null The added parser if successful, null otherwise.
          */
-        public function addParser(Parser $parser): Parser
-        {
-            foreach ($this->parsers as &$p) {
-                if ($p->getKey() === $parser->getKey()) {
-                    $p = $parser;
-                    $this->isSorted = false;
-                    return $p;
-                }
+        public function add_parser(Parser $parser): ?Parser { 
+            // check if the parser is already in the parsers array
+            if ($this->has_parser_key($parser->key)) {
+                return null;
             }
-            $this->parsers[] = $parser;
-            $this->isSorted = false;
-            return $parser;
+            // add the parser to the parsers array
+            $new_parser = parent::add_parser($parser);
+            if (is_null($new_parser)) {
+                return null;
+            }
+            $this->_is_sorted = false;
+            return $new_parser;
         }
-
         /**
-         * Sorts the parsers in the collection by their priority.
-         */
-        public function sortParsers(): void
-        {
-            usort($this->parsers, function (Parser $a, Parser $b): int {
-                return $a->getPriority() - $b->getPriority();
-            });
-            $this->isSorted = true;
-        }
-
-        /**
-         * Returns an array of parsers, sorted by priority if not already sorted.
+         * Sorts the parsers in the collection by the order of parsing.
          *
-         * @return Parser[] Array of parser objects, sorted by priority.
+         * @return void
          */
-        public function getParsers(): array
-        {
-            if (!$this->isSorted) {
-                $this->sortParsers();
+        public function sort_parsers() : void {
+            // TODO: Refactoring, sort by order of parsing
+            usort($this->parsers, function($a, $b) {
+                return $a->get_order_of_parsing() <=> $b->get_order_of_parsing();
+            });
+        
+            $this->_is_sorted = true;
+        }
+        /**
+         * Retrieves the parsers array.
+         *
+         * If the parsers array is not sorted, it will be sorted before returning.
+         *
+         * @return array The parsers array.
+         */
+        public function get_parsers(): array {
+            if (!$this->_is_sorted) {
+                $this->sort_parsers();
             }
             return $this->parsers;
-        }
-
-        /**
-         * Retrieves a parser by its key.
-         *
-         * @param string $key The key of the parser to retrieve.
-         * @return Parser|null The parser with the specified key, or null if not found.
-         */
-        public function getParser(string $key): ?Parser
-        {
-            foreach ($this->parsers as $p) {
-                if ($p->getKey() === $key) {
-                    return $p;
-                }
-            }
-            return null;
-        }
-
-        /**
-         * Magic method to get properties. Currently, only 'parsers' is accessible and returns the sorted parsers array.
-         *
-         * @param string $name The property name to access.
-         * @return array The value of the accessed property.
-         * @throws Exception If the property name is not supported.
-         */
-        public function __get(string $name): array
-        {
-            if ($name === 'parsers') {
-                return $this->getParsers();
-            }
-            throw new Exception("Property $name not found");
-        }
-
-        /**
-         * Invokable method to return the sorted parsers array.
-         *
-         * @return Parser[] The array of sorted parsers.
-         */
-        public function __invoke(): array
-        {
-            return $this->getParsers();
         }
     }
 }
