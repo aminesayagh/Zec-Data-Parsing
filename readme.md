@@ -18,6 +18,13 @@ The Zod Data Parsing and schema declaration Library is designed to bring the rob
 - [Installation](#installation)
 - [Collaboration](#collaboration)
 - [How to Contribute](#how-to-contribute)
+- [Usage](#usage)
+  - [Basic Parsing](#basic-parsing)
+  - [Safe Parsing](#safe-parsing)
+  - [Validation](#validation)
+  - [Exception Handling with Parsing](#exception-handling-with-parsing)
+  - [Parsing of an array of options](#parsing-of-an-array-of-options)
+- [License](#license)
 
 ## Introduction
 
