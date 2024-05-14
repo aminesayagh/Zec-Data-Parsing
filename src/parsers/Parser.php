@@ -134,8 +134,7 @@ if (!class_exists('Parser')) {
             $response = call_user_func($this->_parser_callback, [
                 'value' => $value,
                 'default' => $default, // default value of the parser
-                'argument' => $this->_argument,
-                'default_argument' => $this->_default_argument,
+                'argument' => array_merge($this->_default_argument, $this->_argument),
                 'before_valid_parser' => $before_parser,
                 'owner' => $zod_owner
             ]);
