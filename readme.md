@@ -2,6 +2,15 @@
 
 The Zod Data Parsing and schema declaration Library is designed to bring the robust schema definition and validation capabilities similar to those in the Zod library (JavaScript) to PHP applications. This library offers flexible, modular, and extensible data validation tools that empower developers to enforce strict data integrity rules easily and reliably.
 
+
+## Usage Example
+
+Below is an example of how to use our library, before and after:
+
+![Usage Before Example](images/before.png "Library Usage Example")
+![Usage After Example](images/after.png "Library Usage Example")
+
+
 **Current Version:** v1.0.0
 
 **Note:** This library is currently in development. Official documentation and further resources will be available soon.

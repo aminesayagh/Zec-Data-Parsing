@@ -56,6 +56,15 @@ if(!class_exists('Zod')) {
             parent::__construct($parsers);
             $this->_errors = $_errors;
         }
+        /**
+         * Creates a clone of the Zod object.
+         *
+         * This method is used to create a deep copy of the Zod object, including its internal state.
+         * It clones the `_errors` property and filters the `parsers` array, removing any null values
+         * and parsers with the key 'required'. It also clones each parser in the filtered array.
+         *
+         * @return void
+         */
         public function __clone() {
             $this->_errors = clone $this->_errors;
             $this->parsers = array_filter($this->parsers, function($parser) {
@@ -68,6 +77,14 @@ if(!class_exists('Zod')) {
                 return $parser->clone();
             });
         }
+        /**
+         * Dynamically handles method calls for the Zod class.
+         *
+         * @param string $name The name of the method being called.
+         * @param mixed $arguments The arguments passed to the method.
+         * @return mixed The result of the method call.
+         * @throws ZodError If the method or parser is not found.
+         */
         public function __call(string $name, mixed $arguments = []) {
             if (method_exists($this, $name)) {
                 return call_user_func_array([$this, $name], $arguments);
@@ -87,6 +104,14 @@ if(!class_exists('Zod')) {
             }
             throw new ZodError("Method $name not found");
         }
+        /**
+         * Parses the given value using the specified parsers.
+         *
+         * @param mixed $value The value to be parsed.
+         * @param mixed $default The default value to be used if the parsed value is null.
+         * @param Zod|null $parent The parent Zod instance, if any.
+         * @return Zod The current Zod instance.
+         */
         public function parse(mixed $value, mixed $default = null, Zod|null $parent = null): Zod {
             $this->_errors->reset();
 
@@ -115,7 +140,13 @@ if(!class_exists('Zod')) {
             }
 
             return $this;
-        } 
+        }
+        /**
+         * Sets the default value for the Zod instance.
+         *
+         * @param mixed $default The default value to be set.
+         * @return Zod The updated Zod instance.
+         */
         public function set_default(mixed $default): Zod {
             if(is_null($default)) {
                 return $this;
