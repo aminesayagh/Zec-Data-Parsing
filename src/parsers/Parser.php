@@ -68,6 +68,7 @@ if (!class_exists('Parser')) {
         private int $_order_of_parsing = 0; // Calculate the order of execution of a parser on concurrency with the other parsers
         private ?bool $_is_init_state = null;
         private bool $_is_init = false;
+        private bool $_is_validate_parser = false;
         private callable|null $_parser_callback = null;
         private ArgumentParser $_argument_parser;
 
@@ -170,25 +171,23 @@ if (!class_exists('Parser')) {
             }
 
             // Retrieve arguments
-            $before_parser = $args['before_parser'];
             $default = $args['default'];
 
             // Get the path of the owner Zod instance
-            $path = $zod_owner->get_path();
+            $path = $zod_owner->get_path_string();
 
             // Call the parser callback function
             $response = call_user_func($this->_parser_callback, [
                 'value' => $value,
                 'default' => $default, // default value of the parser
                 'argument' => $this->get_argument(),
-                'before_valid_parser' => $before_parser,
                 'owner' => $zod_owner
             ]);
 
             // Handle the response based on its type
             if (is_string($response)) {
                 // If the response is a string, set an error and return invalid result
-                $zod_owner = $zod_owner->set_error(
+                $zod_owner->set_error(
                     new ZodError($response, $this->identify_parser_key($this->_name, $path))
                 );
                 return [
@@ -205,6 +204,7 @@ if (!class_exists('Parser')) {
                 ];
             } else if (is_bool($response) && $response == true) {
                 // If the response is a boolean and true, return valid result
+                $this->_is_validate_parser = true;
                 return [
                     'is_valid' => true,
                 ];
@@ -212,6 +212,9 @@ if (!class_exists('Parser')) {
 
             // If the response is not a valid type, throw an error
             throw new ZodError('The parser_callback field must return a string or a boolean', 'parser_callback');
+        }
+        public function is_validate_parser(): bool {
+            return $this->_is_validate_parser;
         }
         public function set_accept_state(array $accept_state): Parser {
             // if $this->accept is not null, return an error

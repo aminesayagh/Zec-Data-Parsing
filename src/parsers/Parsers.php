@@ -66,5 +66,14 @@ if(!class_exists('Parsers')) {
             }
             return $this->parsers;
         }
+        public function get_validate_parser(): ?Parser {
+            $parsers = $this->get_parsers();
+            foreach ($parsers as $parser) {
+                if ($parser->is_validate_parser()) {
+                    return $parser;
+                }
+            }
+            return null;
+        }
     }
 }

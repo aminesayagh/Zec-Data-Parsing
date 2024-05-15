@@ -50,11 +50,12 @@ if(!class_exists('Zod')) {
         private ZodErrors $_errors = new ZodErrors();
         private mixed $_value = null;
         private mixed $_default = null;
-        private ZodPath $_path = new ZodPath();
+        private ZodPath $_path;
         private Zod|null $_parent = null;
         public function __construct(array $parsers = [], array $_errors = new ZodErrors()) {
             parent::__construct($parsers);
             $this->_errors = $_errors;
+            $this->_path = new ZodPath();
         }
         /**
          * Creates a clone of the Zod object.
@@ -120,6 +121,10 @@ if(!class_exists('Zod')) {
             $this->set_default($default);
             $before_parsers = [];
 
+            if (!is_null($parent)) {
+                $this->_path->push($parent->get_path_string());
+            }
+
             $has_required = $this->has_parser_key('required');
             if (!$has_required && is_null($value)) {
                 return $this;
@@ -131,7 +136,6 @@ if(!class_exists('Zod')) {
 
             foreach ($this->get_parsers() as $parser) {
                 $response = $parser->parse($this->_value, [
-                    'before_parser' => $before_parsers,
                     'default' => $this->_default,
                 ], $this);
 
