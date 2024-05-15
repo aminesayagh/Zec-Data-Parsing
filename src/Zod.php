@@ -93,12 +93,13 @@ if(!class_exists('Zod')) {
                 $parser = bundler()->get_parser($name);
 
                 if (is_array($arguments)) {
-                    $parser->set_arguments($arguments);
+                    $parser->set_argument($arguments);
                 } else {
-                    $parser->set_arguments([
+                    $parser->set_argument([
                         $name => $arguments
                     ]);
                 }
+                
                 $this->add_parser($parser);
                 return $this;
             }
@@ -163,6 +164,12 @@ if(!class_exists('Zod')) {
         public function get_errors(): ZodErrors {
             return $this->_errors;
         }
+        /**
+         * Sets an error for the current Zod instance and its parent, if any.
+         *
+         * @param ZodError $error The error to be set.
+         * @return Zod The current Zod instance.
+         */
         public function set_error(ZodError $error): Zod {
             // set the same error to the parent
             if (!is_null($this->_parent)) {
@@ -171,6 +178,21 @@ if(!class_exists('Zod')) {
 
             $this->_errors->set_error($error);
             return $this;
+        }
+        /**
+         * Parses the given value and throws an error if it is not valid.
+         *
+         * @param mixed $value The value to parse.
+         * @param mixed $default The default value to use if the parsed value is invalid.
+         * @return Zod The parsed value.
+         * @throws mixed The error(s) if the parsed value is invalid.
+         */
+        public function parse_or_throw(mixed $value, mixed $default = null): Zod {
+            $this->parse($value, $default);
+            if (!$this->is_valid()) {
+                throw $this->_errors;
+            }
+            return $this->get_value();
         }
     }
 }

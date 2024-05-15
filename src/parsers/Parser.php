@@ -18,22 +18,58 @@ if (!class_exists('Parser')) {
         public function parse(mixed $value, array $args);
         public function set_accept_state(array $accept_state): Parser;
         public function set_is_init_state(bool $is_init_state): Parser;
-        public function set_arguments(array $argument): Parser;
+        public function set_argument(array $argument): Parser;
         public function set_priority_of_parser(int $priority): Parser;
         public function calc_order_of_parsing(CaretakerParsers &$parserRules, array $parents = []): ?int;
     }
 
-
+    class ArgumentParser {
+        private array $_argument = [];
+        private mixed $_parser_arguments = null;
+        private bool $_is_valid_argument = false;
+        private array $_default_argument = [];
+        public function __construct(array $default_argument, callable $parser_arguments) {
+            if (!is_array($default_argument)) {
+                throw new ZodError('The default_argument field must be an array', 'default_argument');
+            }
+            if (!is_callable($parser_arguments)) {
+                throw new ZodError('The parser_arguments field must be a callback function', 'parser_arguments');
+            }
+            $this->_default_argument = $default_argument;
+            $this->_parser_arguments = $parser_arguments;
+        }
+        public function get_argument(): array {
+            if (!$this->_parser_arguments) {
+                throw new ZodError('The parser_arguments field must be set', 'parser_arguments');
+            }
+            $merged_argument = array_merge($this->_default_argument, $this->_argument);
+            if (is_bool($this->_is_valid_argument) && !$this->_is_valid_argument) {
+                $argument_zod_validator = call_user_func($this->_parser_arguments);
+                $argument = $argument_zod_validator->parse_or_throw($merged_argument);
+                $this->_is_valid_argument = true;
+            } else {
+                $argument = $merged_argument;
+            }
+            return $argument;
+        }
+        public function set_argument(array $argument): ArgumentParser {
+            if (!is_array($argument)) {
+                throw new ZodError('The argument field must be an array', 'argument');
+            }
+            $this->_argument = $argument;
+            $this->_is_valid_argument = false;
+            return $this;
+        }
+    }
     class Parser {
         private ?string $_name = null;
         private array $_accept_state = [];
         private int $_priority = 10; // calculate the priority of a parser on concurrency with the other parser with the same key, using the field priority 
         private int $_order_of_parsing = 0; // Calculate the order of execution of a parser on concurrency with the other parsers
         private ?bool $_is_init_state = null;
-        private callable|null $_parser_arguments = null;
-        private array $_default_argument = []; 
-        private array $_argument = [];
+        private bool $_is_init = false;
         private callable|null $_parser_callback = null;
+        private ArgumentParser $_argument_parser;
 
         
         public function __construct(string $name, array $args = [
@@ -49,7 +85,7 @@ if (!class_exists('Parser')) {
             $this->set_accept_state($args['accept_state']);
             $this->set_priority_of_parser($args['priority']);
             $this->set_is_init_state($args['is_init_state']);
-            $this->set_structure_arguments($args['default_argument'], $args['parser_arguments']);
+            $this->_argument_parser = new ArgumentParser($args['default_argument'], $args['parser_arguments']);
             $this->set_parser_callback($args['parser_callback']);
         }
         // constructor of copy of the parser
@@ -91,7 +127,7 @@ if (!class_exists('Parser')) {
             $this->set_priority_of_parser($parser->_priority);
             $this->_order_of_parsing = $parser->_order_of_parsing;
             $this->_is_init_state = $parser->_is_init_state;
-            $this->set_structure_arguments($parser->_default_argument, $parser->_parser_arguments);
+            // $this->set_structure_arguments($parser->_default_argument, $parser->_parser_arguments);
 
             $this->_parser_callback = $parser->_parser_callback;
             return $this;
@@ -108,6 +144,16 @@ if (!class_exists('Parser')) {
                 return $name_of_parser;
             }
             return $path_to_parser->get_path_string() . '/' . $name_of_parser;
+        }
+        public function initialize(): void {
+            $this->_is_init = true;
+        }
+        public function get_argument(): array {
+            return $this->_argument_parser->get_argument();
+        }
+        public function set_argument(array $argument): Parser {
+            $this->_argument_parser->set_argument($argument);
+            return $this;
         }
         /**
          * Parses the given value using the provided parser callback function.
@@ -134,7 +180,7 @@ if (!class_exists('Parser')) {
             $response = call_user_func($this->_parser_callback, [
                 'value' => $value,
                 'default' => $default, // default value of the parser
-                'argument' => array_merge($this->_default_argument, $this->_argument),
+                'argument' => $this->get_argument(),
                 'before_valid_parser' => $before_parser,
                 'owner' => $zod_owner
             ]);
@@ -188,71 +234,9 @@ if (!class_exists('Parser')) {
             return $this;
         }
         // -------------- ARGUMENTS OF THE PARSER -------------- //
-        /**
-         * Parses an argument using a callback function.
-         *
-         * @param array $argument The argument to be parsed.
-         * @param callable $parser_argument The callback function used to parse the argument.
-         * @return array The parsed argument.
-         * @throws ZodError If the argument is not an array or if the parser_argument is not a callback function.
-         * @throws ZodError If the parsed argument is an instance of ZodError.
-         */
-        private function _parse_argument(array $argument, callable $parser_argument): array {
-            if (!is_array($argument)) {
-                throw new ZodError('The argument field must be an array', 'argument');
-            }
-            if (!is_callable($parser_argument)) {
-                throw new ZodError('The parser_argument field must be a callback function', 'parser_argument');
-            }
 
-            $zod_parser_argument = $parser_argument();
-            $valid_argument = $zod_parser_argument->parse($argument);
-
-            if ($valid_argument instanceof ZodError) {
-                throw $valid_argument;
-            }
-            return $valid_argument;
-        }
-        /**
-         * Sets the structure arguments for the parser.
-         *
-         * @param array $default The default field values.
-         * @param callable $parser_arguments The callback function for parsing the arguments.
-         * @return Parser The updated Parser instance.
-         * @throws ZodError If the default field is not an array or if the parser_arguments field is not a callback function.
-         */
-        private function set_structure_arguments(array $default = [], callable $parser_arguments): Parser {
-            if (!is_array($default)) {
-                throw new ZodError('The default field must be an array', 'default');
-            }
-            if (!is_callable($parser_arguments)) {
-                throw new ZodError('The parser_arguments field must be a callback function', 'parser_arguments');
-            }
-
-
-            $this->_default_argument = $this->_parse_argument($default, $parser_arguments);
-            $this->_parser_arguments = $parser_arguments;
-            return $this;
-        }
-        /**
-         * Sets the arguments for the parser.
-         *
-         * @param array $argument The array of arguments to set.
-         * @return Parser Returns the current instance of the Parser.
-         * @throws ZodError Throws a ZodError if the argument field is not an array or if the parser_arguments field is not set.
-         */
-        public function set_arguments(array $argument): Parser {
-            if (!is_array($argument)) {
-                throw new ZodError('The argument field must be an array', 'argument');
-            }
-            if (!isset($this->_parser_arguments)) {
-                throw new ZodError('The parser_arguments field must be set', 'parser_arguments');
-            }
-            
-            $argument_merge_by_default = array_merge($this->_default_argument, $argument);
-            $this->_argument = $this->_parse_argument($argument_merge_by_default, $this->_parser_arguments);
-            return $this;
-        }
+        
+        
         // -------------- ARGUMENTS OF THE PARSER -------------- //
         /**
          * Sets the parser callback function for the Parser.

@@ -1,6 +1,7 @@
 <?php
 
 use function Zod\z;
+use function Zod\bundler;
 use Zod\FIELD as FK; // FK: Field Key
 use Zod\PARSER as PK; // PK: Parser Key
 
@@ -8,13 +9,10 @@ require_once ZOD_PATH . '/src/config/Bundler.php';
 require_once ZOD_PATH . '/src/Zod.php';
 
 
-// TODO:
-// Add parser arguments, a zod parser for the argument values;
+// TODO: Add parser arguments, a zod parser for the argument values;
 // Don't forget to parse the argument on instanciation of the parser
-Zod\bundler()->assign_parser_config(PK::EMAIL, [
-    FK::ACCEPT => [
-
-    ],
+bundler()->assign_parser_config(PK::EMAIL, [
+    FK::ACCEPT => [],
     FK::IS_INIT_STATE => true,
     FK::PARSER_ARGUMENTS => function () {
         return z()->options([
@@ -124,7 +122,7 @@ Zod\bundler()->assign_parser_config(PK::EMAIL, [
     FK::PARSER_CALLBACK => function (array $par): string|bool {
         $value = $par['value'];
         if (!is_string($value)) {
-            return $par['argument']['message']; // TODO: Merge between default argument and argument before running the callback
+            return $par['argument']['message'];
         }
         return true;
     }

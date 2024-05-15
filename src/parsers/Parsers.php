@@ -47,7 +47,6 @@ if(!class_exists('Parsers')) {
          * @return void
          */
         public function sort_parsers() : void {
-            // TODO: Refactoring, sort by order of parsing
             usort($this->parsers, function($a, $b) {
                 return $a->get_order_of_parsing() <=> $b->get_order_of_parsing();
             });

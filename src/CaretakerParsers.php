@@ -60,7 +60,10 @@ if (!class_exists('CaretakerParsers')) {
                 return null;
             }
 
-            return $selected_parser;
+            $selected_parser_cloned_and_initialized = clone $selected_parser;
+            $selected_parser_cloned_and_initialized->initialize();
+
+            return $selected_parser_cloned_and_initialized;
         }
         /**
          * Checks if a parser is present in the list of parsers.
