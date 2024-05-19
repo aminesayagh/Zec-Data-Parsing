@@ -51,7 +51,8 @@ if (!class_exists('CaretakerParsers')) {
 
             // get the parser with the highest priority
             foreach ($selected_parsers as $value) {
-                if ($value->name === $key && (is_null($selected_parser) || $value->_priority > $selected_parser->_priority)) {
+                // 
+                if (is_null($selected_parser) || !$selected_parser->is_priority($value)) {
                     $selected_parser = $value;
                 }
             }

@@ -10,10 +10,12 @@ require_once ZOD_PATH . '/src/Zod.php';
 
 
 // TODO: Add parser arguments, a zod parser for the argument values;
-// Don't forget to parse the argument on instanciation of the parser
+// Don't forget to parse the argument on instantiation of the parser
+// NOTE: in has_to_be, we don't need to specify required of optional, because it is already specified in the parser config
 bundler()->assign_parser_config(PK::EMAIL, [
-    FK::ACCEPT => [],
-    FK::IS_INIT_STATE => true,
+    FK::PRIORITIZE => [
+        PK::STRING,
+    ],
     FK::PARSER_ARGUMENTS => function () {
         return z()->options([
             'message' => z()->required()->string(),
@@ -24,28 +26,24 @@ bundler()->assign_parser_config(PK::EMAIL, [
     FK::DEFAULT_ARGUMENT => [
         'message' => 'Invalid email address',
         'pattern' => '/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/',
-        'domain' => ['gmail.com', 'yahoo.com', 'hotmail.com']
+        'domain' => ['gmail.com', 'yahoo.com']
     ],
     FK::PARSER_CALLBACK => function (array $args): string|bool {
         $value = $args['value'];
-        $arrgument = $args['argument'];
+        $argument = $args['argument'];
 
+        $pattern = $argument['pattern'];
+        $message = $argument['message'];
+        $domain = $argument['domain'];
+        
+        if (!preg_match($pattern, $value)) {
+            return $message;
+        }
 
         return true;
     }
 ])->assign_parser_config(PK::REQUIRED, [
-    FK::ACCEPT => [
-        PK::EMAIL,
-        PK::DATE,
-        PK::BOOL,
-        PK::INPUT,
-        PK::NUMBER,
-        PK::URL,
-        PK::STRING,
-        PK::OPTIONS,
-        PK::EACH,
-    ],
-    FK::IS_INIT_STATE => true,
+    FK::PRIORITIZE => [],
     FK::PARSER_ARGUMENTS => function () {
         return z()->options([
             'message' => z()->required()->string()
@@ -63,10 +61,10 @@ bundler()->assign_parser_config(PK::EMAIL, [
         return true;
     }
 ])->assign_parser_config(PK::DATE, [
-    FK::ACCEPT => [
-
+    FK::PRIORITIZE => [
+        PK::STRING,
+        PK::NUMBER
     ],
-    FK::IS_INIT_STATE => true,
     FK::PARSER_ARGUMENTS => function () {
         return z()->options([
             'message' => z()->required()->string(),
@@ -89,10 +87,7 @@ bundler()->assign_parser_config(PK::EMAIL, [
         return true;
     }
 ])->assign_parser_config(PK::BOOL, [
-    FK::ACCEPT => [
-
-    ],
-    FK::IS_INIT_STATE => true,
+    FK::PRIORITIZE => [],
     FK::PARSER_ARGUMENTS => function () {
         return z()->options([
             'message' => z()->required()->string()
@@ -108,27 +103,8 @@ bundler()->assign_parser_config(PK::EMAIL, [
         }
         return true;
     }
-])->assign_parser_config(PK::INPUT, [
-    FK::ACCEPT => [],
-    FK::IS_INIT_STATE => true,
-    FK::PARSER_ARGUMENTS => function () {
-        return z()->options([
-            'message' => z()->required()->string()
-        ]);
-    },
-    FK::DEFAULT_ARGUMENT => [
-        'message' => 'Invalid input value'
-    ],
-    FK::PARSER_CALLBACK => function (array $par): string|bool {
-        $value = $par['value'];
-        if (!is_string($value)) {
-            return $par['argument']['message'];
-        }
-        return true;
-    }
 ])->assign_parser_config(PK::STRING, [
-    FK::ACCEPT => [],
-    FK::IS_INIT_STATE => true,
+    FK::PRIORITIZE => [],
     FK::PARSER_ARGUMENTS => function () {
         return null;
     },
@@ -143,8 +119,7 @@ bundler()->assign_parser_config(PK::EMAIL, [
         return true;
     }
 ])->assign_parser_config(PK::URL, [
-    FK::ACCEPT => [],
-    FK::IS_INIT_STATE => true,
+    FK::PRIORITIZE => [PK::STRING],
     FK::PARSER_ARGUMENTS => function () {
         return z()->options([
             'message' => z()->required()->string(),
@@ -164,8 +139,7 @@ bundler()->assign_parser_config(PK::EMAIL, [
         return true;
     }
 ])->assign_parser_config(PK::NUMBER, [
-    FK::ACCEPT => [],
-    FK::IS_INIT_STATE => true,
+    FK::PRIORITIZE => [],
     FK::PARSER_ARGUMENTS => function () {
         return z()->options([
             'message' => z()->required()->string(),
@@ -185,8 +159,7 @@ bundler()->assign_parser_config(PK::EMAIL, [
         return true;
     }
 ])->assign_parser_config(PK::OPTIONS, [
-    FK::ACCEPT => [],
-    FK::IS_INIT_STATE => true,
+    FK::PRIORITIZE => [],
     FK::PARSER_ARGUMENTS => function () {
         return Zod\z()->options([
             'message' => z()->required()->string(),
@@ -231,8 +204,7 @@ bundler()->assign_parser_config(PK::EMAIL, [
         return true;
     }
 ])->assign_parser_config(PK::EACH, [
-    FK::ACCEPT => [],
-    FK::IS_INIT_STATE => true,
+    FK::PRIORITIZE => [],
     FK::PARSER_ARGUMENTS => function () {
         return z()->options([
             'message' => z()->required()->string(),
@@ -262,9 +234,8 @@ bundler()->assign_parser_config(PK::EMAIL, [
         return true;
     }
 ])->assign_parser_config(PK::MIN, [
-    FK::ACCEPT => [
+    FK::PRIORITIZE => [
     ],
-    FK::IS_INIT_STATE => true,
     FK::PARSER_ARGUMENTS => function () {
         return z()->min([
             'message' => z()->required()->string(),
@@ -294,8 +265,7 @@ bundler()->assign_parser_config(PK::EMAIL, [
         return true;
     }
 ])->assign_parser_config(PK::MAX, [
-    FK::ACCEPT => [],
-    FK::IS_INIT_STATE => true,
+    FK::PRIORITIZE => [],
     FK::PARSER_ARGUMENTS => function () {
         return z()->max([
             'message' => z()->required()->string(),
@@ -322,6 +292,19 @@ bundler()->assign_parser_config(PK::EMAIL, [
 
         if ($min_value > $max) {
             return $message;
+        }
+        return true;
+    }
+])->assign_parser_config(PK::OPTIONAL, [
+    FK::PRIORITIZE => [],
+    FK::PARSER_ARGUMENTS => function () {
+        return z();
+    },
+    FK::DEFAULT_ARGUMENT => [],
+    FK::PARSER_CALLBACK => function (array $par): string|bool {
+        // if the value is null, then it is valid
+        if (is_null($par['value'])) {
+            return false; // end the parsing process
         }
         return true;
     }

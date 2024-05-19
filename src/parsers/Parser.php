@@ -2,22 +2,21 @@
 declare(strict_types=1);
 
 namespace Zod;
+use Zod\FIELD as FK;
 
 if (!class_exists('Parser')) {
     interface IParser {
         public function __construct(string $name, array $args = [
-            'accept_state' => [],
-            'priority' => 10,
-            'is_init_state' => null,
-            'parser_arguments' => null,
-            'default_argument' => [],
-            'parser_callback' => null
+            FK::PRIORITIZE => [],
+            FK::PRIORITY => 10,
+            FK::PARSER_ARGUMENTS => null,
+            FK::DEFAULT_ARGUMENT => [],
+            FK::PARSER_CALLBACK => null
         ]);
         public function __get(string $name);
         public function clone(?Parser $parser = null): Parser;
         public function parse(mixed $value, array $args);
         public function set_accept_state(array $accept_state): Parser;
-        public function set_is_init_state(bool $is_init_state): Parser;
         public function set_argument(array $argument): Parser;
         public function set_priority_of_parser(int $priority): Parser;
         public function calc_order_of_parsing(CaretakerParsers &$parserRules, array $parents = []): ?int;
@@ -35,8 +34,15 @@ if (!class_exists('Parser')) {
             if (!is_callable($parser_arguments)) {
                 throw new ZodError('The parser_arguments field must be a callback function', 'parser_arguments');
             }
+
             $this->_default_argument = $default_argument;
             $this->_parser_arguments = $parser_arguments;
+        }
+        public function get_config(): array {
+            return [
+                'default_argument' => $this->_default_argument,
+                'parser_arguments' => $this->_parser_arguments
+            ];
         }
         public function get_argument(): array {
             if (!$this->_parser_arguments) {
@@ -63,45 +69,51 @@ if (!class_exists('Parser')) {
     }
     class Parser {
         private ?string $_name = null;
-        private array $_accept_state = [];
+        private array $_prioritize = [];
         private int $_priority = 10; // calculate the priority of a parser on concurrency with the other parser with the same key, using the field priority 
         private int $_order_of_parsing = 0; // Calculate the order of execution of a parser on concurrency with the other parsers
-        private ?bool $_is_init_state = null;
-        private bool $_is_init = false;
         private bool $_is_validate_parser = false;
         private callable|null $_parser_callback = null;
         private ArgumentParser $_argument_parser;
-
+        private bool $_is_init = false; // check if the parser is initialized on a zod instance
         
         public function __construct(string $name, array $args = [
-            'accept_state' => [],
-            'priority' => 10,
-            'is_init_state' => null,
-            'parser_arguments' => null,
-            'default_argument' => [],
-            'parser_callback' => null
+            FK::PRIORITIZE => [],
+            FK::PRIORITY => 10,
+            FK::PARSER_ARGUMENTS => null,
+            FK::DEFAULT_ARGUMENT => [],
+            FK::PARSER_CALLBACK => null,
+            'argument' => null
         ]) {
             $this->_name = $name;
 
-            $this->set_accept_state($args['accept_state']);
+
+            $this->set_prioritize($args[FK::PRIORITIZE]);
             $this->set_priority_of_parser($args['priority']);
-            $this->set_is_init_state($args['is_init_state']);
-            $this->_argument_parser = new ArgumentParser($args['default_argument'], $args['parser_arguments']);
-            $this->set_parser_callback($args['parser_callback']);
+
+            // assign argument
+            if (is_null($args['argument'])) {
+                $this->_argument_parser = new ArgumentParser($args[FK::DEFAULT_ARGUMENT], $args[FK::PARSER_ARGUMENTS]);
+            } else if ($args['argument'] instanceof ArgumentParser) {
+                $this->_argument_parser = $args['argument'];
+            } else {
+                throw new ZodError('The argument field must be an instance of ArgumentParser', 'argument');
+            }
+
+            // assign parser callback
+            $this->set_parser_callback($args[FK::PARSER_CALLBACK]);
         }
         // constructor of copy of the parser
         public function __get($name) {
             switch ($name) {
                 case 'name':
                     return $this->_name;
-                case 'accept_state':
-                    return $this->_accept_state;
+                case 'prioritize':
+                    return $this->_prioritize;
                 case 'priority':
                     return $this->_priority;
                 case 'order_of_parsing':
                     return $this->_order_of_parsing;
-                case 'is_init_state':
-                    return $this->_is_init_state;
                 case 'parser_arguments':
                     return $this->_parser_arguments;
                 case 'default_argument':
@@ -115,23 +127,15 @@ if (!class_exists('Parser')) {
         /**
          * Clones the current parser object.
          *
-         * @param Parser|null $parser The parser object to clone. If null, the current parser object is returned.
          * @return Parser The cloned parser object.
          */
-        public function clone(?Parser $parser = null): Parser {
-            if (is_null($parser)) {
-                return $this;
-            }
-            $this->set_accept_state($parser->_accept_state);
-            
-            $this->_priority = $parser->_priority;
-            $this->set_priority_of_parser($parser->_priority);
-            $this->_order_of_parsing = $parser->_order_of_parsing;
-            $this->_is_init_state = $parser->_is_init_state;
-            // $this->set_structure_arguments($parser->_default_argument, $parser->_parser_arguments);
-
-            $this->_parser_callback = $parser->_parser_callback;
-            return $this;
+        public function clone(): Parser { 
+            return new Parser($this->_name, [
+                FK::PRIORITIZE => $this->_prioritize,
+                FK::PRIORITY => $this->_priority,
+                'argument' => $this->_argument_parser,
+                FK::PARSER_CALLBACK => $this->_parser_callback
+            ]);
         }
         /**
          * Identifies the parser key based on the name of the parser and the path to the parser.
@@ -147,6 +151,9 @@ if (!class_exists('Parser')) {
             return $path_to_parser->get_path_string() . '/' . $name_of_parser;
         }
         public function initialize(): void {
+            if ($this->_is_init) {
+                throw new ZodError('The parser is already initialized', 'parser');
+            }
             $this->_is_init = true;
         }
         public function get_argument(): array {
@@ -155,6 +162,19 @@ if (!class_exists('Parser')) {
         public function set_argument(array $argument): Parser {
             $this->_argument_parser->set_argument($argument);
             return $this;
+        }
+        public function is_priority(int $priority_compare): bool {
+            if ($this->_priority < $priority_compare) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+        public function get_config() {
+            return array_merge([
+                FK::PRIORITIZE => $this->_prioritize,
+                FK::PARSER_CALLBACK => $this->_parser_callback
+            ], $this->_argument_parser->get_config());
         }
         /**
          * Parses the given value using the provided parser callback function.
@@ -216,31 +236,17 @@ if (!class_exists('Parser')) {
         public function is_validate_parser(): bool {
             return $this->_is_validate_parser;
         }
-        public function set_accept_state(array $accept_state): Parser {
-            // if $this->accept is not null, return an error
-            if (isset($this->_accept_state)) {
+        private function set_prioritize(array $prioritize): Parser {
+            if (!isset($prioritize)) {
                 throw new ZodError('The accept field is already set', 'accept');
             }
-            $this->_accept_state = $accept_state;
-            return $this;
-        }
-        public function set_is_init_state(bool $is_init_state): Parser {
-            // if $this->_is_init_state is not nll, return an error
-            if (isset($this->_is_init_state)) {
-                throw new ZodError('The is_init_state field is already set', 'is_init_state');
+            if (!is_array($prioritize)) {
+                throw new ZodError('The accept field must be an array', 'accept');
             }
-            // if $is_init_state is not a boolean, return an error
-            if (!is_bool($is_init_state)) {
-                throw new ZodError('The is_init_state field must be a boolean', 'is_init_state');
-            }
-            $this->_is_init_state = $is_init_state;
-            return $this;
-        }
-        // -------------- ARGUMENTS OF THE PARSER -------------- //
 
-        
-        
-        // -------------- ARGUMENTS OF THE PARSER -------------- //
+            $this->_prioritize = $prioritize;
+            return $this;
+        }
         /**
          * Sets the parser callback function for the Parser.
          *
@@ -263,7 +269,7 @@ if (!class_exists('Parser')) {
          * @return Parser The updated Parser instance.
          * @throws ZodError If the priority field is not an integer.
          */
-        public function set_priority_of_parser(int $priority): Parser {
+        private function set_priority_of_parser(int $priority): Parser {
             if (!is_int($priority)) {
                 throw new ZodError('The priority field must be an integer', 'priority');
             }
@@ -274,7 +280,7 @@ if (!class_exists('Parser')) {
         // TODO: Calculate the order of parsing of a parser
         // TODO: Look for possible conflicts between parsers
         public function calc_order_of_parsing(CaretakerParsers &$parserRules, array $parents = []): ?int {
-            return null;
+            return 1;
             // if (!isset($this->_accept)) {
             //     return 0;
             // }

@@ -18,6 +18,26 @@ if (!class_exists('Bundler')) {
     class Bundler extends CaretakerParsers {
         private static ?Bundler $_instance = null;
         private array $zod_types = [];
+        const ARRAY_CONFIG_KEYS = [
+            FK::PRIORITIZE,
+            FK::PARSER_ARGUMENTS,
+            FK::DEFAULT_ARGUMENT,
+            FK::PARSER_CALLBACK
+        ];
+        const DEFAULT_PARSER_CONFIG = [
+            FK::PRIORITIZE => [],
+            FK::PARSER_ARGUMENTS => function () {
+                return z()->options([
+                    'message' => z()->required()->string()
+                ]);
+            },
+            FK::DEFAULT_ARGUMENT => [
+                'message' => 'Error on the {{name}} field'
+            ],
+            FK::PARSER_CALLBACK => function (array $par): string|bool {
+                return $par['argument']['message'];
+            }
+        ];
         /**
          * Class Bundler
          * 
@@ -28,6 +48,17 @@ if (!class_exists('Bundler')) {
         {
             // class parent
             parent::__construct();
+        }
+        private function is_parser_config(array $value) : bool {
+            return count(array_intersect_key($value, array_flip(self::ARRAY_CONFIG_KEYS))) === count(self::ARRAY_CONFIG_KEYS);
+        }
+        private function get_complete_parser_config(string $name, array $value, array $default = self::DEFAULT_PARSER_CONFIG): array {
+            $parser_config = array_merge($default, $value);
+            if(!$this->is_parser_config($parser_config)) {
+                throw new \Exception("The parser configuration for the parser with the key $name is not valid.");
+            }
+            
+            return $parser_config;
         }
         /**
          * Assigns a parser configuration to the bundler.
@@ -46,18 +77,31 @@ if (!class_exists('Bundler')) {
             // if the priority is the same register update the parser with the new value
             // the value is an array of parameters
 
-            $before_config = $this::get_parser($name); // get the paarser with the same key and the biggest priority
+            $before_config = $this::get_parser($name); // get the parser with the same key and the biggest priority
             if(is_null($before_config)) {
-                // create parser
-                // set paser to the cartacker
+                $parser_config = $this->get_complete_parser_config($name, $value);
                 $value_parser = array_merge(
-                    $value,
-                    ['priority' => $priority]
+                    $parser_config,
+                    [
+                        'priority' => $priority,
+                    ]
                 );
                 $parser = $this->add_parser(new Parser($name, $value_parser));
-                
+                if(is_null($parser)) {
+                    throw new \Exception("The parser configuration for the parser with the key $name is not valid.");
+                }
             } else {
-
+                $parser_config = $this->get_complete_parser_config($name, $value, $before_config->get_config());
+                $value_parser = array_merge(
+                    $parser_config,
+                    [
+                        'priority' => $priority,
+                    ]
+                );
+                $parser = $this->add_parser(new Parser($name, $value_parser));
+                if(is_null($parser)) {
+                    throw new \Exception("The parser configuration for the parser with the key $name is not valid.");
+                }
             }
 
 
