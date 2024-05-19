@@ -37,12 +37,27 @@ if (!class_exists('Bundler')) {
          * @param int $priority The priority of the parser configuration (default is 10).
          * @return $this The current instance of the Bundler.
          */
-        public function assign_parser_config(string $key, array $value, int $priority = 10) {
-            $before_config = $this::get_parser($key);
+        public function assign_parser_config(string $name, array $value, int $priority = 10) {
+            // check if their is a parser with the same key
+            // if yes check if the priority is higher
+            // if yes register the new parser with the new priority and use the old one to get the default $value parser
+            // if no register the new parser with the new priority
+            // if their is no parser with the same key register the new parser with the new priority
+            // if the priority is the same register update the parser with the new value
+            // the value is an array of parameters
 
-            if (!is_null($before_config)) {
-                $before_config->clone();
-                return $this;
+            $before_config = $this::get_parser($name); // get the paarser with the same key and the biggest priority
+            if(is_null($before_config)) {
+                // create parser
+                // set paser to the cartacker
+                $value_parser = array_merge(
+                    $value,
+                    ['priority' => $priority]
+                );
+                $parser = $this->add_parser(new Parser($name, $value_parser));
+                
+            } else {
+
             }
 
 
