@@ -34,10 +34,8 @@ if (!class_exists('CaretakerParsers')) {
          * @return Parser The parser with the specified key.
          * @throws ZodError If the parser with the specified key is not found.
          */
-        static function get_parser(string $key, ?array $parsers = null): ?Parser {
-            if (is_null($parsers)) {
-                $parsers = self::$parsers;
-            }
+        public function get_parser(string $key): ?Parser {
+            $parsers = self::$parsers;
 
             $selected_parsers = array_filter($parsers, function ($value) use ($key) {
                 return $value->get_key() === $key;
@@ -51,7 +49,6 @@ if (!class_exists('CaretakerParsers')) {
 
             // get the parser with the highest priority
             foreach ($selected_parsers as $value) {
-                // 
                 if (is_null($selected_parser) || !$selected_parser->is_priority($value)) {
                     $selected_parser = $value;
                 }

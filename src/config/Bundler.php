@@ -17,7 +17,7 @@ if (!class_exists('Bundler')) {
      */
     class Bundler extends CaretakerParsers {
         private static ?Bundler $_instance = null;
-        private array $zod_types = [];
+        private bool $_parser_ordered = false;
         const ARRAY_CONFIG_KEYS = [
             FK::PRIORITIZE,
             FK::PARSER_ARGUMENTS,
@@ -69,41 +69,25 @@ if (!class_exists('Bundler')) {
          * @return $this The current instance of the Bundler.
          */
         public function assign_parser_config(string $name, array $value, int $priority = 10) {
-            // check if their is a parser with the same key
-            // if yes check if the priority is higher
-            // if yes register the new parser with the new priority and use the old one to get the default $value parser
-            // if no register the new parser with the new priority
-            // if their is no parser with the same key register the new parser with the new priority
-            // if the priority is the same register update the parser with the new value
-            // the value is an array of parameters
-
-            $before_config = $this::get_parser($name); // get the parser with the same key and the biggest priority
+            
+            $is_init_state = in_array(FK::IS_INIT_STATE, $value);
+            $before_config = parent::get_parser($name);
+            $parser_config = null;
             if(is_null($before_config)) {
                 $parser_config = $this->get_complete_parser_config($name, $value);
-                $value_parser = array_merge(
-                    $parser_config,
-                    [
-                        'priority' => $priority,
-                    ]
-                );
-                $parser = $this->add_parser(new Parser($name, $value_parser));
-                if(is_null($parser)) {
-                    throw new \Exception("The parser configuration for the parser with the key $name is not valid.");
-                }
             } else {
                 $parser_config = $this->get_complete_parser_config($name, $value, $before_config->get_config());
-                $value_parser = array_merge(
-                    $parser_config,
-                    [
-                        'priority' => $priority,
-                    ]
-                );
-                $parser = $this->add_parser(new Parser($name, $value_parser));
-                if(is_null($parser)) {
-                    throw new \Exception("The parser configuration for the parser with the key $name is not valid.");
-                }
             }
-
+            $value_parser = array_merge(
+                $parser_config,
+                [
+                'priority' => $priority,
+                ]
+            );
+            $new_parser = $this->add_parser(new Parser($name, $value_parser));
+            if(!$is_init_state) {
+                $new_parser->increment_order();
+            }
 
             return $this;
         }
@@ -117,6 +101,42 @@ if (!class_exists('Bundler')) {
                 self::$_instance = new Bundler();
             }
             return self::$_instance;
+        }
+        static function sort_parser(string $name, array &$cache): int {
+            $parser = self::get_instance()->get_parser($name);
+            if ($parser->order_of_parsing == 0) {
+                return 0;
+            }
+            $parser_name = $parser->name;
+            $parser_prioritize = $parser->prioritize;
+            $order = $parser->get_order_parsing();
+            foreach ($parser_prioritize as $prioritize) {
+                $order_parent = self::sort_parser($prioritize, $cache);
+                if ($order_parent > $order) {
+                    $order += $order_parent;
+                } else if ($order_parent == $order) {
+                    $order += 1;
+                }
+            }
+            $cache[$parser_name] = $order;
+            return $order;
+        }
+        
+        public function get_parser(string $key): ?Parser {
+            // sort the parsers
+
+                
+            return parent::get_parser($key);
+        }
+        public function add_parser(Parser $parser): ?Parser {
+            $this->_parser_ordered = false;
+            $this->remove_parser($parser->name, $parser->priority);
+            return parent::add_parser($parser);
+        }
+        private function remove_parser(string $name, int $priority): void {
+            $this->parsers = array_filter($this->parsers, function($parser) use ($name, $priority) {
+                return $parser->name !== $name || $parser->priority !== $priority;
+            });
         }
     }
 }

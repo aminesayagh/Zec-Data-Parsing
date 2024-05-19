@@ -279,30 +279,12 @@ if (!class_exists('Parser')) {
         // TODO: Continue here //
         // TODO: Calculate the order of parsing of a parser
         // TODO: Look for possible conflicts between parsers
-        public function calc_order_of_parsing(CaretakerParsers &$parserRules, array $parents = []): ?int {
-            return 1;
-            // if (!isset($this->_accept)) {
-            //     return 0;
-            // }
-
-            // $priority_of_execution = 0;
-
-            // foreach ($this->_accept as $a) {
-            //     // Check if the parser has a priority
-            //     if (isset($this->_order_of_parsing)) {
-            //         $priority_of_execution = max($priority_of_execution, $this->_order_of_parsing);
-            //     } else {
-            //         if (in_array($a, $parents)) {
-            //             continue; // avoid infinite loop in case of circular dependency
-            //         }
-            //         $parents[] = $this->_name;
-            //         $parser = $parserRules->get_parser($a);
-            //         $priority_of_execution = max($priority_of_execution, $parserRules->cal_priority($parserRules, $parents) + 1);
-            //     }
-            // }
-        
-            // $this->set_priority_of_parser($priority_of_execution + 1);
-            // return $this->_order_of_parsing;
+        public function increment_order(): int {
+            $this->_order_of_parsing++;
+            return $this->_order_of_parsing;
+        }
+        public function get_order_parsing(): int {
+            return $this->_order_of_parsing;
         }
     }
 }

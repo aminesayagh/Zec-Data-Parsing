@@ -7,6 +7,8 @@ namespace Zod {
         const DEFAULT_ARGUMENT = 'default_argument';
         const PRIORITY = 'priority';
         const PARSER_CALLBACK = 'parser_callback';
+        
+        const IS_INIT_STATE = 'is_init_state';
     }
 }
 
