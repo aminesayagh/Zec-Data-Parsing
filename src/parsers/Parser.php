@@ -236,6 +236,10 @@ if (!class_exists('Parser')) {
         public function is_validate_parser(): bool {
             return $this->_is_validate_parser;
         }
+        public function set_order_parsing(int $order): Parser {
+            $this->_order_of_parsing = $order;
+            return $this;
+        }
         private function set_prioritize(array $prioritize): Parser {
             if (!isset($prioritize)) {
                 throw new ZodError('The accept field is already set', 'accept');

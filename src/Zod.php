@@ -134,12 +134,12 @@ if(!class_exists('Zod')) {
                 $this->_parent = $parent;
             }
 
-            foreach ($this->get_parsers() as $parser) {
+            foreach ($this->list_parsers() as $parser) {
                 $response = $parser->parse($this->_value, [
                     'default' => $this->_default,
                 ], $this);
 
-                if ($response->is_valid) {
+                if ($response->is_valid()) {
                     $before_parsers[] = $parser->name;
                 }
             }

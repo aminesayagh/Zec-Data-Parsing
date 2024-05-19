@@ -34,17 +34,17 @@ if (!class_exists('CaretakerParsers')) {
          * @return Parser The parser with the specified key.
          * @throws ZodError If the parser with the specified key is not found.
          */
-        public function get_parser(string $key): ?Parser {
+        public function get_parser(string $name): ?Parser {
             $parsers = self::$parsers;
 
-            $selected_parsers = array_filter($parsers, function ($value) use ($key) {
-                return $value->get_key() === $key;
+            $selected_parsers = array_filter($parsers, function (Parser $value) use ($name) {
+                return $value->name === $name;
             });
 
             $selected_parser = null;
 
             if (count($selected_parsers) === 0) {
-                throw new ZodError('The parser with the key ' . $key . ' is not found', 'key');
+                throw new ZodError('The parser with the key ' . $name . ' is not found', 'key');
             }
 
             // get the parser with the highest priority
@@ -62,6 +62,19 @@ if (!class_exists('CaretakerParsers')) {
             $selected_parser_cloned_and_initialized->initialize();
 
             return $selected_parser_cloned_and_initialized;
+        }
+        public function get_parsers(string $name): array {
+            $parsers = self::$parsers;
+
+            $selected_parsers = array_filter($parsers, function (Parser $value) use ($name) {
+                return $value->name === $name;
+            });
+
+            if (count($selected_parsers) === 0) {
+                throw new ZodError('The parser with the key ' . $name . ' is not found', 'key');
+            }
+
+            return $selected_parsers;
         }
         /**
          * Checks if a parser is present in the list of parsers.

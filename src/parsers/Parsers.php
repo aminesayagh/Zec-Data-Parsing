@@ -60,14 +60,14 @@ if(!class_exists('Parsers')) {
          *
          * @return array The parsers array.
          */
-        public function get_parsers(): array {
+        public function list_parsers(): array {
             if (!$this->_is_sorted) {
                 $this->sort_parsers();
             }
             return $this->parsers;
         }
         public function get_validate_parser(): ?Parser {
-            $parsers = $this->get_parsers();
+            $parsers = $this->list_parsers();
             foreach ($parsers as $parser) {
                 if ($parser->is_validate_parser()) {
                     return $parser;

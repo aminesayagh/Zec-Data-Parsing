@@ -1,6 +1,5 @@
 <?php 
 
-use function Zod\z; // Add this import statement
 
 if (!defined('ZOD_PATH')) {
     define('ZOD_PATH', __DIR__);

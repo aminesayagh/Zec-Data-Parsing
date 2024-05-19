@@ -102,16 +102,19 @@ if (!class_exists('Bundler')) {
             }
             return self::$_instance;
         }
-        static function sort_parser(string $name, array &$cache): int {
+        static function generate_sort_parser(string $name, array &$cache): int {
             $parser = self::get_instance()->get_parser($name);
             if ($parser->order_of_parsing == 0) {
                 return 0;
+            }
+            if (isset($cache[$parser->name])) {
+                return $cache[$parser->name];
             }
             $parser_name = $parser->name;
             $parser_prioritize = $parser->prioritize;
             $order = $parser->get_order_parsing();
             foreach ($parser_prioritize as $prioritize) {
-                $order_parent = self::sort_parser($prioritize, $cache);
+                $order_parent = self::generate_sort_parser($prioritize, $cache);
                 if ($order_parent > $order) {
                     $order += $order_parent;
                 } else if ($order_parent == $order) {
@@ -121,11 +124,26 @@ if (!class_exists('Bundler')) {
             $cache[$parser_name] = $order;
             return $order;
         }
-        
+        private function generate_sort_parsers () {
+            $cache = [];
+            foreach ($this->parsers as $parser) {
+                self::generate_sort_parser($parser->name, $cache);
+            }
+            $this->_parser_ordered = true;
+
+            foreach ($cache as $key => $value) {
+                $parsers = $this->get_parsers($key);
+                foreach ($parsers as $parser) {
+                    $parser->set_order_parsing($value);
+                }
+            }
+        }
         public function get_parser(string $key): ?Parser {
             // sort the parsers
+            if (!$this->_parser_ordered) {
+                $this->generate_sort_parsers();
+            }
 
-                
             return parent::get_parser($key);
         }
         public function add_parser(Parser $parser): ?Parser {
