@@ -29,5 +29,6 @@ namespace Zod {
         const OPTIONS = 'options';
         const EACH = 'each';
         const INSTANCEOF = 'instanceof';
+        const ASSOCIATIVE = 'associative';
     }
 }

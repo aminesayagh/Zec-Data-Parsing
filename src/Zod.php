@@ -35,6 +35,9 @@ if(!class_exists('ZodPath')) {
         public function get_path(): array {
             return $this->_path;
         }
+        public function extend(ZodPath $path): void {
+            $this->_path = array_merge($this->_path, $path->get_path());
+        }
         public function push(string $key): void {
             $this->_path[] = $key;
         }
@@ -113,10 +116,12 @@ if(!class_exists('Zod')) {
          * @throws ZodError If the method or parser is not found.
          */
         public function __call(string $name, ?array $arguments): mixed{
+
             if (method_exists($this, $name)) {
                 return call_user_func_array([$this, $name], $arguments);
             }
             if (bundler()->has_parser_key($name)) {
+                // echo "Parser $name found" . PHP_EOL;
                 $parser = bundler()->get_parser($name);
                 if(is_array($arguments) && count($arguments) > 0) {
                     $arguments = $arguments[0];
@@ -124,7 +129,6 @@ if(!class_exists('Zod')) {
                 }
                 
                 $this->add_parser($parser);
-                // log_msg("Parser $parser->name found");
                 return $this;
             }
 
@@ -160,18 +164,21 @@ if(!class_exists('Zod')) {
                 $this->_path->push($parent->get_path_string());
             }
 
-            $this->get_conf_from_parent($parent);  
-
-            $has_required = $this->has_parser_key('required');
+            
+            $has_required = $this->has_parser_key(PK::REQUIRED);
             if (!$has_required && is_null($value)) {
                 return $this;
             }
-
+            
             if (!is_null($parent)) {
                 $this->_parent = $parent;
+                $this->get_conf_from_parent($parent);
+                // get path from parent
+                $this->_path->extend($parent->_path);
             }
 
             foreach ($this->list_parsers() as $parser) {
+                // echo "Parsing $parser->name : " . json_encode($this->_value) . " " . PHP_EOL;
                 $parser->parse($this->_value, [
                     'default' => $this->_default,
                 ], $this);
@@ -227,10 +234,10 @@ if(!class_exists('Zod')) {
          * @return Zod The parsed value.
          * @throws mixed The error(s) if the parsed value is invalid.
          */
-        public function parse_or_throw(mixed $value, mixed $default = null): mixed {
+        public function parse_or_throw(mixed $value, mixed $default = null, Zod $parent = null): mixed {
             $this->parse($value, $default);
             if (!$this->is_valid()) {
-                throw $this->_errors->first;
+                throw $this->_errors;
             }
             return $this->get_value();
         }

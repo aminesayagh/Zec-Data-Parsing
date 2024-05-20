@@ -169,7 +169,10 @@ bundler()->assign_parser_config(PK::EMAIL, [
     FK::PARSER_ARGUMENTS => function (Zod\Zod $z) {
         return $z->options([
             'message' => z()->required()->string(),
-            'options' => z()->required()->each(z()->instanceof(Zod\Zod::class))
+            'options' => z()->required()->associative([
+                'key' => z()->string(),
+                'value' => z()->instanceof(Zod\Zod::class)
+            ])
         ]);
     },
     FK::DEFAULT_ARGUMENT => [
@@ -180,8 +183,6 @@ bundler()->assign_parser_config(PK::EMAIL, [
         $value = $par['value'];
         $options = $par['argument'][PK::OPTIONS];
         $default_value = $par['default'];
-
-        echo 'Options: ' . json_encode($value) . PHP_EOL . json_encode($par['argument']) . PHP_EOL;
 
         $has_error = false;
 
@@ -199,7 +200,6 @@ bundler()->assign_parser_config(PK::EMAIL, [
             
             $zod_response = $option->parse($value_field, $default_of_option, $par['owner']);
             if (!$zod_response->is_valid()) {
-                echo 'Error: ' . $zod_response->errors[0]->message . PHP_EOL;
                 $has_error = true;
             }
         }
@@ -221,10 +221,11 @@ bundler()->assign_parser_config(PK::EMAIL, [
         'message' => 'Invalid each value',
     ],
     FK::PARSER_CALLBACK=> function (array $par): string|bool {
-        echo 'Each: ' . json_encode($par) . PHP_EOL;
         $values = $par['value'];
         $message = $par['argument']['message'];
-        $each = $par['argument']['each'];
+        $each = $par['argument'][PK::EACH];
+
+        echo 'Each: ' . json_encode($values) . PHP_EOL;
         $has_error = false;
 
         foreach ($values as $value) {
@@ -319,7 +320,7 @@ bundler()->assign_parser_config(PK::EMAIL, [
     FK::PARSER_ARGUMENTS => function (Zod\Zod $z) {
         return $z->options([
             'message' => z()->required()->string(),
-            'instanceof' => z()->required(),
+            PK::INSTANCEOF => z()->required(),
         ]);
     },
     FK::DEFAULT_ARGUMENT => [
@@ -327,7 +328,7 @@ bundler()->assign_parser_config(PK::EMAIL, [
     ],
     FK::PARSER_CALLBACK => function (array $par): string|bool {
         $value = $par['value'];
-        $instanceof = $par['argument']['instanceof'];
+        $instanceof = $par['argument'][PK::INSTANCEOF];
         $message = $par['argument']['message'];
 
         if (!($value instanceof $instanceof)) {
@@ -335,6 +336,40 @@ bundler()->assign_parser_config(PK::EMAIL, [
         }
         return true;
     }
+])->assign_parser_config(PK::ASSOCIATIVE, [
+    FK::PRIORITIZE => [],
+    FK::PARSER_ARGUMENTS => function (Zod\Zod $z) {
+        return $z->options([
+            'message' => z()->required()->string(),
+            'key' => z()->required()->instanceof(Zod\Zod::class),
+            'value' => z()->required()->instanceof(Zod\Zod::class)
+        ]);
+    },
+    FK::DEFAULT_ARGUMENT => [
+        'message' => 'Invalid associative array'
+    ],
+    FK::PARSER_CALLBACK => function (array $par): string|bool {
+        echo 'Associative: ' . json_encode($par) . PHP_EOL; 
+        $value = $par['value'];
+        $message = $par['argument']['message'];
+        $key = $par['argument']['associative']['key']; // TODO: Is more good to use $par['argument']['key']
+        $value = $par['argument']['associative']['value'];
+
+        $has_error = false;
+        foreach ($value as $k => $v) {
+            $key_response = $key->parse($k, null, $par['owner']);
+            $value_response = $value->parse($v, null, $par['owner']);
+            if (!$key_response->is_valid() || !$value_response->is_valid()) {
+                echo 'Error: ' . $key_response->get_error_message() . PHP_EOL;
+                $has_error = true;
+            }
+        }
+
+        if ($has_error) {
+            return $message;
+        }
+
+        return true;
+    }
 ]);
 
-// over

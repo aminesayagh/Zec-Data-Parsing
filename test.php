@@ -4,14 +4,23 @@ require_once './index.php';
 use function Zod\z as z;
 
 
-$email_schema = z()->email();
-$email = 'emialil.com';
+echo '------------------- Generate Parser : ' . PHP_EOL . PHP_EOL;
+$user_parser = z()->options([
+    'name' => z()->string()->min(3)->max(20),
+    'email' => z()->string()->email(),
+    'age' => z()->number()->min(18)->max(99),
+]);
 
-try{
-    $email_parsed = $email_schema->parse_or_throw($email);
-    echo 'Email is valid ' . $email_parsed . PHP_EOL;
-} catch (\Zod\ZodError $e) {
-    echo 'Email is invalid' . PHP_EOL;
-    echo $e->get_message() . PHP_EOL;
-    exit;
+$user = [
+    'name' => 'John Doe',
+    'email' => 'john@gmail.com',
+    'age' => 25,
+];
+
+echo '------------------- State Parsing : ' . PHP_EOL . PHP_EOL;
+try {
+    $user_parser->parse_or_throw($user);
+    echo 'User is valid';
+} catch (\Zod\ZodErrors $e) {
+    echo 'User is invalid: ' . $e->get_message();
 }

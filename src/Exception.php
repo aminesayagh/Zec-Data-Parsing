@@ -42,7 +42,7 @@ if (!class_exists('ZodError')) {
             throw new \Exception("Property $name not found");
         }
         public function get_message() {
-            return $this->message;
+            return $this->message . ' ' . $this->key;
         }
     }
 }
@@ -60,7 +60,7 @@ if(!class_exists('ZodErrors')) {
      * 
      * Represents a collection of ZodError objects.
      */
-    class ZodErrors {
+    class ZodErrors extends \Exception{
         /**
          * @var array An array to store the ZodError objects.
          */
@@ -126,6 +126,14 @@ if(!class_exists('ZodErrors')) {
                 }
             }
             return null;
+        }
+
+        public function get_message() {
+            $message = '';
+            foreach ($this->errors as $error) {
+                $message .= $error->get_message() . PHP_EOL;
+            }
+            return $message;
         }
 
         /**
