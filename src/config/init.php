@@ -196,9 +196,10 @@ bundler()->assign_parser_config(PK::EMAIL, [
             }
             
             $value_field = array_key_exists($key, $value) ? $value[$key] : null;
-            echo 'Value field: ' . $value_field . PHP_EOL; 
+            
             $zod_response = $option->parse($value_field, $default_of_option, $par['owner']);
             if (!$zod_response->is_valid()) {
+                echo 'Error: ' . $zod_response->errors[0]->message . PHP_EOL;
                 $has_error = true;
             }
         }
@@ -220,9 +221,10 @@ bundler()->assign_parser_config(PK::EMAIL, [
         'message' => 'Invalid each value',
     ],
     FK::PARSER_CALLBACK=> function (array $par): string|bool {
+        echo 'Each: ' . json_encode($par) . PHP_EOL;
         $values = $par['value'];
         $message = $par['argument']['message'];
-        $each = $par['each'];
+        $each = $par['argument']['each'];
         $has_error = false;
 
         foreach ($values as $value) {

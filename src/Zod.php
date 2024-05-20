@@ -130,7 +130,7 @@ if(!class_exists('Zod')) {
 
             throw new ZodError("Method $name not found");
         }
-        public function get_conf_from_parent(Zod|null $parent): void {
+        private function get_conf_from_parent(Zod|null $parent): void {
             if (is_null($parent)) {
                 return;
             }
@@ -138,6 +138,9 @@ if(!class_exists('Zod')) {
                 $this->_conf,
                 $parent->get_configs()
             );
+        }
+        public function get_value() {
+            return $this->_value;
         }
         /**
          * Parses the given value using the specified parsers.
@@ -224,7 +227,7 @@ if(!class_exists('Zod')) {
          * @return Zod The parsed value.
          * @throws mixed The error(s) if the parsed value is invalid.
          */
-        public function parse_or_throw(mixed $value, mixed $default = null): Zod {
+        public function parse_or_throw(mixed $value, mixed $default = null): mixed {
             $this->parse($value, $default);
             if (!$this->is_valid()) {
                 throw $this->_errors->first;
