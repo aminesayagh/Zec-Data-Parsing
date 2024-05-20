@@ -55,8 +55,10 @@ if (!class_exists('ArgumentParser')) {
         }
         public function valid_argument(Zod $parent = null) {
             $merged_argument = $this->merge_argument();
-
             if (!$this->_is_valid_argument) {
+                echo PHP_EOL;
+                echo 'Merged argument: ' . json_encode($merged_argument) . PHP_EOL;
+                echo PHP_EOL;
                 $argument_zod_validator = call_user_func($this->_parser_arguments, z()->set_trust_arguments(true));
                 $argument_zod_validator->parse_or_throw($merged_argument, null, $parent); // TODO: Ideally, we should pass the default argument as default value, not null
                 $this->_is_valid_argument = true;
@@ -204,8 +206,10 @@ if (!class_exists('Parser')) {
         }
         public function get_argument(bool $parse_argument = true, ?Zod $parent = null): array {
             if ($parse_argument) {
+                echo 'none trusted' . PHP_EOL;
                 $this->_argument_parser->valid_argument($parent);
             }
+            echo 'Get argument: ' . json_encode($this->_argument_parser->get_argument()) . PHP_EOL;
             return $this->_argument_parser->get_argument();
         }
         public function set_argument(mixed $argument): Parser {
@@ -249,10 +253,11 @@ if (!class_exists('Parser')) {
                 $zod_owner
             ) ? null : $zod_owner->get_path_string();
             
-            
 
-            $has_to_parse_argument = $zod_owner->trust_arguments;
-            $argument = $this->get_argument(!$has_to_parse_argument, $zod_owner);
+
+            $has_to_parse_argument = !$zod_owner->trust_arguments;
+            echo 'Has to parse argument: ' . ($has_to_parse_argument ? 'true' : 'false') . PHP_EOL;
+            $argument = $this->get_argument($has_to_parse_argument, $zod_owner);
 
             // Call the parser callback function
             $response = call_user_func($this->_parser_callback, [
@@ -265,7 +270,7 @@ if (!class_exists('Parser')) {
             // Handle the response based on its type
             if (is_string($response)) {
                 $path_of_error = $this->identify_parser_key($this->_name, $path);
-                echo 'Response: ' . $response . ' ' . $path_of_error . PHP_EOL;
+                echo 'Response: ' . $response . ' ' . json_encode($value) . ' ' . json_encode($argument). ' ' . $path_of_error . PHP_EOL;
                 $zod_owner->set_error(
                     new ZodError($response, $path_of_error)
                 );

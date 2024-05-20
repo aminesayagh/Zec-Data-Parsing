@@ -341,8 +341,10 @@ bundler()->assign_parser_config(PK::EMAIL, [
     FK::PARSER_ARGUMENTS => function (Zod\Zod $z) {
         return $z->options([
             'message' => z()->required()->string(),
-            'key' => z()->required()->instanceof(Zod\Zod::class),
-            'value' => z()->required()->instanceof(Zod\Zod::class)
+            'associative' => z()->required()->associative([
+                'key' => z()->required()->instanceof(Zod\Zod::class),
+                'value' => z()->required()->instanceof(Zod\Zod::class)
+            ])
         ]);
     },
     FK::DEFAULT_ARGUMENT => [
@@ -352,13 +354,14 @@ bundler()->assign_parser_config(PK::EMAIL, [
         echo 'Associative: ' . json_encode($par) . PHP_EOL; 
         $value = $par['value'];
         $message = $par['argument']['message'];
-        $key = $par['argument']['associative']['key']; // TODO: Is more good to use $par['argument']['key']
-        $value = $par['argument']['associative']['value'];
+        $key_parser = $par['argument']['associative']['key']; // TODO: Is more good to use $par['argument']['key']
+        $value_parser = $par['argument']['associative']['value'];
 
         $has_error = false;
+        echo 'Key: ' . json_encode($value) . PHP_EOL;
         foreach ($value as $k => $v) {
-            $key_response = $key->parse($k, null, $par['owner']);
-            $value_response = $value->parse($v, null, $par['owner']);
+            $key_response = $key_parser->parse($k, null, $par['owner']);
+            $value_response = $value_parser->parse($v, null, $par['owner']);
             if (!$key_response->is_valid() || !$value_response->is_valid()) {
                 echo 'Error: ' . $key_response->get_error_message() . PHP_EOL;
                 $has_error = true;
