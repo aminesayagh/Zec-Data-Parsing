@@ -9,6 +9,7 @@ echo 'Hello, World!';
 
 $email_schema = z()->email();
 $email = 'wrong email';
+echo 'Email: ' . $email . PHP_EOL;
 
 try {
     $email_schema->parse_or_throw($email);

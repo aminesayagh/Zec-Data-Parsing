@@ -67,17 +67,57 @@ if (!class_exists('ArgumentParser')) {
             if (!is_array($argument)) {
                 throw new ZodError('The argument field must be an array', 'argument');
             }
-            if(is_null($this->_handler_argument)) {
-                $this->_argument = $this->_default_argument_handler($argument);
-            } else {
-                $this->_argument = call_user_func($this->_handler_argument, $argument);
-            }
+
+            $this->_argument = $this->_default_argument_handler($argument);
             $this->_is_valid_argument = false;
             return $this;
         }
         private function _default_argument_handler(mixed $argument): array {
+            if (is_null($argument)) return [];
+            
+
             if (is_array($argument)) {
+                $is_associative = array_keys($argument) !== range(0, count($argument) - 1);
+                if (!$is_associative) {
+                    return [
+                        $this->_main_key => $argument
+                    ];
+                }
+
+                $is_associative_of_zod = array_reduce($argument, function($carry, $item) {
+                    return $carry && $item instanceof Zod;
+                }, true);
+                if ($is_associative_of_zod) {
+                    return [
+                        $this->_main_key => $argument
+                    ];
+                }
+
                 return $argument;
+            }
+
+            return [
+                $this->_main_key => $argument
+            ];
+
+            if (is_array($argument)) {
+                // check if the array is a list of key, value, if yes, check if the value is an instance of zod
+                $is_associative = array_keys($argument) !== range(0, count($argument) - 1);
+                if ($is_associative) {
+                    // check if the values is an instance of zod or not
+                    $is_associative_of_zod = array_reduce($argument, function($carry, $item) {
+                        return $carry && $item instanceof Zod;
+                    }, true);
+                    if ($is_associative_of_zod) {
+                        return [
+                            $this->_main_key => $argument
+                        ];
+                    }
+                    return $argument;
+                }
+                return [
+                    $this->_main_key => $argument,
+                ];
             } else if (!is_null($argument)) {
                 return [
                     $this->_main_key => $argument,
@@ -109,11 +149,9 @@ if (!class_exists('Parser')) {
         ]) {
             $this->_name = $name;
 
-
             $this->set_prioritize($args[FK::PRIORITIZE]);
-            $this->set_priority_of_parser($args['priority']);
+            $this->set_priority_of_parser($args[FK::PRIORITY]);
 
-            // assign argument
             if (!array_key_exists('argument', $args) || is_null($args['argument'])) {
                 $this->_argument_parser = new ArgumentParser($this->name, $args[FK::DEFAULT_ARGUMENT], $args[FK::PARSER_ARGUMENTS]);
             } else if ($args['argument'] instanceof ArgumentParser) {

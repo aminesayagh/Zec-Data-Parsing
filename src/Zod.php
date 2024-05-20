@@ -102,6 +102,7 @@ if(!class_exists('Zod')) {
                 $parser->set_argument($arguments);  
                 
                 $this->add_parser($parser);
+                // log_msg("Parser $parser->name found");
                 return $this;
             }
 
