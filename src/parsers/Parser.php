@@ -38,6 +38,7 @@ if (!class_exists('ArgumentParser')) {
             if (!is_callable($parser_arguments)) {
                 throw new ZodError('The parser_arguments field must be a callback function', 'parser_arguments');
             }
+
             $this->_main_key = $main_key;
             $this->_default_argument = $default_argument;
             $this->_parser_arguments = $parser_arguments;
@@ -57,6 +58,7 @@ if (!class_exists('ArgumentParser')) {
 
             if (!$this->_is_valid_argument) {
                 $argument_zod_validator = call_user_func($this->_parser_arguments, z()->set_trust_arguments(true));
+                log_msg('Argument: ' . json_encode($merged_argument) . ' for ' . $this->_main_key . ' argument parser');
                 $argument_zod_validator->parse_or_throw($merged_argument);
                 $this->_is_valid_argument = true;
             }
@@ -68,11 +70,7 @@ if (!class_exists('ArgumentParser')) {
             }
             return $this->merge_argument();
         }
-        public function set_argument(array $argument): ArgumentParser {
-            if (!is_array($argument)) {
-                throw new ZodError('The argument field must be an array', 'argument');
-            }
-
+        public function set_argument(mixed $argument): ArgumentParser {
             $this->_argument = $this->_default_argument_handler($argument);
             $this->_is_valid_argument = false;
             return $this;
@@ -82,7 +80,16 @@ if (!class_exists('ArgumentParser')) {
             
 
             if (is_array($argument)) {
-                $is_associative = array_keys($argument) !== range(0, count($argument) - 1);
+                $is_associative = false;
+                
+                foreach ($argument as $key => $value) {
+                    if (!is_int($key)) {
+                        $is_associative = true;
+                        break;
+                    }
+                }
+                echo 'Argument Is associative: ' . json_encode($argument) . ' ' . ($is_associative ? 'true' : 'false') . ' ' . $this->_main_key . PHP_EOL;
+                
                 if (!$is_associative) {
                     return [
                         $this->_main_key => $argument
@@ -92,44 +99,18 @@ if (!class_exists('ArgumentParser')) {
                 $is_associative_of_zod = array_reduce($argument, function($carry, $item) {
                     return $carry && $item instanceof Zod;
                 }, true);
+                // echo $is_associative_of_zod ? 'true' : 'false' . PHP_EOL;
                 if ($is_associative_of_zod) {
                     return [
                         $this->_main_key => $argument
                     ];
                 }
-
                 return $argument;
             }
 
             return [
                 $this->_main_key => $argument
             ];
-
-            if (is_array($argument)) {
-                // check if the array is a list of key, value, if yes, check if the value is an instance of zod
-                $is_associative = array_keys($argument) !== range(0, count($argument) - 1);
-                if ($is_associative) {
-                    // check if the values is an instance of zod or not
-                    $is_associative_of_zod = array_reduce($argument, function($carry, $item) {
-                        return $carry && $item instanceof Zod;
-                    }, true);
-                    if ($is_associative_of_zod) {
-                        return [
-                            $this->_main_key => $argument
-                        ];
-                    }
-                    return $argument;
-                }
-                return [
-                    $this->_main_key => $argument,
-                ];
-            } else if (!is_null($argument)) {
-                return [
-                    $this->_main_key => $argument,
-                ];
-            } else {
-                return [];
-            }
         }
     }
 }
@@ -209,7 +190,7 @@ if (!class_exists('Parser')) {
          * @param ZodPath|null $path_to_parser The path to the parser (optional).
          * @return string The identified parser key.
          */
-        private function identify_parser_key(string $name_of_parser, string $path_to_parser = null) {
+        private function identify_parser_key(string $name_of_parser, string $path_to_parser = null): string {
             if (is_null($path_to_parser)) {
                 return $name_of_parser;
             }
@@ -227,7 +208,7 @@ if (!class_exists('Parser')) {
             }
             return $this->_argument_parser->get_argument();
         }
-        public function set_argument(array $argument): Parser {
+        public function set_argument(mixed $argument): Parser {
             $this->_argument_parser->set_argument($argument);
             return $this;
         }
@@ -284,9 +265,9 @@ if (!class_exists('Parser')) {
 
             // Handle the response based on its type
             if (is_string($response)) {
-                // If the response is a string, set an error and return invalid result
+                echo 'Response: ' . $response . PHP_EOL;
                 $zod_owner->set_error(
-                    new ZodError($response, $this->identify_parser_key($this->_name, $path))
+                    new ZodError($response, $this->identify_parser_key($this->_name, $path) . '/' . $this->_name)
                 );
                 return [
                     'is_valid' => false,
@@ -294,7 +275,7 @@ if (!class_exists('Parser')) {
             } else if (is_array($response)) {
                 // If the response is an array, set errors and return invalid result
                 foreach ($response as $value) {
-                    $error = new ZodError($value, $this->identify_parser_key($this->_name, $path));
+                    $error = new ZodError($value, $this->identify_parser_key($this->_name, $path) . '/' . $value);
                     $zod_owner->set_error($error);
                 }
                 return [

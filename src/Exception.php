@@ -26,7 +26,7 @@ if (!class_exists('ZodError')) {
             $code = $options['code'] ?? 0;
             $previous = $options['previous'] ?? null;
             $this->key = $key;
-            parent::__construct($message, $code, $previous);
+            parent::__construct($message . ' ' . $key, $code, $previous);
         }
     
         /**
@@ -77,6 +77,11 @@ if(!class_exists('ZodErrors')) {
             }
             $this->errors = $errors;
         }
+        public function log() {
+            foreach ($this->errors as $error) {
+                echo $error->get_message() . PHP_EOL;
+            }
+        }
 
         /**
          * Sets a ZodError object in the collection.
@@ -85,9 +90,8 @@ if(!class_exists('ZodErrors')) {
          * @throws \Exception If the provided error is not an instance of ZodError.
          */
         public function set_error(ZodError $error): void {
-            if (!(is_a($error, 'ZodError'))) {
-                throw new \Exception('Error must be an instance of ZodError');
-            }
+            // TODO: check if the error is an instance of ZodError 
+            
             $this->errors[] = $error;
         }
 

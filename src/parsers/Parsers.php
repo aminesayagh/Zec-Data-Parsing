@@ -49,7 +49,7 @@ if(!class_exists('Parsers')) {
          */
         public function sort_parsers() : void {
             usort($this->parsers, function($a, $b) {
-                return $a->get_order_of_parsing() <=> $b->get_order_of_parsing();
+                return $a->order_of_parsing <=> $b->order_of_parsing;
             });
         
             $this->_is_sorted = true;

@@ -13,7 +13,7 @@ if(!interface_exists('IZod')) {
     interface IZod {
         public function __construct(array $parsers = [], ZodErrors $_errors = new ZodErrors());
         public function __clone();
-        public function __call(string $name, mixed $arguments): mixed;
+        public function __call(string $name, array $arguments): mixed;
         public function parse(mixed $value, mixed $default = null): Zod;
         public function set_default(mixed $default): Zod;
         public function pick(string $name): ?Zod;
@@ -112,13 +112,16 @@ if(!class_exists('Zod')) {
          * @return mixed The result of the method call.
          * @throws ZodError If the method or parser is not found.
          */
-        public function __call(string $name, mixed $arguments): mixed{
+        public function __call(string $name, ?array $arguments): mixed{
             if (method_exists($this, $name)) {
                 return call_user_func_array([$this, $name], $arguments);
             }
             if (bundler()->has_parser_key($name)) {
                 $parser = bundler()->get_parser($name);
-                $parser->set_argument($arguments);
+                if(is_array($arguments) && count($arguments) > 0) {
+                    $arguments = $arguments[0];
+                    $parser->set_argument($arguments);
+                }
                 
                 $this->add_parser($parser);
                 // log_msg("Parser $parser->name found");
@@ -224,7 +227,7 @@ if(!class_exists('Zod')) {
         public function parse_or_throw(mixed $value, mixed $default = null): Zod {
             $this->parse($value, $default);
             if (!$this->is_valid()) {
-                throw $this->_errors;
+                throw $this->_errors->first;
             }
             return $this->get_value();
         }

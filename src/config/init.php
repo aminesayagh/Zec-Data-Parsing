@@ -35,6 +35,7 @@ bundler()->assign_parser_config(PK::EMAIL, [
         $pattern = $argument['pattern'];
         $message = $argument['message'];
         $domain = $argument['domain'];
+
         
         if (!preg_match($pattern, $value)) {
             return $message;
@@ -180,11 +181,10 @@ bundler()->assign_parser_config(PK::EMAIL, [
         $options = $par['argument'][PK::OPTIONS];
         $default_value = $par['default'];
 
-        if (!in_array($value, $options)) {
-            return $par['argument']['message'];
-        }
+        echo 'Options: ' . json_encode($value) . PHP_EOL . json_encode($par['argument']) . PHP_EOL;
 
         $has_error = false;
+
 
         foreach ($options as $key => $option) {
             if (!($option instanceof Zod\Zod)) {
@@ -196,6 +196,7 @@ bundler()->assign_parser_config(PK::EMAIL, [
             }
             
             $value_field = array_key_exists($key, $value) ? $value[$key] : null;
+            echo 'Value field: ' . $value_field . PHP_EOL; 
             $zod_response = $option->parse($value_field, $default_of_option, $par['owner']);
             if (!$zod_response->is_valid()) {
                 $has_error = true;
@@ -216,8 +217,7 @@ bundler()->assign_parser_config(PK::EMAIL, [
         ]);
     },
     FK::DEFAULT_ARGUMENT => [
-        'message' => 'Invalid value',
-        'key' => null,
+        'message' => 'Invalid each value',
     ],
     FK::PARSER_CALLBACK=> function (array $par): string|bool {
         $values = $par['value'];
