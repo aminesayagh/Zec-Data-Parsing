@@ -1,12 +1,10 @@
 <?php
+declare(strict_types=1);
 
 namespace Zod;
 
-use ArrayObject;
-use Zod\FIELD\KEY as FK;
 use Zod\Parser;
 
-require_once ZOD_PATH . '/src/config/init.php';
 
 
 if (!class_exists('CaretakerParsers')) {
@@ -35,7 +33,7 @@ if (!class_exists('CaretakerParsers')) {
          * @throws ZodError If the parser with the specified key is not found.
          */
         public function get_parser(string $name): ?Parser {
-            $parsers = self::$parsers;
+            $parsers = $this->parsers;
 
             $selected_parsers = array_filter($parsers, function (Parser $value) use ($name) {
                 return $value->name === $name;
@@ -44,7 +42,7 @@ if (!class_exists('CaretakerParsers')) {
             $selected_parser = null;
 
             if (count($selected_parsers) === 0) {
-                throw new ZodError('The parser with the key ' . $name . ' is not found', 'key');
+                return null;
             }
 
             // get the parser with the highest priority
@@ -64,7 +62,7 @@ if (!class_exists('CaretakerParsers')) {
             return $selected_parser_cloned_and_initialized;
         }
         public function get_parsers(string $name): array {
-            $parsers = self::$parsers;
+            $parsers = $this->parsers;
 
             $selected_parsers = array_filter($parsers, function (Parser $value) use ($name) {
                 return $value->name === $name;
@@ -95,7 +93,7 @@ if (!class_exists('CaretakerParsers')) {
         public function has_parser_key(string $key): bool
         {
             return in_array($key, array_map(function ($value) {
-                return $value->get_key();
+                return $value->name;
             }, $this->parsers));
         }
         /**

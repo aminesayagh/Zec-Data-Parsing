@@ -1,9 +1,31 @@
 <?php 
 
+use Zod\Zod;
 
 if (!defined('ZOD_PATH')) {
     define('ZOD_PATH', __DIR__);
 }
+
+function log_msg(mixed $msg) {
+    if (!defined('STDIN')) { // if running from the command line
+        return;
+    }
+    echo 'LOG: ';
+    if (is_string($msg) || is_numeric($msg)) {
+        echo $msg . PHP_EOL;
+    } else {
+        print_r($msg);
+    }
+    // print the stack trace
+    $trace = debug_backtrace();
+    // foreach ($trace as $t) {
+    //     echo 'File: ' . $t['file'] . ' Line: ' . $t['line'] . PHP_EOL;
+    // }
+    echo PHP_EOL;
+    echo PHP_EOL;
+    return;
+}
+
 
 require_once ZOD_PATH . '/src/const/KEY.php';
 
@@ -13,7 +35,7 @@ require_once ZOD_PATH . '/src/parsers/Parser.php';
 
 require_once ZOD_PATH . '/src/config/Bundler.php';
 
-require_once ZOD_PATH . '/src/parsers/parsers.php';
+require_once ZOD_PATH . '/src/parsers/Parsers.php';
 
 require_once ZOD_PATH . '/src/Zod.php';
 

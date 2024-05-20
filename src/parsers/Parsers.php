@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace Zod;
 use Zod\CaretakerParsers;
@@ -30,7 +31,7 @@ if(!class_exists('Parsers')) {
          */
         public function add_parser(Parser $parser): ?Parser { 
             // check if the parser is already in the parsers array
-            if ($this->has_parser_key($parser->key)) {
+            if ($this->has_parser_key($parser->name)) {
                 return null;
             }
             // add the parser to the parsers array

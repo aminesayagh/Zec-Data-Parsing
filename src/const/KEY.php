@@ -1,4 +1,5 @@
 <?php 
+declare(strict_types=1);
 
 namespace Zod {
     class FIELD {
@@ -14,7 +15,7 @@ namespace Zod {
 
 namespace Zod {
     // Get a list of all const element on Zod\PARSER\KEY
-    class PARSER {
+    class PARSERS_KEY {
         const REQUIRED = 'required';
         const OPTIONAL = 'optional';
         const EMAIL = 'email';
@@ -27,5 +28,6 @@ namespace Zod {
         const NUMBER = 'number';
         const OPTIONS = 'options';
         const EACH = 'each';
+        const INSTANCEOF = 'instanceof';
     }
 }

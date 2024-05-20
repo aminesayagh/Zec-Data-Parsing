@@ -1,17 +1,18 @@
 <?php
+declare(strict_types=1);
 
 use function Zod\z;
-use function Zod\bundler;
 use Zod\FIELD as FK; // FK: Field Key
-use Zod\PARSER as PK; // PK: Parser Key
+use Zod\PARSERS_KEY as PK; // PK: Parser Key
 
+require_once ZOD_PATH . '/src/CaretakerParsers.php';
 require_once ZOD_PATH . '/src/config/Bundler.php';
 require_once ZOD_PATH . '/src/Zod.php';
 
+use function Zod\bundler as bundler;
+
 
 // TODO: Add parser arguments, a zod parser for the argument values;
-// Don't forget to parse the argument on instantiation of the parser
-// NOTE: in has_to_be, we don't need to specify required of optional, because it is already specified in the parser config
 bundler()->assign_parser_config(PK::EMAIL, [
     FK::PRIORITIZE => [
         PK::STRING,
@@ -20,7 +21,7 @@ bundler()->assign_parser_config(PK::EMAIL, [
         return z()->options([
             'message' => z()->required()->string(),
             'pattern' => z()->required()->string(),
-            'domain' => z()->optional()->array()
+            'domain' => z()->optional()->each(z()->string())
         ]);
     },
     FK::DEFAULT_ARGUMENT => [
@@ -76,7 +77,10 @@ bundler()->assign_parser_config(PK::EMAIL, [
     },
     FK::DEFAULT_ARGUMENT => [
         'message' => 'Invalid date format',
-        'pattern' => '/^(\d{4})-(\d{2})-(\d{2})$/'
+        'pattern' => '/^(\d{4})-(\d{2})-(\d{2})$/',
+        'format' => 'Y-m-d',
+        'after_date' => null,
+        'before_date' => null
     ],
     FK::PARSER_CALLBACK => function (array $par): string|bool {
         $value = $par['value'];
@@ -106,7 +110,9 @@ bundler()->assign_parser_config(PK::EMAIL, [
 ])->assign_parser_config(PK::STRING, [
     FK::PRIORITIZE => [],
     FK::PARSER_ARGUMENTS => function () {
-        return null;
+        return z()->options([
+            'message' => z()->required()->string()
+        ]);
     },
     FK::DEFAULT_ARGUMENT => [
         'message' => 'Invalid string value'
@@ -161,18 +167,18 @@ bundler()->assign_parser_config(PK::EMAIL, [
 ])->assign_parser_config(PK::OPTIONS, [
     FK::PRIORITIZE => [],
     FK::PARSER_ARGUMENTS => function () {
-        return Zod\z()->options([
+        return z()->options([
             'message' => z()->required()->string(),
-            'options' => z()->required()->array()
+            'options' => z()->required()->each(z()->instanceof(Zod\Zod::class))
         ]);
     },
     FK::DEFAULT_ARGUMENT => [
-        'message' => 'Invalid option values',
-        'options' => []
+        'message' => 'Invalid option values'
     ],
+
     FK::PARSER_CALLBACK => function (array $par): string|bool {
         $value = $par['value'];
-        $options = $par['argument']['options'];
+        $options = $par['argument'][PK::OPTIONS];
         $default_value = $par['default'];
 
         if (!in_array($value, $options)) {
@@ -208,11 +214,11 @@ bundler()->assign_parser_config(PK::EMAIL, [
     FK::PARSER_ARGUMENTS => function () {
         return z()->options([
             'message' => z()->required()->string(),
-            'each' => z()->required(),
         ]);
     },
     FK::DEFAULT_ARGUMENT => [
         'message' => 'Invalid value',
+        'key' => null,
     ],
     FK::PARSER_CALLBACK=> function (array $par): string|bool {
         $values = $par['value'];
@@ -244,7 +250,6 @@ bundler()->assign_parser_config(PK::EMAIL, [
     },
     FK::DEFAULT_ARGUMENT => [
         'message' => 'Invalid value',
-        'min' => 0
     ],
     FK::PARSER_CALLBACK => function (array $par): string|bool {
         $value = $par['value'];
@@ -305,6 +310,27 @@ bundler()->assign_parser_config(PK::EMAIL, [
         // if the value is null, then it is valid
         if (is_null($par['value'])) {
             return false; // end the parsing process
+        }
+        return true;
+    }
+])->assign_parser_config(PK::INSTANCEOF, [
+    FK::PRIORITIZE => [],
+    FK::PARSER_ARGUMENTS => function () {
+        return z()->options([
+            'message' => z()->required()->string(),
+            'instanceof' => z()->required(),
+        ]);
+    },
+    FK::DEFAULT_ARGUMENT => [
+        'message' => 'Invalid instance'
+    ],
+    FK::PARSER_CALLBACK => function (array $par): string|bool {
+        $value = $par['value'];
+        $instanceof = $par['argument']['instanceof'];
+        $message = $par['argument']['message'];
+
+        if (!($value instanceof $instanceof)) {
+            return $message;
         }
         return true;
     }
