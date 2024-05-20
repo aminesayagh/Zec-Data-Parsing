@@ -58,11 +58,30 @@ if(!class_exists('Zod')) {
         private mixed $_value = null;
         private mixed $_default = null;
         private ZodPath $_path;
+        private array $_conf = [
+            'trust_arguments' => false,
+        ];
         private Zod|null $_parent = null;
         public function __construct(array $parsers = [], ZodErrors $_errors = new ZodErrors()) {
             parent::__construct($parsers);
             $this->_errors = $_errors ?? new ZodErrors();
             $this->_path = new ZodPath();
+        }
+        public function set_trust_arguments(bool $trust_arguments): Zod {
+            $this->_conf['trust_arguments'] = $trust_arguments;
+            return $this;
+        }
+        
+        public function get_configs(): array {
+            return $this->_conf;
+        }
+        public function get_conf(string $key): mixed {
+            return $this->_conf[$key];
+        }
+        public function __get($name) {
+            if (array_key_exists($name, $this->_conf)) {
+                return $this->_conf[$name];
+            }
         }
         /**
          * Creates a clone of the Zod object.
@@ -99,7 +118,7 @@ if(!class_exists('Zod')) {
             }
             if (bundler()->has_parser_key($name)) {
                 $parser = bundler()->get_parser($name);
-                $parser->set_argument($arguments);  
+                $parser->set_argument($arguments);
                 
                 $this->add_parser($parser);
                 // log_msg("Parser $parser->name found");
@@ -107,6 +126,15 @@ if(!class_exists('Zod')) {
             }
 
             throw new ZodError("Method $name not found");
+        }
+        public function get_conf_from_parent(Zod|null $parent): void {
+            if (is_null($parent)) {
+                return;
+            }
+            $this->_conf = array_merge(
+                $this->_conf,
+                $parent->get_configs()
+            );
         }
         /**
          * Parses the given value using the specified parsers.
@@ -126,10 +154,12 @@ if(!class_exists('Zod')) {
                 $this->_path->push($parent->get_path_string());
             }
 
+            $this->get_conf_from_parent($parent);  
+
             $has_required = $this->has_parser_key('required');
             if (!$has_required && is_null($value)) {
                 return $this;
-            } 
+            }
 
             if (!is_null($parent)) {
                 $this->_parent = $parent;

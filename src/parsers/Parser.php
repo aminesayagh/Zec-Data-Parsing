@@ -48,20 +48,25 @@ if (!class_exists('ArgumentParser')) {
                 'parser_arguments' => $this->_parser_arguments
             ];
         }
-        
+        public function merge_argument() {
+            $merged_argument = array_merge($this->_default_argument, $this->_argument);
+            return $merged_argument;
+        }
+        public function valid_argument() {
+            $merged_argument = $this->merge_argument();
+
+            if (!$this->_is_valid_argument) {
+                $argument_zod_validator = call_user_func($this->_parser_arguments, z()->set_trust_arguments(true));
+                $argument_zod_validator->parse_or_throw($merged_argument);
+                $this->_is_valid_argument = true;
+            }
+            return $merged_argument;
+        }
         public function get_argument(): array {
             if (!$this->_parser_arguments) {
                 throw new ZodError('The parser_arguments field must be set', 'parser_arguments');
             }
-            $merged_argument = array_merge($this->_default_argument, $this->_argument);
-            if (is_bool($this->_is_valid_argument) && !$this->_is_valid_argument) {
-                $argument_zod_validator = call_user_func($this->_parser_arguments);
-                $argument = $argument_zod_validator->parse_or_throw($merged_argument);
-                $this->_is_valid_argument = true;
-            } else {
-                $argument = $merged_argument;
-            }
-            return $argument;
+            return $this->merge_argument();
         }
         public function set_argument(array $argument): ArgumentParser {
             if (!is_array($argument)) {
@@ -204,11 +209,11 @@ if (!class_exists('Parser')) {
          * @param ZodPath|null $path_to_parser The path to the parser (optional).
          * @return string The identified parser key.
          */
-        private function identify_parser_key(string $name_of_parser, ZodPath $path_to_parser = null) {
+        private function identify_parser_key(string $name_of_parser, string $path_to_parser = null) {
             if (is_null($path_to_parser)) {
                 return $name_of_parser;
             }
-            return $path_to_parser->get_path_string() . '/' . $name_of_parser;
+            return $path_to_parser . '/' . $name_of_parser;
         }
         public function initialize(): void {
             if ($this->_is_init) {
@@ -216,7 +221,10 @@ if (!class_exists('Parser')) {
             }
             $this->_is_init = true;
         }
-        public function get_argument(): array {
+        public function get_argument(bool $parse_argument = true): array {
+            if ($parse_argument) {
+                $this->_argument_parser->valid_argument();
+            }
             return $this->_argument_parser->get_argument();
         }
         public function set_argument(array $argument): Parser {
@@ -245,10 +253,11 @@ if (!class_exists('Parser')) {
          * @return array An array containing the validation result.
          * @throws ZodError If the parser_callback field is not a callback function or if it returns an invalid value.
          */
-        public function parse(mixed $value, array $args, Zod $zod_owner = null): array {
+        public function parse(mixed $value, array $args, Zod $zod_owner): array {
             if (!is_callable($this->_parser_callback)) {
                 throw new ZodError('The parser_callback field must be a callback function', 'parser_callback');
             }
+
 
             // Retrieve arguments
             $default = $args['default'];
@@ -259,11 +268,17 @@ if (!class_exists('Parser')) {
                 $zod_owner
             ) ? null : $zod_owner->get_path_string();
 
+
+            $has_to_parse_argument = $zod_owner->trust_arguments;
+            $argument = $this->get_argument(!$has_to_parse_argument);
+
+            log_msg('Argument: ' . json_encode($argument) . ' for ' . $this->_name . ' parser');
+
             // Call the parser callback function
             $response = call_user_func($this->_parser_callback, [
                 'value' => $value,
                 'default' => $default, // default value of the parser
-                'argument' => $this->get_argument(),
+                'argument' => $argument,
                 'owner' => $zod_owner
             ]);
 
