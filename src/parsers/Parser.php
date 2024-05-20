@@ -256,7 +256,6 @@ if (!class_exists('Parser')) {
 
 
             $has_to_parse_argument = !$zod_owner->trust_arguments;
-            echo 'Has to parse argument: ' . ($has_to_parse_argument ? 'true' : 'false') . PHP_EOL;
             $argument = $this->get_argument($has_to_parse_argument, $zod_owner);
 
             // Call the parser callback function

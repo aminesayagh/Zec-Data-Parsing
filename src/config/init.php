@@ -169,10 +169,10 @@ bundler()->assign_parser_config(PK::EMAIL, [
     FK::PARSER_ARGUMENTS => function (Zod\Zod $z) {
         return $z->options([
             'message' => z()->required()->string(),
-            'options' => z()->required()->associative([
-                'key' => z()->string(),
-                'value' => z()->instanceof(Zod\Zod::class)
-            ])
+            // 'options' => z()->required()->associative([
+            //     'key' => z()->string(),
+            //     'value' => z()->instanceof(Zod\Zod::class)
+            // ])
         ]);
     },
     FK::DEFAULT_ARGUMENT => [
@@ -197,7 +197,7 @@ bundler()->assign_parser_config(PK::EMAIL, [
             }
             
             $value_field = array_key_exists($key, $value) ? $value[$key] : null;
-            
+            $par['owner']->set_key_path($key);
             $zod_response = $option->parse($value_field, $default_of_option, $par['owner']);
             if (!$zod_response->is_valid()) {
                 $has_error = true;
@@ -331,6 +331,7 @@ bundler()->assign_parser_config(PK::EMAIL, [
         $instanceof = $par['argument'][PK::INSTANCEOF];
         $message = $par['argument']['message'];
 
+        echo 'Instanceof: ' . json_encode($par) . PHP_EOL;
         if (!($value instanceof $instanceof)) {
             return $message;
         }
@@ -341,10 +342,10 @@ bundler()->assign_parser_config(PK::EMAIL, [
     FK::PARSER_ARGUMENTS => function (Zod\Zod $z) {
         return $z->options([
             'message' => z()->required()->string(),
-            'associative' => z()->required()->associative([
-                'key' => z()->required()->instanceof(Zod\Zod::class),
-                'value' => z()->required()->instanceof(Zod\Zod::class)
-            ])
+            // PK::ASSOCIATIVE => z()->required()->associative([
+            //     'key' => z()->required()->instanceof(Zod\Zod::class),
+            //     'value' => z()->required()->instanceof(Zod\Zod::class)
+            // ])
         ]);
     },
     FK::DEFAULT_ARGUMENT => [
@@ -354,8 +355,8 @@ bundler()->assign_parser_config(PK::EMAIL, [
         echo 'Associative: ' . json_encode($par) . PHP_EOL; 
         $value = $par['value'];
         $message = $par['argument']['message'];
-        $key_parser = $par['argument']['associative']['key']; // TODO: Is more good to use $par['argument']['key']
-        $value_parser = $par['argument']['associative']['value'];
+        $key_parser = $par['argument'][PK::ASSOCIATIVE]['key']; // TODO: Is more good to use $par['argument']['key']
+        $value_parser = $par['argument'][PK::ASSOCIATIVE]['value'];
 
         $has_error = false;
         echo 'Key: ' . json_encode($value) . PHP_EOL;
@@ -363,7 +364,7 @@ bundler()->assign_parser_config(PK::EMAIL, [
             $key_response = $key_parser->parse($k, null, $par['owner']);
             $value_response = $value_parser->parse($v, null, $par['owner']);
             if (!$key_response->is_valid() || !$value_response->is_valid()) {
-                echo 'Error: ' . $key_response->get_error_message() . PHP_EOL;
+                echo 'Error: ' . $key_response->get_errors_message() . PHP_EOL;
                 $has_error = true;
             }
         }

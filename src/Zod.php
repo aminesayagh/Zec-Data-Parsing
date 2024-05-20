@@ -42,7 +42,9 @@ if(!class_exists('ZodPath')) {
             $this->_path[] = $key;
         }
         public function pop(): void {
+            $head = $this->_path[0];
             array_pop($this->_path);
+            return $head;
         }
         public function get_path_string(): string {
             return implode('.', $this->_path);
@@ -74,7 +76,14 @@ if(!class_exists('Zod')) {
             $this->_conf['trust_arguments'] = $trust_arguments;
             return $this;
         }
-        
+        public function set_key_flag(string $flag): Zod {
+            $this->_path->push($flag);
+            return $this;
+        }
+        public function remove_key_flag(string $flag): Zod {
+            $this->_path->pop();
+            return $this;
+        }
         public function get_configs(): array {
             return $this->_conf;
         }
@@ -161,7 +170,6 @@ if(!class_exists('Zod')) {
             $this->set_default($default);
 
             if (!is_null($parent)) {
-                $this->_path->push($parent->get_path_string());
             }
 
             
@@ -173,15 +181,24 @@ if(!class_exists('Zod')) {
             if (!is_null($parent)) {
                 $this->_parent = $parent;
                 $this->get_conf_from_parent($parent);
-                // get path from parent
                 $this->_path->extend($parent->_path);
             }
 
-            foreach ($this->list_parsers() as $parser) {
+            foreach ($this->list_parsers() as $index => $parser) {
+                // echo $this->_path->get_path_string() . ' : ' . $parser->name . PHP_EOL;
+                if ($index > 0) {
+                    $this->_path->pop();
+                }
+                $this->_path->push($parser->name);
                 // echo "Parsing $parser->name : " . json_encode($this->_value) . " " . PHP_EOL;
                 $parser->parse($this->_value, [
                     'default' => $this->_default,
                 ], $this);
+            }
+
+            // push the error to the parent
+            if (!is_null($parent)) {
+                $parent->set_errors($this->_errors);
             }
 
             return $this;
@@ -202,6 +219,11 @@ if(!class_exists('Zod')) {
             $this->_default = $default;
             return $this;
         }
+        public function set_errors(ZodErrors $errors): void {
+            foreach ($errors->get_errors() as $error) {
+                $this->_errors->set_error($error);
+            }
+        }
         public function get_path_string(): string {
             return $this->_path->get_path_string();
         }
@@ -210,6 +232,9 @@ if(!class_exists('Zod')) {
         }
         public function get_errors(): ZodErrors {
             return $this->_errors;
+        }
+        public function get_errors_message(): string {
+            return $this->_errors->get_message();
         }
         /**
          * Sets an error for the current Zod instance and its parent, if any.
