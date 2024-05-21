@@ -12,7 +12,7 @@ if(!class_exists('Parsers')) {
      * 
      * This class extends the CaretakerParsers class and represents a collection of parsers.
      */
-    class Parsers extends CaretakerParsers {
+    abstract class Parsers extends CaretakerParsers {
         private bool $_is_sorted = false;
 
         /**

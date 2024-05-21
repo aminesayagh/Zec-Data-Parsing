@@ -14,7 +14,7 @@ if (!class_exists('CaretakerParsers')) {
      * This class represents a caretaker for parsers.
      * It provides a way to manage and access an array of parsers.
      */
-    class CaretakerParsers
+    abstract class CaretakerParsers
     {
         /**
          * @var Parser[] $parsers An array of objects instantiated from the class Parser.

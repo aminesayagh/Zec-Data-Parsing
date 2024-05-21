@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Zod;
 
+use BadMethodCallException;
 use Zod\PARSERS_KEY as PK; // PK: Parser Key
 
 require_once ZOD_PATH . '/src/parsers/Parser.php';
@@ -16,96 +17,19 @@ if(!interface_exists('IZod')) {
         public function __call(string $name, array $arguments): mixed;
         public function parse(mixed $value, mixed $default = null): Zod;
         public function set_default(mixed $default): Zod;
-        public function pick(string $name): ?Zod;
-    }
-}
-
-if(!class_exists('ZodPath')) {
-    class ZodPath {
-        private array $_path = [];
-        public function __construct(ZodPath|string $path = null) {
-            if (!is_null($path)) {
-                if (is_string($path)) {
-                    $this->_path = explode('.', $path);
-                } else {
-                    $this->_path = $path->get_path();
-                }
-            }
-        }
-        public function get_path(): array {
-            return $this->_path;
-        }
-        public function extend(ZodPath $path): void {
-            $this->_path = array_merge($this->_path, $path->get_path());
-        }
-        public function push(string $key): void {
-            $this->_path[] = $key;
-        }
-        public function pop(): void {
-            $head = $this->_path[0];
-            array_pop($this->_path);
-            return $head;
-        }
-        public function get_path_string(): string {
-            return implode('.', $this->_path);
-        }
     }
 }
 
 if(!class_exists('Zod')) {
-    class Zod extends Parsers implements IZod {
-        /**
-         * Holds the array of errors encountered during validation.
-         *
-         * @var ZodErrors
-         */
-        private ZodErrors $_errors;
-        private mixed $_value = null;
-        private mixed $_default = null;
-        private ZodPath $_path;
-        private array $_conf = [
-            'trust_arguments' => false,
-        ];
-        private Zod|null $_parent = null;
-        public function __construct(array $parsers = [], ZodErrors $_errors = new ZodErrors()) {
+    class Zod extends Parsers {
+        use ZodErrors, ZodPath, ZodConfigs, ZodUtils, ZodDefault, ZodValue, ZodParent;        
+        public function __construct(array $parsers = [], Zod $parent = null) {
             parent::__construct($parsers);
-            $this->_errors = $_errors ?? new ZodErrors();
-            $this->_path = new ZodPath();
-        }
-        public function set_trust_arguments(bool $trust_arguments): Zod {
-            $this->_conf['trust_arguments'] = $trust_arguments;
-            return $this;
-        }
-        public function set_key_flag(string $flag): Zod {
-            $this->_path->push($flag);
-            return $this;
-        }
-        public function remove_key_flag(string $flag): Zod {
-            $this->_path->pop();
-            return $this;
-        }
-        public function get_configs(): array {
-            return $this->_conf;
-        }
-        public function get_conf(string $key): mixed {
-            return $this->_conf[$key];
-        }
-        public function __get($name) {
-            if (array_key_exists($name, $this->_conf)) {
-                return $this->_conf[$name];
+            if(!is_null($parent)) {
+                $this->_clone_parent($parent);
             }
         }
-        /**
-         * Creates a clone of the Zod object.
-         *
-         * This method is used to create a deep copy of the Zod object, including its internal state.
-         * It clones the `_errors` property and filters the `parsers` array, removing any null values
-         * and parsers with the key 'required'. It also clones each parser in the filtered array.
-         *
-         * @return void
-         */
         public function __clone(): void {
-            $this->_errors = clone $this->_errors;
             $this->parsers = array_filter($this->parsers, function($parser) {
                 if (is_null($parser)) {
                     return false;
@@ -141,19 +65,7 @@ if(!class_exists('Zod')) {
                 return $this;
             }
 
-            throw new ZodError("Method $name not found");
-        }
-        private function get_conf_from_parent(Zod|null $parent): void {
-            if (is_null($parent)) {
-                return;
-            }
-            $this->_conf = array_merge(
-                $this->_conf,
-                $parent->get_configs()
-            );
-        }
-        public function get_value() {
-            return $this->_value;
+            throw new BadMethodCallException("Method $name not found");
         }
         /**
          * Parses the given value using the specified parsers.
@@ -219,38 +131,6 @@ if(!class_exists('Zod')) {
             $this->_default = $default;
             return $this;
         }
-        public function set_errors(ZodErrors $errors): void {
-            foreach ($errors->get_errors() as $error) {
-                $this->_errors->set_error($error);
-            }
-        }
-        public function get_path_string(): string {
-            return $this->_path->get_path_string();
-        }
-        public function is_valid(): bool {
-            return $this->_errors->is_empty();
-        }
-        public function get_errors(): ZodErrors {
-            return $this->_errors;
-        }
-        public function get_errors_message(): string {
-            return $this->_errors->get_message();
-        }
-        /**
-         * Sets an error for the current Zod instance and its parent, if any.
-         *
-         * @param ZodError $error The error to be set.
-         * @return Zod The current Zod instance.
-         */
-        public function set_error(ZodError $error): Zod {
-            // set the same error to the parent
-            if (!is_null($this->_parent)) {
-                $this->_parent->set_error($error);
-            }
-
-            $this->_errors->set_error($error);
-            return $this;
-        }
         /**
          * Parses the given value and throws an error if it is not valid.
          *
@@ -265,24 +145,6 @@ if(!class_exists('Zod')) {
                 throw $this->_errors;
             }
             return $this->get_value();
-        }
-        public function pick(string $name): ?Zod {
-            $zod_path = new ZodPath($name);
-            $pile = $zod_path->get_path();
-            $zod = $this;
-            $parser_options = $zod->get_parser(PK::OPTIONS);
-            
-            if (is_null($parser_options)) {
-                return null;
-            }
-            $main_option_argument = $parser_options->get_argument()[PK::OPTIONS];
-            
-            $first_key = array_shift($pile);
-            $zod = $main_option_argument[$first_key];
-            if (count($pile) === 0) {
-                return $zod;
-            }
-            return $zod->pick(implode('.', $pile));
         }
     }
 }
