@@ -10,15 +10,6 @@ require_once ZOD_PATH . '/src/parsers/Parser.php';
 require_once ZOD_PATH . '/src/parsers/Parsers.php';
 require_once ZOD_PATH . '/src/Exception.php';
 
-if(!interface_exists('IZod')) {
-    interface IZod {
-        public function __construct(array $parsers = [], ZodErrors $_errors = new ZodErrors());
-        public function __clone();
-        public function __call(string $name, array $arguments): mixed;
-        public function parse(mixed $value, mixed $default = null): Zod;
-        public function set_default(mixed $default): Zod;
-    }
-}
 
 if(!class_exists('Zod')) {
     class Zod extends Parsers {
