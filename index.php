@@ -39,6 +39,10 @@ require_once ZOD_PATH . '/src/utils/ZodUtils.php';
 
 require_once ZOD_PATH . '/src/utils/ZodDefault.php';
 
+require_once ZOD_PATH . '/src/utils/ZodValue.php';
+
+require_once ZOD_PATH . '/src/utils/ZodParent.php';
+
 require_once ZOD_PATH . '/src/CaretakerParsers.php';
 
 require_once ZOD_PATH . '/src/parsers/Parser.php';

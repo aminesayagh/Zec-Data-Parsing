@@ -66,18 +66,20 @@ if(!class_exists('Zod')) {
          * @param Zod|null $parent The parent Zod instance, if any.
          * @return Zod The current Zod instance.
          */
-        public function parse(mixed $value, mixed ...$default): Zod {
+        public function parse(mixed $value, mixed ...$args): Zod {
+
+            // clean errors
             $this->clear_errors();
 
-            $this->_value = $value;
+            // set the value
+            $this->set_value($value);
+
+            // set default
+            $default = !isset($args['default']) ? null : $args['default'];
             $this->set_default($default);
 
-            $parent = $default['parent'];
-
-
-            if (!is_null($parent)) {
-
-            }
+            $parent = !isset($args['parent']) ? null : $args['parent'];
+            $this->_clone_parent($parent);
 
             
             $has_required = $this->has_parser_key(PK::REQUIRED);
@@ -85,25 +87,15 @@ if(!class_exists('Zod')) {
                 return $this;
             }
             
-            if (!is_null($parent)) {
-                $this->_parent = $parent;
-                $this->get_conf_from_parent($parent);
-                $this->pile_extend($parent);
-            }
 
             foreach ($this->list_parsers() as $index => $parser) {
-               
                 $this->set_key_parser($parser->name);
-                // echo "Parsing $parser->name : " . json_encode($this->_value) . " " . PHP_EOL;
                 $parser->parse($this->_value, [
                     'default' => $this->_default,
                 ], $this);
             }
 
-            // push the error to the parent
-            if (!is_null($parent)) {
-                $parent->set_errors($this->_errors);
-            }
+            $this->_send_errors_to_parent();
 
             return $this;
         }
@@ -149,8 +141,8 @@ if (!function_exists('zod')) {
      * @param ZodErrors $errors The array of errors to assign to the Zod instance.
      * @return Zod The instance of the Zod class.
      */
-    function zod(array $parsers = [], ZodErrors $errors = new ZodErrors()): Zod {
-        return new Zod($parsers, $errors);
+    function zod(?array $parsers = []): Zod {
+        return new Zod($parsers);
     }
 }
 
@@ -172,10 +164,9 @@ if (!function_exists('z')) {
      * Returns an instance of the Zod class.
      *
      * @param array $parsers The array of parsers to assign to the Zod instance.
-     * @param ZodErrors $errors The array of errors to assign to the Zod instance.
      * @return Zod The instance of the Zod class.
      */
-    function z(array $parsers = [], ZodErrors $errors = new ZodErrors()): Zod {
-        return zod($parsers, $errors);
+    function z(array $parsers = []): Zod {
+        return zod($parsers);
     }
 }

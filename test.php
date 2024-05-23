@@ -21,6 +21,6 @@ echo '------------------- State Parsing : ' . PHP_EOL . PHP_EOL;
 try {
     $user_parser->parse_or_throw($user);
     echo 'User is valid';
-} catch (\Zod\ZodErrors $e) {
+} catch (\Zod\ZodError $e) {
     echo 'User is invalid: ' . $e->get_message();
 }

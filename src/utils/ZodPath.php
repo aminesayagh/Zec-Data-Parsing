@@ -57,12 +57,3 @@ if(!trait_exists('ZodPath')) {
         }
     }
 }
-
-z()->options([
-    'object' => z()->options([ // options/object.options
-        'strict' => z()->boolean(),
-        'strip' => z()->boolean(), // options/object.options/strip.boolean
-        'deep' => z()->string()
-    ]),
-    'value' => z()->string()->min(1)->max(100),
-]);
