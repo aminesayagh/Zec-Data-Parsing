@@ -66,13 +66,17 @@ if(!class_exists('Zod')) {
          * @param Zod|null $parent The parent Zod instance, if any.
          * @return Zod The current Zod instance.
          */
-        public function parse(mixed $value, mixed $default = null, Zod|null $parent = null): Zod {
-            $this->_errors->reset();
+        public function parse(mixed $value, mixed ...$default): Zod {
+            $this->clear_errors();
 
             $this->_value = $value;
             $this->set_default($default);
 
+            $parent = $default['parent'];
+
+
             if (!is_null($parent)) {
+
             }
 
             
@@ -84,15 +88,12 @@ if(!class_exists('Zod')) {
             if (!is_null($parent)) {
                 $this->_parent = $parent;
                 $this->get_conf_from_parent($parent);
-                $this->_path->extend($parent->_path);
+                $this->pile_extend($parent);
             }
 
             foreach ($this->list_parsers() as $index => $parser) {
-                // echo $this->_path->get_path_string() . ' : ' . $parser->name . PHP_EOL;
-                if ($index > 0) {
-                    $this->_path->pop();
-                }
-                $this->_path->push($parser->name);
+               
+                $this->set_key_parser($parser->name);
                 // echo "Parsing $parser->name : " . json_encode($this->_value) . " " . PHP_EOL;
                 $parser->parse($this->_value, [
                     'default' => $this->_default,
@@ -133,7 +134,7 @@ if(!class_exists('Zod')) {
         public function parse_or_throw(mixed $value, mixed $default = null, Zod $parent = null): mixed {
             $this->parse($value, $default);
             if (!$this->is_valid()) {
-                throw $this->_errors;
+                throw new ZodError($this->message_errors());
             }
             return $this->get_value();
         }
