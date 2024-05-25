@@ -62,15 +62,26 @@ if(!class_exists('Zod')) {
 
             throw new BadMethodCallException("Method $name not found");
         }
-        /**
-         * Parses the given value using the specified parsers.
-         *
-         * @param mixed $value The value to be parsed.
-         * @param mixed $default The default value to be used if the parsed value is null.
-         * @param Zod|null $parent The parent Zod instance, if any.
-         * @return Zod The current Zod instance.
-         */
-        public function parse(mixed $value, mixed ...$args): Zod {
+        static function proxy_set_arg(mixed $default, ?Zod $parent = null): array {
+            return [
+                'default' => $default,
+                'parent' => $parent
+            ];
+        }
+        public static function proxy_get_arg(?array $args): array {
+            if (is_null($args)) {
+                return [
+                    'default' => null,
+                    'parent' => null
+                ];
+            }
+            return [
+                'default' => isset($args['default']) ? $args['default'] : null,
+                'parent' => isset($args['parent']) ? $args['parent'] : null
+            ];
+        }
+        
+        public function parse(mixed $value, array $args): Zod {
 
             // clean errors
             $this->clear_errors();
@@ -78,25 +89,26 @@ if(!class_exists('Zod')) {
             // set the value
             $this->set_value($value);
 
-            // set default
-            $default = !isset($args['default']) ? null : $args['default'];
-            $this->set_default($default);
+            if (is_null($args)) {
+                $args = [];
+            }
+            $args = self::proxy_get_arg($args);
 
-            $parent = !isset($args['parent']) ? null : $args['parent'];
-            $this->_clone_parent($parent);
+            $this->set_default($args['default']);
+            $this->_clone_parent($args['parent']);
 
-            
             $has_required = $this->has_parser_key(PK::REQUIRED);
             if (!$has_required && is_null($value)) {
                 return $this;
             }
             
-            foreach ($this->list_parsers() as $index => $parser) {
+            foreach ($this->list_parsers() as $parser) {
+                // identify $parser as a instance of Parser
+                if (!is_a($parser, Parser::class)) {
+                    continue;
+                } 
                 $this->set_key_parser($parser->name);
-                $parser->parse($this->_value, [
-                    'default' => $this->_default,
-                    'owner' => $this
-                ], $this);
+                $parser->parse($this->_value, Parser::proxy_set_arg($this->_default, $this));
             }
 
             $this->_send_errors_to_parent();
@@ -128,7 +140,7 @@ if(!class_exists('Zod')) {
          * @throws mixed The error(s) if the parsed value is invalid.
          */
         public function parse_or_throw(mixed $value, mixed $default = null, Zod $parent = null): mixed {
-            $this->parse($value, $default);
+            $this->parse($value, Zod::proxy_set_arg($default, null));
             if (!$this->is_valid()) {
                 throw new ZodError($this->message_errors());
             }

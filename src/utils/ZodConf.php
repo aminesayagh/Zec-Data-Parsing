@@ -25,6 +25,9 @@ if(!class_exists('ZodConf')) {
         public function get_value() {
             return $this->_value;
         }
+        public function get_type() {
+            return $this->_type;
+        }
         public function set_value($value) {
             if ($this->_type === 'readonly') {
                 throw new \Exception('Cannot set value of readonly config');
@@ -58,7 +61,7 @@ if(!trait_exists('ZodConfigs')) {
         public function configs_extend(Zod $zod) {
             $zod_config = $zod->get_configs();
             foreach($zod_config as $key => $value) {
-                $this->_config[$key]->set_value($value);
+                $this->_config[$key] = new ZodConf($key, $value->get_value(), $value->get_type());
             }
         }
         public function get_config(string $key) {

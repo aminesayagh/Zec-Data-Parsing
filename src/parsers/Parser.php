@@ -107,6 +107,28 @@ if (!class_exists('Parser')) {
                 'owner' => $owner
             ];
         }
+        static function proxy_get_arg(array $args): array {
+            $args = is_null($args) ? [] : $args;
+            $default = isset($args['default']) ? $args['default'] : null; // default value of the content to parser
+            $owner = isset($args['owner']) ? $args['owner'] : null; // owner of the parser
+
+            // if the owner is not an instance of Zod, set it to null
+            $owner = $owner instanceof Zod ? $owner : null;
+
+            if (is_null($owner)) {
+                throw new ZodError('The owner field must be an instance of Zod', 'owner');
+            }
+            return [
+                'default' => $default,
+                'owner' => $owner
+            ];
+        }
+        static function proxy_set_arg(mixed $default, Zod $owner): array {
+            return [
+                'default' => $default,
+                'owner' => $owner
+            ];
+        }
         /**
          * Parses the given value using the provided parser callback function.
          *
@@ -126,14 +148,8 @@ if (!class_exists('Parser')) {
             
             $default = $args['default'];
             $zod_owner = $args['owner'];
-
-            // Get the path of the owner Zod instance
             
-            $path = is_null(
-                $zod_owner
-            ) ? null : $zod_owner->get_pile_string();
-            
-
+            echo 'Owner: ' . json_encode($zod_owner) . PHP_EOL;
             $argument = $this->get_argument($zod_owner); // get the argument of the parser, and check the config of the zod_owner
 
             // Call the parser callback function
@@ -143,6 +159,10 @@ if (!class_exists('Parser')) {
                 'argument' => $argument,
                 'owner' => $zod_owner
             ]);
+
+            $path = is_null(
+                $zod_owner
+            ) ? null : $zod_owner->get_pile_string();
 
             // Handle the response based on its type
             if (is_string($response)) {

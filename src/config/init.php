@@ -10,7 +10,7 @@ require_once ZOD_PATH . '/src/config/Bundler.php';
 require_once ZOD_PATH . '/src/Zod.php';
 
 use function Zod\bundler as bundler;
-
+use function Zod\is_zod;
 
 bundler()->assign_parser_config(PK::EMAIL, [
     FK::PRIORITIZE => [
@@ -186,19 +186,28 @@ bundler()->assign_parser_config(PK::EMAIL, [
 
         $has_error = false;
 
-
+        $index = 0;
         foreach ($options as $key => $option) {
             if (!($option instanceof Zod\Zod)) {
-                throw new Zod\ZodError('The options field must be an array of Zod instances', 'options');
+                throw new Exception('Invalid option value');
             }
             $default_of_option = null;
+
+            if ($index > 0) {
+                $par['owner']->clean_last_flag();
+            }
+            $index++;
+            $par['owner']->set_key_flag($key);
+
             if (is_array($default_value) && array_key_exists($key, $default_value)) {
                 $default_of_option = $default_value[$key];
             }
-            
+
             $value_field = array_key_exists($key, $value) ? $value[$key] : null;
-            $par['owner']->set_key_parser($key);
-            $zod_response = $option->parse($value_field, $default_of_option, $par['owner']);
+            $zod_response = $option->parse($value_field, Zod\Zod::proxy_set_arg(
+                $default_of_option,
+                $par['owner']
+            ));
             if (!$zod_response->is_valid()) {
                 $has_error = true;
             }
@@ -331,7 +340,6 @@ bundler()->assign_parser_config(PK::EMAIL, [
         $instanceof = $par['argument'][PK::INSTANCEOF];
         $message = $par['argument']['message'];
 
-        echo 'Instanceof: ' . json_encode($par) . PHP_EOL;
         if (!($value instanceof $instanceof)) {
             return $message;
         }
@@ -352,19 +360,16 @@ bundler()->assign_parser_config(PK::EMAIL, [
         'message' => 'Invalid associative array'
     ],
     FK::PARSER_CALLBACK => function (array $par): string|bool {
-        echo 'Associative: ' . json_encode($par) . PHP_EOL; 
         $value = $par['value'];
         $message = $par['argument']['message'];
         $key_parser = $par['argument'][PK::ASSOCIATIVE]['key']; // TODO: Is more good to use $par['argument']['key']
         $value_parser = $par['argument'][PK::ASSOCIATIVE]['value'];
 
         $has_error = false;
-        echo 'Key: ' . json_encode($value) . PHP_EOL;
         foreach ($value as $k => $v) {
             $key_response = $key_parser->parse($k, null, $par['owner']);
             $value_response = $value_parser->parse($v, null, $par['owner']);
             if (!$key_response->is_valid() || !$value_response->is_valid()) {
-                echo 'Error: ' . $key_response->get_errors_message() . PHP_EOL;
                 $has_error = true;
             }
         }

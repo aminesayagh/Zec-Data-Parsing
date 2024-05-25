@@ -5,17 +5,21 @@ namespace Zod;
 
 if(!trait_exists('ZodPath')) {
     trait ZodPath{
+        private static array $_TYPE_KEY = [
+            'FLAG' => 'flag',
+            'PARSER' => 'parser'
+        ];
         private array $_pile = [];
-        public function set_key_flag(string $value) {
-            $this->pile[] = [
-                'key' => 'flag',
+        public function set_key_flag(string $value): Zod {
+            $this->_pile[] = [
+                'key' => $this::$_TYPE_KEY['FLAG'],
                 'value' => $value
             ];
-
+            return $this;
         }
-        public function set_key_parser(string $value) {
+        public function set_key_parser(string $value): Zod {
             $this->_pile[] = [
-                'key' => 'parser',
+                'key' => $this::$_TYPE_KEY['PARSER'],
                 'value' => $value
             ];
             return $this;
@@ -28,7 +32,7 @@ if(!trait_exists('ZodPath')) {
             $pile = $this->_pile;
             $last_flag = null;
             foreach($pile as $p) {
-                if($p['key'] === 'flag') {
+                if($p['key'] === $this::$_TYPE_KEY['FLAG']) {
                     $last_flag = $p['value'];
                 }
             }
@@ -43,10 +47,10 @@ if(!trait_exists('ZodPath')) {
             $pile = $this->_pile;
             $pile_string = '';
             foreach($pile as $p) {
-                if($p['key'] === 'flag') {
+                if($p['key'] === $this::$_TYPE_KEY['FLAG']) {
                     $pile_string .= '/' . $p['value'];
                 }
-                if($p['key'] === 'parser') {
+                if($p['key'] === $this::$_TYPE_KEY['PARSER']) {
                     $pile_string .= '.' . $p['value'];
                 }
             }
@@ -54,6 +58,18 @@ if(!trait_exists('ZodPath')) {
         }
         public function log_pile() {
             echo 'PILE: ' . $this->get_pile_string() . PHP_EOL;
+        }
+        public function clean_last_flag() {
+            $pile = $this->_pile;
+            $pile = array_reverse($pile);
+            foreach($pile as $key => $p) {
+                if($p['key'] === $this::$_TYPE_KEY['FLAG']) {
+                    unset($pile[$key]);
+                    break;
+                }
+            }
+            $this->_pile = array_reverse($pile);
+            return $this;
         }
     }
 }

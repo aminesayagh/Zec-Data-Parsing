@@ -7,7 +7,7 @@ echo '------------------- Generate Parser : ' . PHP_EOL . PHP_EOL;
 $user_parser = z()->options([
     'name' => z()->string()->min(3)->max(20),
     'email' => z()->string()->email(),
-    'age' => z()->number()->min(18)->max(99),
+    'age' => z()->number()->min(18)->max(99)
 ]);
 
 $user = [
@@ -19,7 +19,9 @@ $user = [
 echo '------------------- Start Parsing : ' . PHP_EOL . PHP_EOL;
 try {
     $user_parser->parse_or_throw($user);
+    
     echo 'User is valid';
 } catch (\Zod\ZodError $e) {
-    echo 'User is invalid: ' . $e->get_message();
+    echo PHP_EOL . PHP_EOL;
+    echo 'User is invalid: ' . PHP_EOL . $e->get_message();
 }
