@@ -46,7 +46,6 @@ if(!class_exists('Parsers')) {
             return $new_parser;
         }
         public function get_parser(string $name): ?Parser {
-            echo "Parsers get_parser called" . PHP_EOL;
             $parser = parent::get_parser($name);
             $parser->set_lifecycle_state(LC_P::ASSIGN);
             return $parser;

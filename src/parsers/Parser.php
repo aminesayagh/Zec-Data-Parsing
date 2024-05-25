@@ -133,6 +133,7 @@ if (!class_exists('Parser')) {
                 $zod_owner
             ) ? null : $zod_owner->get_pile_string();
             
+
             $argument = $this->get_argument($zod_owner); // get the argument of the parser, and check the config of the zod_owner
 
             // Call the parser callback function

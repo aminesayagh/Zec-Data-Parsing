@@ -49,7 +49,6 @@ if(!class_exists('Zod')) {
                 return call_user_func_array([$this, $name], $arguments);
             }
             if (bundler()->has_parser_key($name)) {
-                // echo "Parser $name found" . PHP_EOL;
                 $parser = bundler()->get_parser($name);
                 
                 if(is_array($arguments) && count($arguments) > 0) {
@@ -92,7 +91,6 @@ if(!class_exists('Zod')) {
                 return $this;
             }
             
-
             foreach ($this->list_parsers() as $index => $parser) {
                 $this->set_key_parser($parser->name);
                 $parser->parse($this->_value, [

@@ -12,6 +12,12 @@ if (!trait_exists('ParserArgument')) {
         private mixed $_handler_argument = null;
         private bool $_is_valid_argument = false;
         private array $_default_argument = [];
+        public function set_is_valid_argument() {
+            if($this->_is_valid_argument === true) {
+                throw new \Exception('Argument is already valid');
+            }
+            $this->_is_valid_argument = true;
+        }
         public function init_argument(array $default_argument, callable $parser_arguments) {
             $this->set_default_argument($default_argument);
             $this->set_parser_arguments($parser_arguments);
@@ -31,7 +37,7 @@ if (!trait_exists('ParserArgument')) {
         public function get_argument(?zod $owner = null): array {
             $has_to_parse_argument = is_null($owner) ? false : !$owner->get_config(CK::TRUST_ARGUMENTS);
             if (!$has_to_parse_argument) {
-                $this->_is_valid_argument = true;
+                $this->set_is_valid_argument();
             }
             return $this->valid_argument($owner);
         }
@@ -41,13 +47,13 @@ if (!trait_exists('ParserArgument')) {
         private function valid_argument(Zod $parent = null): array {
             $merged_argument = $this->merge_argument();
             if (!$this->_is_valid_argument) {
-                $argument_zod_validator = call_user_func($this->_parser_arguments, z([
-                    CONFIG_KEY::TRUST_ARGUMENTS => true
-                ]));
-                $argument_zod_validator->parse_or_throw($merged_argument, [
-                    'parent' => $parent,
-                ]);
-                $this->_is_valid_argument = true;
+                // $argument_zod_validator = call_user_func($this->_parser_arguments, z([
+                //     CONFIG_KEY::TRUST_ARGUMENTS => true
+                // ]));
+                // $argument_zod_validator->parse_or_throw($merged_argument, [
+                //     'parent' => $parent,
+                // ]);
+                $this->set_is_valid_argument();
             }
             return $merged_argument;
         }

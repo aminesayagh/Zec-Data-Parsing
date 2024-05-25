@@ -159,7 +159,7 @@ bundler()->assign_parser_config(PK::EMAIL, [
     FK::PARSER_CALLBACK=> function (array $par): string|bool {
         $value = $par['value'];
         $pattern = $par['argument']['pattern'];
-        if (!preg_match($pattern, $value)) {
+        if (!preg_match($pattern, (string) $value)) {
             return $par['argument']['message'];
         }
         return true;
