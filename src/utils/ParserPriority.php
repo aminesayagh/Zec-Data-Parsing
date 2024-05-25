@@ -6,11 +6,12 @@ namespace Zod;
 
 if (!trait_exists('ParserPriority')) {
     trait ParserPriority {
-        private int $_priority = 10;
-        private const MAX_PRIORITY = 20;
-        private const MIN_PRIORITY = 0;
+        private int $_priority;
+        static int $MAX_PRIORITY = 20;
+        public static int $DEFAULT_PRIORITY = 10;
+        static int $MIN_PRIORITY = 0;
         private function is_valid_priority(int $priority): bool {
-            return is_int($priority) && $priority >= self::MIN_PRIORITY && $priority <= self::MAX_PRIORITY;
+            return is_int($priority) && $priority >= self::$MIN_PRIORITY && $priority <= self::$MAX_PRIORITY;
         }
         public function is_prioritized(int $priority_compare): bool {
             if ($this->is_valid_priority($priority_compare) === false) {

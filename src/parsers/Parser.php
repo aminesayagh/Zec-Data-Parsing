@@ -13,13 +13,16 @@ if (!class_exists('Parser')) {
         private array $_prioritize = [];
         private mixed $_parser_callback = null;
         
-        public function __construct(string $name, array $args = [
-            FK::PRIORITIZE => [],
-            FK::PRIORITY => 10,
-            FK::PARSER_ARGUMENTS => null,
-            FK::DEFAULT_ARGUMENT => [],
-            FK::PARSER_CALLBACK => null
-        ]) {
+        public function __construct(string $name, array $args = []) {
+            $default_args = [
+                FK::PRIORITIZE => [],
+                FK::PRIORITY => self::$DEFAULT_PRIORITY,
+                FK::PARSER_ARGUMENTS => null,
+                FK::DEFAULT_ARGUMENT => [],
+                FK::PARSER_CALLBACK => null
+            ];
+            $args = array_merge($default_args, $args);
+
             $this->_name = $name;
 
             $this->set_prioritize($args[FK::PRIORITIZE]);
@@ -31,6 +34,8 @@ if (!class_exists('Parser')) {
 
             // assign parser callback
             $this->set_parser_callback($args[FK::PARSER_CALLBACK]);
+
+            $this->set_lifecycle_state(LC::BUILD);
         }
         // constructor of copy of the parser
         public function __get($name) {
@@ -59,12 +64,13 @@ if (!class_exists('Parser')) {
          * @return Parser The cloned parser object.
          */
         public function clone(): Parser { 
-            return new Parser($this->_name, [
+            return (new Parser($this->_name, [
                 FK::PRIORITIZE => $this->_prioritize,
                 FK::PRIORITY => $this->_priority,
-                FK::ARGUMENT => $this->get_argument(),
-                FK::PARSER_CALLBACK => $this->_parser_callback
-            ]);
+                FK::PARSER_ARGUMENTS => $this->_parser_arguments,
+                FK::DEFAULT_ARGUMENT => $this->_default_argument,
+                FK::PARSER_CALLBACK => $this->_parser_callback, 
+            ]))->set_argument($this->get_argument());
         }
         /**
          * Identifies the parser key based on the name of the parser and the path to the parser.
@@ -85,6 +91,22 @@ if (!class_exists('Parser')) {
                 FK::PARSER_CALLBACK => $this->_parser_callback
             ], $this->_argument_parser->get_argument());
         }
+        private function _proxy_parser_argument(array $args) {
+            $args = is_null($args) ? [] : $args;
+            $default = isset($args['default']) ? $args['default'] : null; // default value of the content to parser
+            $owner = isset($args['owner']) ? $args['owner'] : null; // owner of the parser
+
+            // if the owner is not an instance of Zod, set it to null
+            $owner = $owner instanceof Zod ? $owner : null;
+
+            if (is_null($owner)) {
+                throw new ZodError('The owner field must be an instance of Zod', 'owner');
+            }
+            return [
+                'default' => $default,
+                'owner' => $owner
+            ];
+        }
         /**
          * Parses the given value using the provided parser callback function.
          *
@@ -98,9 +120,10 @@ if (!class_exists('Parser')) {
             if (!is_callable($this->_parser_callback)) {
                 throw new ZodError('The parser_callback field must be a callback function', 'parser_callback');
             }
+            $this->set_lifecycle_state(LC::PARSE);
 
-
-            // Retrieve arguments
+            $args = $this->_proxy_parser_argument($args);
+            
             $default = $args['default'];
             $zod_owner = $args['owner'];
 
@@ -108,12 +131,9 @@ if (!class_exists('Parser')) {
             
             $path = is_null(
                 $zod_owner
-            ) ? null : $zod_owner->get_path_string();
+            ) ? null : $zod_owner->get_pile_string();
             
-
-
-            // $has_to_parse_argument = !$zod_owner->get_config(CK::TRUST_ARGUMENTS); // TODO: send this information to 
-            $argument = $this->get_argument($zod_owner);
+            $argument = $this->get_argument($zod_owner); // get the argument of the parser, and check the config of the zod_owner
 
             // Call the parser callback function
             $response = call_user_func($this->_parser_callback, [
@@ -133,6 +153,7 @@ if (!class_exists('Parser')) {
                     'is_valid' => false,
                 ];
             } else if (is_array($response)) {
+
                 // If the response is an array, set errors and return invalid result
                 foreach ($response as $value) {
                     $error = new ZodError($value, $this->identify_parser_key($this->_name, $path) . '/' . $value);
@@ -142,7 +163,7 @@ if (!class_exists('Parser')) {
                     'is_valid' => false,
                 ];
             } else if (is_bool($response) && $response == true) {
-                $this->set_lifecycle_state(LC::VALIDATE);
+                $this->set_lifecycle_state(LC::VALIDATE)->set_lifecycle_state(LC::FINALIZE);
                 return [
                     'is_valid' => true,
                 ];

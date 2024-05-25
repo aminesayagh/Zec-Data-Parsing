@@ -33,6 +33,10 @@ require_once ZOD_PATH . '/src/utils/ParserArgument.php';
 
 require_once ZOD_PATH . '/src/utils/ParserLifecycle.php';
 
+require_once ZOD_PATH . '/src/utils/ParserOrder.php';
+
+require_once ZOD_PATH . '/src/utils/ParserPriority.php';
+
 require_once ZOD_PATH . '/src/utils/ZodPath.php';
 
 require_once ZOD_PATH . '/src/utils/ZodErrors.php';

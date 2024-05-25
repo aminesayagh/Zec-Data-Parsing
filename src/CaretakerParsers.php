@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Zod;
 
 use Zod\Parser;
+use Zod\LIFECYCLE_PARSER as LC_P;
 
 
 
@@ -57,7 +58,7 @@ if (!class_exists('CaretakerParsers')) {
             }
 
             $selected_parser_cloned_and_initialized = clone $selected_parser;
-            // $selected_parser_cloned_and_initialized->set_lifecycle_state(LC_P::I);
+            $selected_parser_cloned_and_initialized->set_lifecycle_state(LC_P::ASSIGN);
 
             return $selected_parser_cloned_and_initialized;
         }
@@ -107,7 +108,7 @@ if (!class_exists('CaretakerParsers')) {
             if ($this->has_parser($parser)) {
                 return null;
             }
-
+            
             $this->parsers[] = $parser;
             return $parser;
         }

@@ -3,7 +3,6 @@ require_once './index.php';
 
 use function Zod\z as z;
 
-
 echo '------------------- Generate Parser : ' . PHP_EOL . PHP_EOL;
 $user_parser = z()->options([
     'name' => z()->string()->min(3)->max(20),
@@ -17,7 +16,7 @@ $user = [
     'age' => 25,
 ];
 
-echo '------------------- State Parsing : ' . PHP_EOL . PHP_EOL;
+echo '------------------- Start Parsing : ' . PHP_EOL . PHP_EOL;
 try {
     $user_parser->parse_or_throw($user);
     echo 'User is valid';

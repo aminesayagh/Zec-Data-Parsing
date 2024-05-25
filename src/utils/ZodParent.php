@@ -5,7 +5,7 @@ namespace Zod;
 
 if(!trait_exists('ZodParent')) {
     trait ZodParent {
-        private ?Zod $_parent;
+        private ?Zod $_parent = null;
         private function _clone_parent(?Zod $parent): Zod {
             if(is_null($parent)) {
                 return $this;

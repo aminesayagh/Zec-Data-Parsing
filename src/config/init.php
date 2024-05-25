@@ -169,10 +169,10 @@ bundler()->assign_parser_config(PK::EMAIL, [
     FK::PARSER_ARGUMENTS => function (Zod\Zod $z) {
         return $z->options([
             'message' => z()->required()->string(),
-            // 'options' => z()->required()->associative([
-            //     'key' => z()->string(),
-            //     'value' => z()->instanceof(Zod\Zod::class)
-            // ])
+            'options' => z()->required()->associative([
+                'key' => z()->string(),
+                'value' => z()->instanceof(Zod\Zod::class)
+            ])
         ]);
     },
     FK::DEFAULT_ARGUMENT => [
@@ -197,7 +197,7 @@ bundler()->assign_parser_config(PK::EMAIL, [
             }
             
             $value_field = array_key_exists($key, $value) ? $value[$key] : null;
-            $par['owner']->set_key_path($key);
+            $par['owner']->set_key_parser($key);
             $zod_response = $option->parse($value_field, $default_of_option, $par['owner']);
             if (!$zod_response->is_valid()) {
                 $has_error = true;

@@ -4,6 +4,8 @@ declare(strict_types=1);
 namespace Zod;
 use Zod\CaretakerParsers;
 use Zod\Parser;
+use Zod\LIFECYCLE_PARSER as LC_P;
+
 require_once ZOD_PATH . '/src/CaretakerParsers.php';
 
 if(!class_exists('Parsers')) {
@@ -40,7 +42,14 @@ if(!class_exists('Parsers')) {
                 return null;
             }
             $this->_is_sorted = false;
+            $new_parser->set_lifecycle_state(LC_P::ASSIGN);
             return $new_parser;
+        }
+        public function get_parser(string $name): ?Parser {
+            echo "Parsers get_parser called" . PHP_EOL;
+            $parser = parent::get_parser($name);
+            $parser->set_lifecycle_state(LC_P::ASSIGN);
+            return $parser;
         }
         /**
          * Sorts the parsers in the collection by the order of parsing.
@@ -66,15 +75,6 @@ if(!class_exists('Parsers')) {
                 $this->sort_parsers();
             }
             return $this->parsers;
-        }
-        public function get_validate_parser(): ?Parser {
-            $parsers = $this->list_parsers();
-            foreach ($parsers as $parser) {
-                if ($parser->is_validate_parser()) {
-                    return $parser;
-                }
-            }
-            return null;
         }
     }
 }

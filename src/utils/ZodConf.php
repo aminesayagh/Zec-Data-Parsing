@@ -11,7 +11,6 @@ if(!class_exists('ZodConf')) {
         private string $_key;
         private mixed $_value;
         private string $_type;
-        // constructor
         public function __construct(string $key, mixed $init_value, string $type) {
             $this->_key = $key;
             $this->_value = $init_value;
@@ -38,11 +37,18 @@ if(!class_exists('ZodConf')) {
 if(!trait_exists('ZodConfigs')) {
     trait ZodConfigs {
         private array $_config = [];
-        private function init_config() {
-            $this->_config = [
-                CK::TRUST_ARGUMENTS => new ZodConf(CK::TRUST_ARGUMENTS, false, CR::READONLY),
-                CK::STRICT => new ZodConf(CK::STRICT, false, CR::READWRITE),
-            ];
+        private static array $_default_configs = [
+            CK::TRUST_ARGUMENTS => [false, CR::READWRITE],
+            CK::STRICT => [false, CR::READONLY],
+        ];
+        private function init_config(?array $args = null) {
+            foreach(self::$_default_configs as $config_key => $config_value) {
+                // check the value from the args else check it from the default configs
+                $value = isset($args[$config_key]) ? $args[$config_key] : $config_value[0];
+                $role = $config_value[1];
+
+                $this->_config[$config_key] = new ZodConf($config_key, $value, $role);
+            }
         }
 
         public function get_configs() {
@@ -58,9 +64,5 @@ if(!trait_exists('ZodConfigs')) {
         public function get_config(string $key) {
             return $this->_config[$key]->get_value();
         }
-        public function set_config(string $key, $value) {
-            $this->_config[$key]->set_value($value);
-        }
-        
     }
 }

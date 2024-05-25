@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Zod;
 use Zod\FIELD as FK;
+use Zod\LIFECYCLE_PARSER as LC_P;
 
 // require_once ZOD_PATH . '/src/config/init.php';
 require_once ZOD_PATH . '/src/CaretakerParsers.php';
@@ -144,7 +145,11 @@ if (!class_exists('Bundler')) {
             }
             
 
-            return parent::get_parser($key);
+            $parser = parent::get_parser($key);
+            if (is_null($parser)) {
+                return null;
+            }
+            return $parser->clone();
         }
         public function add_parser(Parser $parser): ?Parser {
             $this->_parser_ordered = false;

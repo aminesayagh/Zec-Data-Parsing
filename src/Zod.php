@@ -14,11 +14,15 @@ require_once ZOD_PATH . '/src/Exception.php';
 if(!class_exists('Zod')) {
     class Zod extends Parsers {
         use ZodErrors, ZodPath, ZodConfigs, ZodUtils, ZodDefault, ZodValue, ZodParent;        
-        public function __construct(array $parsers = [], Zod $parent = null) {
-            parent::__construct($parsers);
+        public function __construct(Zod|array|null $args = null) {
+            parent::__construct();
+            // if type of args is Zod then clone it as a parent
+            $parent = is_zod($args) ? $args : null;
             if(!is_null($parent)) {
                 $this->_clone_parent($parent);
             }
+
+            $this->init_config($args);
         }
         public function __clone(): void {
             $this->parsers = array_filter($this->parsers, function($parser) {
@@ -93,6 +97,7 @@ if(!class_exists('Zod')) {
                 $this->set_key_parser($parser->name);
                 $parser->parse($this->_value, [
                     'default' => $this->_default,
+                    'owner' => $this
                 ], $this);
             }
 
@@ -142,8 +147,8 @@ if (!function_exists('zod')) {
      * @param ZodErrors $errors The array of errors to assign to the Zod instance.
      * @return Zod The instance of the Zod class.
      */
-    function zod(?array $parsers = []): Zod {
-        return new Zod($parsers);
+    function zod(Zod|array|null $args = null): Zod {
+        return new Zod($args);
     }
 }
 
@@ -155,19 +160,14 @@ if (!function_exists('is_zod')) {
      * @return bool Returns true if the value is an instance of Zod, false otherwise.
      */
     function is_zod($value): bool {
-        return is_a($value, 'Zod');
+        return is_a($value, \Zod\Zod::class);
     }
 }
 
 
 if (!function_exists('z')) {
-    /**
-     * Returns an instance of the Zod class.
-     *
-     * @param array $parsers The array of parsers to assign to the Zod instance.
-     * @return Zod The instance of the Zod class.
-     */
-    function z(array $parsers = []): Zod {
-        return zod($parsers);
+    
+    function z(Zod|array|null $args = null): Zod {
+        return zod($args);
     }
 }
