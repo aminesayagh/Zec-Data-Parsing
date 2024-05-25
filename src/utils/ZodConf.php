@@ -3,6 +3,9 @@ declare(strict_types=1);
 
 namespace Zod;
 
+use Zod\CONFIG_KEY as CK;
+use Zod\CONFIG_ROLE as CR;
+
 if(!class_exists('ZodConf')) {
     class ZodConf {
         private string $_key;
@@ -35,11 +38,10 @@ if(!class_exists('ZodConf')) {
 if(!trait_exists('ZodConfigs')) {
     trait ZodConfigs {
         private array $_config = [];
-        // if zod has parent and parent has configs, extend zod's configs with parent's configs
         private function init_config() {
             $this->_config = [
-                'trust_arguments' => new ZodConf('trust_arguments', false, 'readonly'),
-                'strict' => new ZodConf('strict', false, 'readwrite'),
+                CK::TRUST_ARGUMENTS => new ZodConf(CK::TRUST_ARGUMENTS, false, CR::READONLY),
+                CK::STRICT => new ZodConf(CK::STRICT, false, CR::READWRITE),
             ];
         }
 

@@ -3,150 +3,31 @@ declare(strict_types=1);
 
 namespace Zod;
 use Zod\FIELD as FK;
+use Zod\CONFIG_KEY as CK;
+use Zod\LIFECYCLE_PARSER as LC;
 
-if(!interface_exists('IParser')) {
-    interface IParser {
-        public function __construct(string $name, array $args = [
-            FK::PRIORITIZE => [],
-            FK::PRIORITY => 10,
-            FK::PARSER_ARGUMENTS => null,
-            FK::DEFAULT_ARGUMENT => [],
-            FK::PARSER_CALLBACK => null
-        ]);
-        public function __get(string $name);
-        public function clone(?Parser $parser = null): Parser;
-        public function parse(mixed $value, array $args);
-        public function set_accept_state(array $accept_state): Parser;
-        public function set_argument(array $argument): Parser;
-        public function set_priority_of_parser(int $priority): Parser;
-        public function calc_order_of_parsing(CaretakerParsers &$parserRules, array $parents = []): ?int;
-    }
-}
-
-if (!class_exists('ArgumentParser')) {
-    class ArgumentParser {
-        private string $_main_key;
-        private array $_argument = [];
-        private mixed $_parser_arguments;
-        private mixed $_handler_argument = null;
-        private bool $_is_valid_argument = false;
-        private array $_default_argument = [];
-        public function __construct(string $main_key, array $default_argument, callable $parser_arguments) {
-            if (!is_array($default_argument)) {
-                throw new ZodError('The default_argument field must be an array', 'default_argument');
-            }
-            if (!is_callable($parser_arguments)) {
-                throw new ZodError('The parser_arguments field must be a callback function', 'parser_arguments');
-            }
-
-            $this->_main_key = $main_key;
-            $this->_default_argument = $default_argument;
-            $this->_parser_arguments = $parser_arguments;
-        }
-        public function get_config(): array {
-            return [
-                'default_argument' => $this->_default_argument,
-                'parser_arguments' => $this->_parser_arguments
-            ];
-        }
-        public function merge_argument() {
-            $merged_argument = array_merge($this->_default_argument, $this->_argument);
-            return $merged_argument;
-        }
-        public function valid_argument(Zod $parent = null) {
-            $merged_argument = $this->merge_argument();
-            if (!$this->_is_valid_argument) {
-                echo PHP_EOL;
-                echo 'Merged argument: ' . json_encode($merged_argument) . PHP_EOL;
-                echo PHP_EOL;
-                $argument_zod_validator = call_user_func($this->_parser_arguments, z()->set_trust_arguments(true));
-                $argument_zod_validator->parse_or_throw($merged_argument, null, $parent); // TODO: Ideally, we should pass the default argument as default value, not null
-                $this->_is_valid_argument = true;
-            }
-            return $merged_argument;
-        }
-        public function get_argument(): array {
-            if (!$this->_parser_arguments) {
-                throw new ZodError('The parser_arguments field must be set', 'parser_arguments');
-            }
-            return $this->merge_argument();
-        }
-        public function set_argument(mixed $argument): ArgumentParser {
-            $this->_argument = $this->_default_argument_handler($argument);
-            $this->_is_valid_argument = false;
-            return $this;
-        }
-        private function _default_argument_handler(mixed $argument): array {
-            if (is_null($argument)) return [];
-            
-
-            if (is_array($argument)) {
-                $is_associative = false;
-                
-                foreach ($argument as $key => $value) {
-                    if (!is_int($key)) {
-                        $is_associative = true;
-                        break;
-                    }
-                }
-                
-                if (!$is_associative) {
-                    return [
-                        $this->_main_key => $argument
-                    ];
-                }
-                
-                $is_associative_of_zod = array_reduce($argument, function($carry, $item) {
-                    return $carry && $item instanceof Zod;
-                }, true);
-                
-                // echo $is_associative_of_zod ? 'true' : 'false' . PHP_EOL;
-                echo 'Is associative ' . $this->_main_key . ': ' . ($is_associative_of_zod ? 'true' : 'false') . PHP_EOL;
-                if ($is_associative_of_zod) {
-                    return [
-                        $this->_main_key => $argument
-                    ];
-                }
-                return $argument;
-            }
-
-            return [
-                $this->_main_key => $argument
-            ];
-        }
-    }
-}
 if (!class_exists('Parser')) {
     class Parser {
+        use ParserArgument, ParserOrder, ParserPriority, ParserLifecycle;
         private ?string $_name = null;
         private array $_prioritize = [];
-        private int $_priority = 10; // calculate the priority of a parser on concurrency with the other parser with the same key, using the field priority 
-        private int $_order_of_parsing = 0; // Calculate the order of execution of a parser on concurrency with the other parsers
-        private bool $_is_validate_parser = false;
         private mixed $_parser_callback = null;
-        private ArgumentParser $_argument_parser;
-        private bool $_is_init = false; // check if the parser is initialized on a zod instance
         
         public function __construct(string $name, array $args = [
             FK::PRIORITIZE => [],
             FK::PRIORITY => 10,
             FK::PARSER_ARGUMENTS => null,
             FK::DEFAULT_ARGUMENT => [],
-            FK::PARSER_CALLBACK => null,
-            'argument' => null
+            FK::PARSER_CALLBACK => null
         ]) {
             $this->_name = $name;
 
             $this->set_prioritize($args[FK::PRIORITIZE]);
             $this->set_priority_of_parser($args[FK::PRIORITY]);
-
-            if (!array_key_exists('argument', $args) || is_null($args['argument'])) {
-                $this->_argument_parser = new ArgumentParser($this->name, $args[FK::DEFAULT_ARGUMENT], $args[FK::PARSER_ARGUMENTS]);
-            } else if ($args['argument'] instanceof ArgumentParser) {
-                $this->_argument_parser = $args['argument'];
-            } else {
-                throw new ZodError('The argument field must be an instance of ArgumentParser', 'argument');
-            }
+            $this->init_argument(
+                $args[FK::DEFAULT_ARGUMENT],
+                $args[FK::PARSER_ARGUMENTS]
+            );
 
             // assign parser callback
             $this->set_parser_callback($args[FK::PARSER_CALLBACK]);
@@ -181,7 +62,7 @@ if (!class_exists('Parser')) {
             return new Parser($this->_name, [
                 FK::PRIORITIZE => $this->_prioritize,
                 FK::PRIORITY => $this->_priority,
-                'argument' => $this->_argument_parser,
+                FK::ARGUMENT => $this->get_argument(),
                 FK::PARSER_CALLBACK => $this->_parser_callback
             ]);
         }
@@ -198,36 +79,11 @@ if (!class_exists('Parser')) {
             }
             return $path_to_parser . '/' . $name_of_parser;
         }
-        public function initialize(): void {
-            if ($this->_is_init) {
-                throw new ZodError('The parser is already initialized', 'parser');
-            }
-            $this->_is_init = true;
-        }
-        public function get_argument(bool $parse_argument = true, ?Zod $parent = null): array {
-            if ($parse_argument) {
-                echo 'none trusted' . PHP_EOL;
-                $this->_argument_parser->valid_argument($parent);
-            }
-            echo 'Get argument: ' . json_encode($this->_argument_parser->get_argument()) . PHP_EOL;
-            return $this->_argument_parser->get_argument();
-        }
-        public function set_argument(mixed $argument): Parser {
-            $this->_argument_parser->set_argument($argument);
-            return $this;
-        }
-        public function is_priority(int $priority_compare): bool {
-            if ($this->_priority < $priority_compare) {
-                return true;
-            } else {
-                return false;
-            }
-        }
         public function get_config() {
             return array_merge([
                 FK::PRIORITIZE => $this->_prioritize,
                 FK::PARSER_CALLBACK => $this->_parser_callback
-            ], $this->_argument_parser->get_config());
+            ], $this->_argument_parser->get_argument());
         }
         /**
          * Parses the given value using the provided parser callback function.
@@ -238,7 +94,7 @@ if (!class_exists('Parser')) {
          * @return array An array containing the validation result.
          * @throws ZodError If the parser_callback field is not a callback function or if it returns an invalid value.
          */
-        public function parse(mixed $value, array $args, Zod $zod_owner): array {
+        public function parse(mixed $value, array $args): array {
             if (!is_callable($this->_parser_callback)) {
                 throw new ZodError('The parser_callback field must be a callback function', 'parser_callback');
             }
@@ -246,6 +102,7 @@ if (!class_exists('Parser')) {
 
             // Retrieve arguments
             $default = $args['default'];
+            $zod_owner = $args['owner'];
 
             // Get the path of the owner Zod instance
             
@@ -255,8 +112,8 @@ if (!class_exists('Parser')) {
             
 
 
-            $has_to_parse_argument = !$zod_owner->trust_arguments;
-            $argument = $this->get_argument($has_to_parse_argument, $zod_owner);
+            // $has_to_parse_argument = !$zod_owner->get_config(CK::TRUST_ARGUMENTS); // TODO: send this information to 
+            $argument = $this->get_argument($zod_owner);
 
             // Call the parser callback function
             $response = call_user_func($this->_parser_callback, [
@@ -269,7 +126,6 @@ if (!class_exists('Parser')) {
             // Handle the response based on its type
             if (is_string($response)) {
                 $path_of_error = $this->identify_parser_key($this->_name, $path);
-                echo 'Response: ' . $response . ' ' . json_encode($value) . ' ' . json_encode($argument). ' ' . $path_of_error . PHP_EOL;
                 $zod_owner->set_error(
                     new ZodError($response, $path_of_error)
                 );
@@ -286,22 +142,19 @@ if (!class_exists('Parser')) {
                     'is_valid' => false,
                 ];
             } else if (is_bool($response) && $response == true) {
-                // If the response is a boolean and true, return valid result
-                $this->_is_validate_parser = true;
+                $this->set_lifecycle_state(LC::VALIDATE);
                 return [
                     'is_valid' => true,
+                ];
+            } else if (is_bool($response) && $response == false) {
+                return [
+                    'is_valid' => true,
+                    'close' => true
                 ];
             }
 
             // If the response is not a valid type, throw an error
             throw new ZodError('The parser_callback field must return a string or a boolean', 'parser_callback');
-        }
-        public function is_validate_parser(): bool {
-            return $this->_is_validate_parser;
-        }
-        public function set_order_parsing(int $order): Parser {
-            $this->_order_of_parsing = $order;
-            return $this;
         }
         private function set_prioritize(array $prioritize): Parser {
             if (!isset($prioritize)) {
@@ -328,27 +181,6 @@ if (!class_exists('Parser')) {
             }
             $this->_parser_callback = $parser;
             return $this;
-        }
-        /**
-         * Sets the priority of the parser.
-         *
-         * @param int $priority The priority value to set.
-         * @return Parser The updated Parser instance.
-         * @throws ZodError If the priority field is not an integer.
-         */
-        private function set_priority_of_parser(int $priority): Parser {
-            if (!is_int($priority)) {
-                throw new ZodError('The priority field must be an integer', 'priority');
-            }
-            $this->_priority = $priority;
-            return $this;
-        }
-        public function increment_order(): int {
-            $this->_order_of_parsing++;
-            return $this->_order_of_parsing;
-        }
-        public function get_order_parsing(): int {
-            return $this->_order_of_parsing;
         }
     }
 }

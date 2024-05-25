@@ -25,7 +25,7 @@ if(!class_exists('Zod')) {
                 if (is_null($parser)) {
                     return false;
                 }
-                if ($parser->name == 'required') {
+                if ($parser->name == PK::REQUIRED) {
                     return false;
                 }
                 return $parser->clone();
@@ -47,6 +47,7 @@ if(!class_exists('Zod')) {
             if (bundler()->has_parser_key($name)) {
                 // echo "Parser $name found" . PHP_EOL;
                 $parser = bundler()->get_parser($name);
+                
                 if(is_array($arguments) && count($arguments) > 0) {
                     $arguments = $arguments[0];
                     $parser->set_argument($arguments);

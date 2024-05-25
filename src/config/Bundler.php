@@ -142,6 +142,7 @@ if (!class_exists('Bundler')) {
             if (!$this->_parser_ordered && $had_to_be_ordered) {
                 $this->generate_sort_parsers();
             }
+            
 
             return parent::get_parser($key);
         }

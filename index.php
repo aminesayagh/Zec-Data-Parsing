@@ -29,6 +29,10 @@ function log_msg(mixed $msg) {
 
 require_once ZOD_PATH . '/src/const/KEY.php';
 
+require_once ZOD_PATH . '/src/utils/ParserArgument.php';
+
+require_once ZOD_PATH . '/src/utils/ParserLifecycle.php';
+
 require_once ZOD_PATH . '/src/utils/ZodPath.php';
 
 require_once ZOD_PATH . '/src/utils/ZodErrors.php';

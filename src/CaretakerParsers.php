@@ -47,7 +47,7 @@ if (!class_exists('CaretakerParsers')) {
 
             // get the parser with the highest priority
             foreach ($selected_parsers as $value) {
-                if (is_null($selected_parser) || !$selected_parser->is_priority($value)) {
+                if (is_null($selected_parser) || !$selected_parser->is_prioritized($value->get_priority())) {
                     $selected_parser = $value;
                 }
             }
@@ -57,7 +57,7 @@ if (!class_exists('CaretakerParsers')) {
             }
 
             $selected_parser_cloned_and_initialized = clone $selected_parser;
-            $selected_parser_cloned_and_initialized->initialize();
+            // $selected_parser_cloned_and_initialized->set_lifecycle_state(LC_P::I);
 
             return $selected_parser_cloned_and_initialized;
         }

@@ -8,8 +8,8 @@ namespace Zod {
         const DEFAULT_ARGUMENT = 'default_argument';
         const PRIORITY = 'priority';
         const PARSER_CALLBACK = 'parser_callback';
-        
         const IS_INIT_STATE = 'is_init_state';
+        CONST ARGUMENT = 'argument';
     }
 }
 
@@ -31,4 +31,24 @@ namespace Zod {
         const INSTANCEOF = 'instanceof';
         const ASSOCIATIVE = 'associative';
     }
+
+    class CONFIG_KEY {
+        const TRUST_ARGUMENTS = 'trust_arguments';
+        const STRICT = 'strict';
+    }
+
+    class CONFIG_ROLE {
+        const READONLY = 'readonly';
+        const READWRITE = 'readwrite';
+    }
+
+    class LIFECYCLE_PARSER {
+        const CREATE = 'create'; // -> build, create a zod instance
+        const BUILD = 'build'; // -> assign, parameter by zod Bundle
+        const ASSIGN = 'assign'; // -> parse, assign to a zod instance
+        const PARSE = 'parse'; // -> validate, parse the value
+        const VALIDATE = 'validate'; // -> finalize, validate the value
+        const FINALIZE = 'finalize'; // -> finalize the value
+    }
+
 }
