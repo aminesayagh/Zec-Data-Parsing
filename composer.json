@@ -7,8 +7,11 @@
     },
     "autoload": {
         "psr-4": {
-            "YourNamespace\\": "src/"
-        }
+            "Zec\\": "src/"
+        },
+        "files": [
+            "src/index.php"
+        ]
     },
     "license": "MIT",
     "authors": [
