@@ -88,16 +88,10 @@ if(!trait_exists('ZecPath')) {
             return $this;
         }
         public function clean_pile() {
+            $pile = $this;
             $this->_pile = [];
-            return $this;
+            return $pile;
         }
-        public function extend_pile($z) {
-            if(!is_zec($z)) {
-                throw new \Exception('Zec instance is required');
-            }
-            $extend_pile = $z->get_pile();
-            $this->_pile = array_merge($extend_pile, $this->_pile);
-            return $this;
-        }
+        
     }
 }
