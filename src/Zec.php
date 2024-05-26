@@ -11,7 +11,7 @@ require_once ZEC_PATH . '/src/parsers/Parsers.php';
 require_once ZEC_PATH . '/src/Exception.php';
 
 
-if(!class_exists('Zod')) {
+if(!class_exists('Zed')) {
     class Zec extends Parsers {
         use ZecErrors, ZecPath, ZecConfigs, ZecUtils, ZecDefault, ZecValue, ZecParent;        
         public function __construct(Zec|array|null $args = null) {
@@ -36,7 +36,7 @@ if(!class_exists('Zod')) {
             });
         }
         /**
-         * Dynamically handles method calls for the Zod class.
+         * Dynamically handles method calls for the Zec class.
          *
          * @param string $name The name of the method being called.
          * @param mixed $arguments The arguments passed to the method.
@@ -108,7 +108,10 @@ if(!class_exists('Zod')) {
                     continue;
                 } 
                 $this->set_key_parser($parser->name);
-                $parser->parse($this->_value, Parser::proxy_set_arg($this->_default, $this));
+                $response = $parser->parse($this->_value, Parser::proxy_set_arg($this->_default, $this));
+                if($response['close']) {
+                    break;
+                }
             }
 
             $this->_send_errors_to_parent();
@@ -145,11 +148,11 @@ if(!class_exists('Zod')) {
 
 if (!function_exists('zec')) {
     /**
-     * Returns an instance of the Zod class.
+     * Returns an instance of the Zec class.
      *
-     * @param array $parsers The array of parsers to assign to the Zod instance.
-     * @param ZecErrors $errors The array of errors to assign to the Zod instance.
-     * @return Zec The instance of the Zod class.
+     * @param array $parsers The array of parsers to assign to the Zec instance.
+     * @param ZecErrors $errors The array of errors to assign to the Zec instance.
+     * @return Zec The instance of the Zec class.
      */
     function zec(Zec|array|null $args = null): Zec {
         return new Zec($args);
@@ -158,10 +161,10 @@ if (!function_exists('zec')) {
 
 if (!function_exists('is_zec')) {
     /**
-     * Checks if the given value is an instance of the Zod class.
+     * Checks if the given value is an instance of the Zec class.
      *
      * @param mixed $value The value to check.
-     * @return bool Returns true if the value is an instance of Zod, false otherwise.
+     * @return bool Returns true if the value is an instance of Zec, false otherwise.
      */
     function is_zec($value): bool {
         return is_a($value, \Zec\Zec::class);

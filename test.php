@@ -13,8 +13,8 @@ $user_parser = z()->options([
 
 $user = [
     'name' => 'John Doe',
-    'email' => 'john',
-    'age' => 2
+    'email' => 'john@gmail',
+    'age' => 20
 ];
 
 try {

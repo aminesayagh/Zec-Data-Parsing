@@ -186,33 +186,17 @@ bundler()->assign_parser_config(PK::EMAIL, [
 
         $has_error = false;
 
-        $index = 0;
-        foreach ($options as $key => $option) {
-            if (!($option instanceof Zec\Zec)) {
-                throw new Exception('Invalid option value');
-            }
-            $default_of_option = null;
-
-            if ($index > 0) {
-                $par['owner']->clean_last_flag();
-            }
-            $index++;
-            $par['owner']->set_key_flag($key);
-
-            if (is_array($default_value) && array_key_exists($key, $default_value)) {
-                $default_of_option = $default_value[$key];
-            }
-
-            $value_field = array_key_exists($key, $value) ? $value[$key] : null;
-            $zod_response = $option->parse($value_field, Zec\Zec::proxy_set_arg(
-                $default_of_option,
+        Zec\Zec::associative_parse($options, function ($key, $option, $value, $index, $default) use ($par, &$has_error) {
+            $zec_response = $option->parse($value, Zec\Zec::proxy_set_arg(
+                $default,
                 $par['owner']
             ));
-            if (!$zod_response->is_valid()) {
+
+            if (!$zec_response->is_valid()) {
                 $has_error = true;
             }
-        }
-        $par['owner']->clean_last_flag();
+            
+        }, $par);
 
         if ($has_error) {
             return $par['argument']['message'];
@@ -239,8 +223,8 @@ bundler()->assign_parser_config(PK::EMAIL, [
         $has_error = false;
 
         foreach ($values as $value) {
-            $zod_response = $each->parse($value, $par['default'], $par['owner']);
-            if (!$zod_response->is_valid()) {
+            $zec_response = $each->parse($value, $par['default'], $par['owner']);
+            if (!$zec_response->is_valid()) {
                 $has_error = true;
             }
         }
@@ -319,9 +303,8 @@ bundler()->assign_parser_config(PK::EMAIL, [
     },
     FK::DEFAULT_ARGUMENT => [],
     FK::PARSER_CALLBACK => function (array $par): string|bool {
-        // if the value is null, then it is valid
         if (is_null($par['value'])) {
-            return false; // end the parsing process
+            return false;
         }
         return true;
     }
@@ -351,10 +334,10 @@ bundler()->assign_parser_config(PK::EMAIL, [
     FK::PARSER_ARGUMENTS => function (Zec\Zec $z) {
         return $z->options([
             'message' => z()->required()->string(),
-            // PK::ASSOCIATIVE => z()->required()->associative([
-            //     'key' => z()->required()->instanceof(Zec\Zec::class),
-            //     'value' => z()->required()->instanceof(Zec\Zec::class)
-            // ])
+            PK::ASSOCIATIVE => z()->required()->associative([
+                'key' => z()->required()->instanceof(Zec\Zec::class),
+                'value' => z()->required()->instanceof(Zec\Zec::class)
+            ])
         ]);
     },
     FK::DEFAULT_ARGUMENT => [
@@ -363,7 +346,7 @@ bundler()->assign_parser_config(PK::EMAIL, [
     FK::PARSER_CALLBACK => function (array $par): string|bool {
         $value = $par['value'];
         $message = $par['argument']['message'];
-        $key_parser = $par['argument'][PK::ASSOCIATIVE]['key']; // TODO: Is more good to use $par['argument']['key']
+        $key_parser = $par['argument'][PK::ASSOCIATIVE]['key'];
         $value_parser = $par['argument'][PK::ASSOCIATIVE]['value'];
 
         $has_error = false;

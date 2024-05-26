@@ -6,8 +6,6 @@ if (!defined('ZEC_PATH')) {
     define('ZEC_PATH', __DIR__);
 }
 
-
-
 require_once ZEC_PATH . '/src/const/KEY.php';
 
 require_once ZEC_PATH . '/src/utils/ParserArgument.php';

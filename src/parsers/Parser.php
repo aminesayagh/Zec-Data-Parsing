@@ -118,15 +118,12 @@ if (!class_exists('Parser')) {
                 'owner' => $owner
             ];
         }
-        /**
-         * Parses the given value using the provided parser callback function.
-         *
-         * @param mixed $value The value to be parsed.
-         * @param array $args An array of arguments passed to the parser.
-         * @param Zec $zec_owner The owner Zec instance.
-         * @return array An array containing the validation result.
-         * @throws ZecError If the parser_callback field is not a callback function or if it returns an invalid value.
-         */
+        static function proxy_response_zod(bool $is_valid, bool $close = false): array {
+            return [
+                'is_valid' => $is_valid,
+                'close' => $close
+            ];
+        }
         public function parse(mixed $value, array $args): array {
             if (!is_callable($this->_parser_callback)) {
                 throw new Exception('The parser_callback field must be a callback function');
@@ -156,28 +153,19 @@ if (!class_exists('Parser')) {
                 $zec_owner->set_error(new ZecError(
                     ZecError::generate_message($response, $path)
                 ));
-                return [
-                    'is_valid' => false,
-                ];
+                return self::proxy_response_zod(false);
             } else if (is_array($response)) {
                 foreach ($response as $value) {
                     $zec_owner->set_error(new ZecError(
                         ZecError::generate_message($value, $path)
                     ));
                 }
-                return [
-                    'is_valid' => false,
-                ];
+                return self::proxy_response_zod(false);
             } else if (is_bool($response) && $response == true) {
                 $this->set_lifecycle_state(LC::VALIDATE)->set_lifecycle_state(LC::FINALIZE);
-                return [
-                    'is_valid' => true,
-                ];
+                return self::proxy_response_zod(true);
             } else if (is_bool($response) && $response == false) {
-                return [
-                    'is_valid' => true,
-                    'close' => true
-                ];
+                return self::proxy_response_zod(true, true);
             }
 
             throw new Exception('The parser_callback field must return a string or a boolean');
