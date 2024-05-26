@@ -1,10 +1,10 @@
 <?php
 declare(strict_types=1);
 
-namespace Zod;
-use Zod\CaretakerParsers;
-use Zod\Parser;
-use Zod\LIFECYCLE_PARSER as LC_P;
+namespace Zec;
+use Zec\CaretakerParsers;
+use Zec\Parser;
+use Zec\LIFECYCLE_PARSER as LC_P;
 
 require_once ZOD_PATH . '/src/CaretakerParsers.php';
 

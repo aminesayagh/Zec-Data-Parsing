@@ -1,25 +1,29 @@
 <?php
 declare(strict_types=1);
 
-namespace Zod;
+namespace Zec;
 
-if(!trait_exists('ZodPath')) {
-    trait ZodPath{
-        private static array $_TYPE_KEY = [
-            'FLAG' => 'flag',
-            'PARSER' => 'parser'
-        ];
+if(!trait_exists('ZecPath')) {
+    trait ZecPath{
+        private static string $TYPE_KEY_FLAG = 'flag';
+        private static string $TYPE_KEY_PARSER = 'parser';
         private array $_pile = [];
-        public function set_key_flag(string $value): Zod {
+        public function set_key_flag(string $value): Zec {
+            if(!is_string($value)) {
+                throw new \Exception('Flag value must be a string');
+            }
             $this->_pile[] = [
-                'key' => $this::$_TYPE_KEY['FLAG'],
+                'key' => self::$TYPE_KEY_FLAG,
                 'value' => $value
             ];
             return $this;
         }
-        public function set_key_parser(string $value): Zod {
+        public function set_key_parser(string $value): Zec {
+            if(!is_string($value)) {
+                throw new \Exception('Parser value must be a string');
+            }
             $this->_pile[] = [
-                'key' => $this::$_TYPE_KEY['PARSER'],
+                'key' => self::$TYPE_KEY_PARSER,
                 'value' => $value
             ];
             return $this;
@@ -27,44 +31,43 @@ if(!trait_exists('ZodPath')) {
         public function get_pile() {
             return $this->_pile;
         }
-        // get last element on the pile of type flag
         public function get_last_flag() {
             $pile = $this->_pile;
             $last_flag = null;
             foreach($pile as $p) {
-                if($p['key'] === $this::$_TYPE_KEY['FLAG']) {
+                if($p['key'] === self::$TYPE_KEY_FLAG) {
                     $last_flag = $p['value'];
                 }
             }
             return $last_flag;
         }
-        public function pile_extend(Zod $z) {
+        public function pile_extend(Zec $z) {
+            if(!is_zec($z)) {
+                throw new \Exception('Zec instance is required');
+            }
             $extend_pile = $z->get_pile();
             $this->_pile = array_merge($extend_pile, $this->_pile);
             return $this;
         }
-        public function get_pile_string() {
+        public function get_pile_string(): string {
             $pile = $this->_pile;
             $pile_string = '';
             foreach($pile as $p) {
-                if($p['key'] === $this::$_TYPE_KEY['FLAG']) {
-                    $pile_string .= '/' . $p['value'];
+                if($p['key'] === self::$TYPE_KEY_FLAG) {
+                    $pile_string .= '[' . $p['value'] . ']';
                 }
-                if($p['key'] === $this::$_TYPE_KEY['PARSER']) {
+                if($p['key'] === self::$TYPE_KEY_PARSER) {
                     $pile_string .= '.' . $p['value'];
                 }
             }
             return $pile_string;
         }
-        public function log_pile() {
-            echo 'PILE: ' . $this->get_pile_string() . PHP_EOL;
-        }
         public function clean_last_flag() {
             $pile = $this->_pile;
             $pile = array_reverse($pile);
             foreach($pile as $key => $p) {
-                if($p['key'] === $this::$_TYPE_KEY['FLAG']) {
-                    unset($pile[$key]);
+                unset($pile[$key]);
+                if($p['key'] == $this::$TYPE_KEY_FLAG) {
                     break;
                 }
             }

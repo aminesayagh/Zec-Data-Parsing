@@ -1,9 +1,9 @@
 <?php
 declare(strict_types=1);
 
-namespace Zod;
-use Zod\FIELD as FK;
-use Zod\CONFIG_KEY as CK;
+namespace Zec;
+use Zec\FIELD as FK;
+use Zec\CONFIG_KEY as CK;
 
 if (!trait_exists('ParserArgument')) {
     trait ParserArgument {
@@ -24,17 +24,17 @@ if (!trait_exists('ParserArgument')) {
         }
         private function set_default_argument(array $default_argument): void {
             if (!is_array($default_argument)) {
-                throw new ZodError('Default argument must be an array');
+                throw new \Exception('Default argument must be an array');
             }
             $this->_default_argument = $default_argument;
         }
         private function set_parser_arguments(callable $_parser_arguments): void {
             if (!is_callable($_parser_arguments)) {
-                throw new ZodError('Parser argument must be a callable');
+                throw new \Exception('Parser argument must be a callable');
             }
             $this->_parser_arguments = $_parser_arguments;
         }
-        public function get_argument(?zod $owner = null): array {
+        public function get_argument(?Zec $owner = null): array {
             $has_to_parse_argument = is_null($owner) ? false : !$owner->get_config(CK::TRUST_ARGUMENTS);
             if (!$has_to_parse_argument) {
                 $this->set_is_valid_argument();
@@ -44,13 +44,13 @@ if (!trait_exists('ParserArgument')) {
         private function merge_argument(): array {
             return array_merge($this->_default_argument, $this->_arguments);
         }
-        private function valid_argument(Zod $parent = null): array {
+        private function valid_argument(Zec $parent = null): array {
             $merged_argument = $this->merge_argument();
             if (!$this->_is_valid_argument) {
-                // $argument_zod_validator = call_user_func($this->_parser_arguments, z([
+                // $argument_zec_validator = call_user_func($this->_parser_arguments, z([
                 //     CONFIG_KEY::TRUST_ARGUMENTS => true
                 // ]));
-                // $argument_zod_validator->parse_or_throw($merged_argument, [
+                // $argument_zec_validator->parse_or_throw($merged_argument, [
                 //     'parent' => $parent,
                 // ]);
                 $this->set_is_valid_argument();
@@ -82,11 +82,11 @@ if (!trait_exists('ParserArgument')) {
                     ];
                 }
 
-                $is_associative_of_zod = array_reduce($argument, function ($carry, $item) {
-                    return $carry && is_zod($item);
+                $is_associative_of_zec = array_reduce($argument, function ($carry, $item) {
+                    return $carry && is_zec($item);
                 }, true);
 
-                if ($is_associative_of_zod) {
+                if ($is_associative_of_zec) {
                     return [
                         $this->name => $argument
                     ];

@@ -1,7 +1,7 @@
 <?php 
 declare(strict_types=1);
 
-namespace Zod {
+namespace Zec {
     class FIELD {
         const PRIORITIZE = 'prioritize';
         const PARSER_ARGUMENTS = 'parser_arguments';
@@ -13,8 +13,8 @@ namespace Zod {
     }
 }
 
-namespace Zod {
-    // Get a list of all const element on Zod\PARSER\KEY
+namespace Zec {
+    // Get a list of all const element on Zec\PARSER\KEY
     class PARSERS_KEY {
         const REQUIRED = 'required';
         const OPTIONAL = 'optional';
@@ -43,9 +43,9 @@ namespace Zod {
     }
 
     class LIFECYCLE_PARSER {
-        const CREATE = 'create'; // -> build, create a zod instance
-        const BUILD = 'build'; // -> assign, parameter by zod Bundle
-        const ASSIGN = 'assign'; // -> parse, assign to a zod instance
+        const CREATE = 'create'; // -> build, create a zec instance
+        const BUILD = 'build'; // -> assign, parameter by zec Bundle
+        const ASSIGN = 'assign'; // -> parse, assign to a zec instance
         const PARSE = 'parse'; // -> validate, parse the value
         const VALIDATE = 'validate'; // -> finalize, validate the value
         const FINALIZE = 'finalize'; // -> finalize the value

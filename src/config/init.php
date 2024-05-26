@@ -1,22 +1,22 @@
 <?php
 declare(strict_types=1);
 
-use function Zod\z;
-use Zod\FIELD as FK; // FK: Field Key
-use Zod\PARSERS_KEY as PK; // PK: Parser Key
+use function Zec\z;
+use Zec\FIELD as FK; // FK: Field Key
+use Zec\PARSERS_KEY as PK; // PK: Parser Key
 
-require_once ZOD_PATH . '/src/CaretakerParsers.php';
-require_once ZOD_PATH . '/src/config/Bundler.php';
-require_once ZOD_PATH . '/src/Zod.php';
+require_once ZEC_PATH . '/src/CaretakerParsers.php';
+require_once ZEC_PATH . '/src/config/Bundler.php';
+require_once ZEC_PATH . '/src/Zec.php';
 
-use function Zod\bundler as bundler;
-use function Zod\is_zod;
+use function Zec\bundler as bundler;
+use function Zec\is_zec;
 
 bundler()->assign_parser_config(PK::EMAIL, [
     FK::PRIORITIZE => [
         PK::STRING,
     ],
-    FK::PARSER_ARGUMENTS => function (Zod\Zod $z) {
+    FK::PARSER_ARGUMENTS => function (Zec\Zec $z) {
         return $z->options([
             'message' => z()->required()->string(),
             'pattern' => z()->required()->string(),
@@ -45,7 +45,7 @@ bundler()->assign_parser_config(PK::EMAIL, [
     }
 ])->assign_parser_config(PK::REQUIRED, [
     FK::PRIORITIZE => [],
-    FK::PARSER_ARGUMENTS => function (Zod\Zod $z) {
+    FK::PARSER_ARGUMENTS => function (Zec\Zec $z) {
         return $z->options([
             'message' => z()->required()->string()
         ]);
@@ -66,7 +66,7 @@ bundler()->assign_parser_config(PK::EMAIL, [
         PK::STRING,
         PK::NUMBER
     ],
-    FK::PARSER_ARGUMENTS => function (Zod\Zod $z) {
+    FK::PARSER_ARGUMENTS => function (Zec\Zec $z) {
         return $z->options([
             'message' => z()->required()->string(),
             'pattern' => z()->required()->string(),
@@ -92,7 +92,7 @@ bundler()->assign_parser_config(PK::EMAIL, [
     }
 ])->assign_parser_config(PK::BOOL, [
     FK::PRIORITIZE => [],
-    FK::PARSER_ARGUMENTS => function (Zod\Zod $z) {
+    FK::PARSER_ARGUMENTS => function (Zec\Zec $z) {
         return $z->options([
             'message' => z()->required()->string()
         ]);
@@ -109,7 +109,7 @@ bundler()->assign_parser_config(PK::EMAIL, [
     }
 ])->assign_parser_config(PK::STRING, [
     FK::PRIORITIZE => [],
-    FK::PARSER_ARGUMENTS => function (Zod\Zod $z) {
+    FK::PARSER_ARGUMENTS => function (Zec\Zec $z) {
         return $z->options([
             'message' => z()->required()->string()
         ]);
@@ -126,7 +126,7 @@ bundler()->assign_parser_config(PK::EMAIL, [
     }
 ])->assign_parser_config(PK::URL, [
     FK::PRIORITIZE => [PK::STRING],
-    FK::PARSER_ARGUMENTS => function (Zod\Zod $z) {
+    FK::PARSER_ARGUMENTS => function (Zec\Zec $z) {
         return $z->options([
             'message' => z()->required()->string(),
             'pattern' => z()->required()->string()
@@ -146,7 +146,7 @@ bundler()->assign_parser_config(PK::EMAIL, [
     }
 ])->assign_parser_config(PK::NUMBER, [
     FK::PRIORITIZE => [],
-    FK::PARSER_ARGUMENTS => function (Zod\Zod $z) {
+    FK::PARSER_ARGUMENTS => function (Zec\Zec $z) {
         return $z->options([
             'message' => z()->required()->string(),
             'pattern' => z()->required()->string()
@@ -166,12 +166,12 @@ bundler()->assign_parser_config(PK::EMAIL, [
     }
 ])->assign_parser_config(PK::OPTIONS, [
     FK::PRIORITIZE => [],
-    FK::PARSER_ARGUMENTS => function (Zod\Zod $z) {
+    FK::PARSER_ARGUMENTS => function (Zec\Zec $z) {
         return $z->options([
             'message' => z()->required()->string(),
             'options' => z()->required()->associative([
                 'key' => z()->string(),
-                'value' => z()->instanceof(Zod\Zod::class)
+                'value' => z()->instanceof(Zec\Zec::class)
             ])
         ]);
     },
@@ -188,7 +188,7 @@ bundler()->assign_parser_config(PK::EMAIL, [
 
         $index = 0;
         foreach ($options as $key => $option) {
-            if (!($option instanceof Zod\Zod)) {
+            if (!($option instanceof Zec\Zec)) {
                 throw new Exception('Invalid option value');
             }
             $default_of_option = null;
@@ -204,7 +204,7 @@ bundler()->assign_parser_config(PK::EMAIL, [
             }
 
             $value_field = array_key_exists($key, $value) ? $value[$key] : null;
-            $zod_response = $option->parse($value_field, Zod\Zod::proxy_set_arg(
+            $zod_response = $option->parse($value_field, Zec\Zec::proxy_set_arg(
                 $default_of_option,
                 $par['owner']
             ));
@@ -212,6 +212,7 @@ bundler()->assign_parser_config(PK::EMAIL, [
                 $has_error = true;
             }
         }
+        $par['owner']->clean_last_flag();
 
         if ($has_error) {
             return $par['argument']['message'];
@@ -221,7 +222,7 @@ bundler()->assign_parser_config(PK::EMAIL, [
     }
 ])->assign_parser_config(PK::EACH, [
     FK::PRIORITIZE => [],
-    FK::PARSER_ARGUMENTS => function (Zod\Zod $z) {
+    FK::PARSER_ARGUMENTS => function (Zec\Zec $z) {
         return $z->options([
             'message' => z()->required()->string(),
         ]);
@@ -253,7 +254,7 @@ bundler()->assign_parser_config(PK::EMAIL, [
 ])->assign_parser_config(PK::MIN, [
     FK::PRIORITIZE => [
     ],
-    FK::PARSER_ARGUMENTS => function (Zod\Zod $z) {
+    FK::PARSER_ARGUMENTS => function (Zec\Zec $z) {
         return $z->options([
             'message' => z()->required()->string(),
             'min' => z()->required()->number()
@@ -282,7 +283,7 @@ bundler()->assign_parser_config(PK::EMAIL, [
     }
 ])->assign_parser_config(PK::MAX, [
     FK::PRIORITIZE => [],
-    FK::PARSER_ARGUMENTS => function (Zod\Zod $z) {
+    FK::PARSER_ARGUMENTS => function (Zec\Zec $z) {
         return $z->options([
             'message' => z()->required()->string(),
             'max' => z()->required()->number()
@@ -313,7 +314,7 @@ bundler()->assign_parser_config(PK::EMAIL, [
     }
 ])->assign_parser_config(PK::OPTIONAL, [
     FK::PRIORITIZE => [],
-    FK::PARSER_ARGUMENTS => function (Zod\Zod $z) {
+    FK::PARSER_ARGUMENTS => function (Zec\Zec $z) {
         return null;
     },
     FK::DEFAULT_ARGUMENT => [],
@@ -326,7 +327,7 @@ bundler()->assign_parser_config(PK::EMAIL, [
     }
 ])->assign_parser_config(PK::INSTANCEOF, [
     FK::PRIORITIZE => [],
-    FK::PARSER_ARGUMENTS => function (Zod\Zod $z) {
+    FK::PARSER_ARGUMENTS => function (Zec\Zec $z) {
         return $z->options([
             'message' => z()->required()->string(),
             PK::INSTANCEOF => z()->required(),
@@ -347,12 +348,12 @@ bundler()->assign_parser_config(PK::EMAIL, [
     }
 ])->assign_parser_config(PK::ASSOCIATIVE, [
     FK::PRIORITIZE => [],
-    FK::PARSER_ARGUMENTS => function (Zod\Zod $z) {
+    FK::PARSER_ARGUMENTS => function (Zec\Zec $z) {
         return $z->options([
             'message' => z()->required()->string(),
             // PK::ASSOCIATIVE => z()->required()->associative([
-            //     'key' => z()->required()->instanceof(Zod\Zod::class),
-            //     'value' => z()->required()->instanceof(Zod\Zod::class)
+            //     'key' => z()->required()->instanceof(Zec\Zec::class),
+            //     'value' => z()->required()->instanceof(Zec\Zec::class)
             // ])
         ]);
     },

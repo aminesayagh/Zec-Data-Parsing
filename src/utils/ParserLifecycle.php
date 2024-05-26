@@ -1,9 +1,9 @@
 <?php 
 declare(strict_types=1);
 
-namespace Zod;
-use Zod\FIELD as FK;
-use Zod\LIFECYCLE_PARSER as LC_P;
+namespace Zec;
+use Zec\FIELD as FK;
+use Zec\LIFECYCLE_PARSER as LC_P;
 
 if(!trait_exists('ParserLifecycle')) {
     trait ParserLifecycle {

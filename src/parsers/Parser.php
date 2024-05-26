@@ -1,10 +1,12 @@
 <?php
 declare(strict_types=1);
 
-namespace Zod;
-use Zod\FIELD as FK;
-use Zod\CONFIG_KEY as CK;
-use Zod\LIFECYCLE_PARSER as LC;
+namespace Zec;
+
+use Exception;
+use Zec\FIELD as FK;
+use Zec\CONFIG_KEY as CK;
+use Zec\LIFECYCLE_PARSER as LC;
 
 if (!class_exists('Parser')) {
     class Parser {
@@ -55,7 +57,7 @@ if (!class_exists('Parser')) {
                 case 'parser_callback':
                     return $this->_parser_callback;
                 default:
-                    throw new ZodError("Property $name not found", $name);
+                    throw new Exception("Property $name not found", $name);
             }
         }
         /**
@@ -72,19 +74,6 @@ if (!class_exists('Parser')) {
                 FK::PARSER_CALLBACK => $this->_parser_callback, 
             ]))->set_argument($this->get_argument());
         }
-        /**
-         * Identifies the parser key based on the name of the parser and the path to the parser.
-         *
-         * @param string $name_of_parser The name of the parser.
-         * @param ZodPath|null $path_to_parser The path to the parser (optional).
-         * @return string The identified parser key.
-         */
-        private function identify_parser_key(string $name_of_parser, string $path_to_parser = null): string {
-            if (is_null($path_to_parser)) {
-                return $name_of_parser;
-            }
-            return $path_to_parser . '/' . $name_of_parser;
-        }
         public function get_config() {
             return array_merge([
                 FK::PRIORITIZE => $this->_prioritize,
@@ -96,11 +85,11 @@ if (!class_exists('Parser')) {
             $default = isset($args['default']) ? $args['default'] : null; // default value of the content to parser
             $owner = isset($args['owner']) ? $args['owner'] : null; // owner of the parser
 
-            // if the owner is not an instance of Zod, set it to null
-            $owner = $owner instanceof Zod ? $owner : null;
+            // if the owner is not an instance of Zec, set it to null
+            $owner = $owner instanceof Zec ? $owner : null;
 
             if (is_null($owner)) {
-                throw new ZodError('The owner field must be an instance of Zod', 'owner');
+                throw new Exception('The owner field must be an instance of Zec');
             }
             return [
                 'default' => $default,
@@ -112,18 +101,18 @@ if (!class_exists('Parser')) {
             $default = isset($args['default']) ? $args['default'] : null; // default value of the content to parser
             $owner = isset($args['owner']) ? $args['owner'] : null; // owner of the parser
 
-            // if the owner is not an instance of Zod, set it to null
-            $owner = $owner instanceof Zod ? $owner : null;
+            // if the owner is not an instance of Zec, set it to null
+            $owner = $owner instanceof Zec ? $owner : null;
 
             if (is_null($owner)) {
-                throw new ZodError('The owner field must be an instance of Zod', 'owner');
+                throw new Exception('The owner field must be an instance of Zec');
             }
             return [
                 'default' => $default,
                 'owner' => $owner
             ];
         }
-        static function proxy_set_arg(mixed $default, Zod $owner): array {
+        static function proxy_set_arg(mixed $default, Zec $owner): array {
             return [
                 'default' => $default,
                 'owner' => $owner
@@ -134,51 +123,47 @@ if (!class_exists('Parser')) {
          *
          * @param mixed $value The value to be parsed.
          * @param array $args An array of arguments passed to the parser.
-         * @param Zod $zod_owner The owner Zod instance.
+         * @param Zec $zec_owner The owner Zec instance.
          * @return array An array containing the validation result.
-         * @throws ZodError If the parser_callback field is not a callback function or if it returns an invalid value.
+         * @throws ZecError If the parser_callback field is not a callback function or if it returns an invalid value.
          */
         public function parse(mixed $value, array $args): array {
             if (!is_callable($this->_parser_callback)) {
-                throw new ZodError('The parser_callback field must be a callback function', 'parser_callback');
+                throw new Exception('The parser_callback field must be a callback function');
             }
             $this->set_lifecycle_state(LC::PARSE);
 
             $args = $this->_proxy_parser_argument($args);
             
             $default = $args['default'];
-            $zod_owner = $args['owner'];
+            $zec_owner = $args['owner'];
             
-            echo 'Owner: ' . json_encode($zod_owner) . PHP_EOL;
-            $argument = $this->get_argument($zod_owner); // get the argument of the parser, and check the config of the zod_owner
+            $argument = $this->get_argument($zec_owner); // get the argument of the parser, and check the config of the zec_owner
 
             // Call the parser callback function
             $response = call_user_func($this->_parser_callback, [
                 'value' => $value,
                 'default' => $default, // default value of the parser
                 'argument' => $argument,
-                'owner' => $zod_owner
+                'owner' => $zec_owner
             ]);
 
             $path = is_null(
-                $zod_owner
-            ) ? null : $zod_owner->get_pile_string();
+                $zec_owner
+            ) ? null : $zec_owner->get_pile_string();
 
-            // Handle the response based on its type
             if (is_string($response)) {
-                $path_of_error = $this->identify_parser_key($this->_name, $path);
-                $zod_owner->set_error(
-                    new ZodError($response, $path_of_error)
-                );
+                $zec_owner->set_error(new ZecError(
+                    ZecError::generate_message($response, $path)
+                ));
                 return [
                     'is_valid' => false,
                 ];
             } else if (is_array($response)) {
-
-                // If the response is an array, set errors and return invalid result
                 foreach ($response as $value) {
-                    $error = new ZodError($value, $this->identify_parser_key($this->_name, $path) . '/' . $value);
-                    $zod_owner->set_error($error);
+                    $zec_owner->set_error(new ZecError(
+                        ZecError::generate_message($value, $path)
+                    ));
                 }
                 return [
                     'is_valid' => false,
@@ -195,15 +180,14 @@ if (!class_exists('Parser')) {
                 ];
             }
 
-            // If the response is not a valid type, throw an error
-            throw new ZodError('The parser_callback field must return a string or a boolean', 'parser_callback');
+            throw new Exception('The parser_callback field must return a string or a boolean');
         }
         private function set_prioritize(array $prioritize): Parser {
             if (!isset($prioritize)) {
-                throw new ZodError('The accept field is already set', 'accept');
+                throw new Exception('The accept field is already set');
             }
             if (!is_array($prioritize)) {
-                throw new ZodError('The accept field must be an array', 'accept');
+                throw new Exception('The accept field must be an array');
             }
 
             $this->_prioritize = $prioritize;
@@ -214,12 +198,12 @@ if (!class_exists('Parser')) {
          *
          * @param callable $parser The callback function to set as the parser.
          * @return Parser Returns the current instance of the Parser.
-         * @throws ZodError If the provided $parser is not a valid callback function.
+         * @throws ZecError If the provided $parser is not a valid callback function.
          */
         private function set_parser_callback(callable $parser): Parser {
             // if $this->_parser is not a callback function, return an error
             if (!is_callable($parser)) {
-                throw new ZodError('The parser field must be a callback function', 'parser');
+                throw new Exception('The parser field must be a callback function');
             }
             $this->_parser_callback = $parser;
             return $this;

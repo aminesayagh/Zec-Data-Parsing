@@ -1,8 +1,8 @@
 <?php
 declare(strict_types=1);
 
-namespace Zod;
-use Zod\FIELD as FK;
+namespace Zec;
+use Zec\FIELD as FK;
 
 if(!trait_exists('ParserOrder')) {
     trait ParserOrder {

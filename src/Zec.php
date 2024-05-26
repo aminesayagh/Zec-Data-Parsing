@@ -1,10 +1,10 @@
 <?php
 declare(strict_types=1);
 
-namespace Zod;
+namespace Zec;
 
 use BadMethodCallException;
-use Zod\PARSERS_KEY as PK; // PK: Parser Key
+use Zec\PARSERS_KEY as PK; // PK: Parser Key
 
 require_once ZOD_PATH . '/src/parsers/Parser.php';
 require_once ZOD_PATH . '/src/parsers/Parsers.php';
@@ -12,12 +12,12 @@ require_once ZOD_PATH . '/src/Exception.php';
 
 
 if(!class_exists('Zod')) {
-    class Zod extends Parsers {
-        use ZodErrors, ZodPath, ZodConfigs, ZodUtils, ZodDefault, ZodValue, ZodParent;        
-        public function __construct(Zod|array|null $args = null) {
+    class Zec extends Parsers {
+        use ZecErrors, ZecPath, ZecConfigs, ZecUtils, ZecDefault, ZecValue, ZecParent;        
+        public function __construct(Zec|array|null $args = null) {
             parent::__construct();
-            // if type of args is Zod then clone it as a parent
-            $parent = is_zod($args) ? $args : null;
+            // if type of args is Zec then clone it as a parent
+            $parent = is_zec($args) ? $args : null;
             if(!is_null($parent)) {
                 $this->_clone_parent($parent);
             }
@@ -41,7 +41,7 @@ if(!class_exists('Zod')) {
          * @param string $name The name of the method being called.
          * @param mixed $arguments The arguments passed to the method.
          * @return mixed The result of the method call.
-         * @throws ZodError If the method or parser is not found.
+         * @throws ZecError If the method or parser is not found.
          */
         public function __call(string $name, ?array $arguments): mixed{
 
@@ -62,7 +62,7 @@ if(!class_exists('Zod')) {
 
             throw new BadMethodCallException("Method $name not found");
         }
-        static function proxy_set_arg(mixed $default, ?Zod $parent = null): array {
+        static function proxy_set_arg(mixed $default, ?Zec $parent = null): array {
             return [
                 'default' => $default,
                 'parent' => $parent
@@ -81,7 +81,7 @@ if(!class_exists('Zod')) {
             ];
         }
         
-        public function parse(mixed $value, array $args): Zod {
+        public function parse(mixed $value, array $args): Zec {
 
             // clean errors
             $this->clear_errors();
@@ -115,13 +115,7 @@ if(!class_exists('Zod')) {
 
             return $this;
         }
-        /**
-         * Sets the default value for the Zod instance.
-         *
-         * @param mixed $default The default value to be set.
-         * @return Zod The updated Zod instance.
-         */
-        public function set_default(mixed $default): Zod {
+        public function set_default(mixed $default): Zec {
             if(is_null($default)) {
                 return $this;
             }
@@ -136,48 +130,48 @@ if(!class_exists('Zod')) {
          *
          * @param mixed $value The value to parse.
          * @param mixed $default The default value to use if the parsed value is invalid.
-         * @return Zod The parsed value.
+         * @return Zec The parsed value.
          * @throws mixed The error(s) if the parsed value is invalid.
          */
-        public function parse_or_throw(mixed $value, mixed $default = null, Zod $parent = null): mixed {
-            $this->parse($value, Zod::proxy_set_arg($default, null));
+        public function parse_or_throw(mixed $value, mixed $default = null): mixed {
+            $this->parse($value, Zec::proxy_set_arg($default, null));
             if (!$this->is_valid()) {
-                throw new ZodError($this->message_errors());
+                $this->throw_errors();
             }
             return $this->get_value();
         }
     }
 }
 
-if (!function_exists('zod')) {
+if (!function_exists('zec')) {
     /**
      * Returns an instance of the Zod class.
      *
      * @param array $parsers The array of parsers to assign to the Zod instance.
-     * @param ZodErrors $errors The array of errors to assign to the Zod instance.
-     * @return Zod The instance of the Zod class.
+     * @param ZecErrors $errors The array of errors to assign to the Zod instance.
+     * @return Zec The instance of the Zod class.
      */
-    function zod(Zod|array|null $args = null): Zod {
-        return new Zod($args);
+    function zec(Zec|array|null $args = null): Zec {
+        return new Zec($args);
     }
 }
 
-if (!function_exists('is_zod')) {
+if (!function_exists('is_zec')) {
     /**
      * Checks if the given value is an instance of the Zod class.
      *
      * @param mixed $value The value to check.
      * @return bool Returns true if the value is an instance of Zod, false otherwise.
      */
-    function is_zod($value): bool {
-        return is_a($value, \Zod\Zod::class);
+    function is_zec($value): bool {
+        return is_a($value, \Zec\Zec::class);
     }
 }
 
 
 if (!function_exists('z')) {
     
-    function z(Zod|array|null $args = null): Zod {
-        return zod($args);
+    function z(Zec|array|null $args = null): Zec {
+        return zec($args);
     }
 }

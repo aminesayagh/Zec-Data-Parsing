@@ -2,9 +2,9 @@
 declare(strict_types=1);
 
 
-namespace Zod;
-use Zod\FIELD as FK;
-use Zod\LIFECYCLE_PARSER as LC_P;
+namespace Zec;
+use Zec\FIELD as FK;
+use Zec\LIFECYCLE_PARSER as LC_P;
 
 // require_once ZOD_PATH . '/src/config/init.php';
 require_once ZOD_PATH . '/src/CaretakerParsers.php';
@@ -38,7 +38,7 @@ if (!class_exists('Bundler')) {
         /**
          * Class Bundler
          * 
-         * This class represents a bundler for the Zod library.
+         * This class represents a bundler for the Zec library.
          * It extends the parent class and provides additional functionality.
          */
         private function __construct()

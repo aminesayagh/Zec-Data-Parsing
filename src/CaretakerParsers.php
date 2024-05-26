@@ -1,10 +1,10 @@
 <?php
 declare(strict_types=1);
 
-namespace Zod;
+namespace Zec;
 
-use Zod\Parser;
-use Zod\LIFECYCLE_PARSER as LC_P;
+use Zec\Parser;
+use Zec\LIFECYCLE_PARSER as LC_P;
 
 
 
@@ -17,9 +17,6 @@ if (!class_exists('CaretakerParsers')) {
      */
     abstract class CaretakerParsers
     {
-        /**
-         * @var Parser[] $parsers An array of objects instantiated from the class Parser.
-         */
         protected array $parsers = [];
         public function __construct(array $parsers = [])
         {
@@ -31,7 +28,7 @@ if (!class_exists('CaretakerParsers')) {
          * @param string $key The key of the parser to retrieve.
          * @param array|null $parsers The array of parsers to search in. If null, the default parsers will be used.
          * @return Parser The parser with the specified key.
-         * @throws ZodError If the parser with the specified key is not found.
+         * @throws ZecError If the parser with the specified key is not found.
          */
         public function get_parser(string $name): ?Parser {
             $parsers = $this->parsers;
@@ -70,7 +67,7 @@ if (!class_exists('CaretakerParsers')) {
             });
 
             if (count($selected_parsers) === 0) {
-                throw new ZodError('The parser with the key ' . $name . ' is not found', 'key');
+                throw new \Exception('The parser with the key ' . $name . ' is not found');
             }
 
             return $selected_parsers;

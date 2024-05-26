@@ -1,7 +1,6 @@
-# PHP Data Parsing Library (Zod-Like)
+# Zec: PHP Data Parsing Library
 
-The Zod Data Parsing and schema declaration Library is designed to bring the robust schema definition and validation capabilities similar to those in the Zod library (JavaScript) to PHP applications. This library offers flexible, modular, and extensible data validation tools that empower developers to enforce strict data integrity rules easily and reliably.
-
+The Zec Data Parsing and schema declaration Library is designed to bring the robust schema definition and validation capabilities similar to those in the Zec library (JavaScript) to PHP applications. This library offers flexible, modular, and extensible data validation tools that empower developers to enforce strict data integrity rules easily and reliably.
 
 ## Usage Example
 
@@ -9,7 +8,6 @@ Below is an example of how to use our library, before and after:
 
 ![Usage Before Example](images/before.png "Library Usage Example")
 ![Usage After Example](images/after.png "Library Usage Example")
-
 
 **Current Version:** v1.0.0
 
@@ -41,11 +39,11 @@ Below is an example of how to use our library, before and after:
 
 ## Introduction
 
-The Zod Data Parsing and schema declaration Library is designed to bring the robust schema definition and validation capabilities similar to those in the Zod library (JavaScript) to PHP applications. This library offers flexible, modular, and extensible data validation tools that empower developers to enforce strict data integrity rules easily and reliably.
+The Zec Data Parsing and schema declaration Library is designed to bring the robust schema definition and validation capabilities similar to those in the Zec library (JavaScript) to PHP applications. This library offers flexible, modular, and extensible data validation tools that empower developers to enforce strict data integrity rules easily and reliably.
 
 ### Some other great aspects
 
-- **Robust Schema Validation**: Provides strong typing and validation similar to the Zod library, ensuring accurate data handling.
+- **Robust Schema Validation**: Provides strong typing and validation similar to the Zec library, ensuring accurate data handling.
 - **Modular and Extensible**: Easy to extend with custom parsers, accommodating diverse data validation needs.
 - **Separation of Concerns**: Keeps data parsing separate from business logic for better security and maintainability.
 - **Ease of Testing**: Simplifies testing by enforcing strict data validation.
@@ -82,14 +80,14 @@ We look forward to building a powerful data parsing tool with a vibrant communit
 Define and validate data types using simple schema definitions:
 
 ```php
-    use function Zod\z;
+    use function Zec\z;
     $my_schema = z()->string();
     
-    $response_valid = $my_schema->parse("Hello, World!"); // Returns Zod data object
+    $response_valid = $my_schema->parse("Hello, World!"); // Returns Zec data object
     $value = $response_valid->value; // Returns "Hello, World!"
 
-    $response_invalid = $my_schema->parse(123); // Returns Zod data object
-    $errors = $response_invalid->errors; // Returns an array of Zod error object
+    $response_invalid = $my_schema->parse(123); // Returns Zec data object
+    $errors = $response_invalid->errors; // Returns an array of Zec error object
 ```
 
 ### Safe Parsing
@@ -97,7 +95,7 @@ Define and validate data types using simple schema definitions:
 Use safe_parse for error-safe parsing, returning structured success/error responses:
 
 ```php
-    $response = $my_schema->safe_parse("Hello, World!"); // Returns Zod data object
+    $response = $my_schema->safe_parse("Hello, World!"); // Returns Zec data object
     $value = $response->value; // Returns "Hello, World!"
     $errors = $response->errors; // Returns null
 ```
@@ -117,8 +115,8 @@ Handle exceptions using parse_or_throw for critical data validation:
 
 ```php
     try {
-        $response = $my_schema->parse_or_throw(123); // Throws ZodError
-    } catch (ZodError $error) {
+        $response = $my_schema->parse_or_throw(123); // Throws ZecError
+    } catch (ZecError $error) {
         $error_message = $error->message; // Returns "Invalid type: expected string, received integer"
     }
 ```
@@ -128,7 +126,7 @@ Handle exceptions using parse_or_throw for critical data validation:
 You can enhance the schema definition by incorporating additional validation options. This allows for more detailed control over data conformity based on specific requirements.
 
 ```php
-    use function Zod\z;
+    use function Zec\z;
 
     $user_schema = z()->options([
         'name' => z()->string()->min(3)->max(50),
@@ -174,10 +172,10 @@ You can enhance the schema definition by incorporating additional validation opt
 
 ### Advanced Parser Configuration
 
-The library provides extensive configurability for data validation, allowing users to define complex validation rules with custom messages and conditions. Below is an example of how to configure a detailed schema for an email field with specific validation rules:
+The library provides extensive Configurability for data validation, allowing users to define complex validation rules with custom messages and conditions. Below is an example of how to configure a detailed schema for an email field with specific validation rules:
 
 ```php
-    use function Zod\z;
+    use function Zec\z;
 
     // Define a configurable email schema
     $my_configurable_email_schema = z()->string([
@@ -204,7 +202,7 @@ The library provides extensive configurability for data validation, allowing use
 This example demonstrates validating a user data structure that includes nested arrays, optional fields, and union types, showcasing the library's capability to handle complex and realistic data models.
 
 ```php
-    use function Zod\z;
+    use function Zec\z;
 
     // Define a user schema with various data validation rules
     $user_parser = z()->options([
@@ -270,7 +268,7 @@ This example demonstrates validating a user data structure that includes nested 
                 'grade' => 10,
             ]
         ]
-    ]); // Returns a Zod object
+    ]); // Returns a Zec object
 
     // Validate the parsed data
     if ($user->is_valid()) {
@@ -295,9 +293,9 @@ The `size` method checks if:
 Here is how you can implement this custom parser:
 
 ```php
-    use function Zod\z;
-    use function Zod\bundler;
-    use Zod\FIELD as FK;
+    use function Zec\z;
+    use function Zec\bundler;
+    use Zec\FIELD as FK;
     
     // Define the custom size parser method
     bundler->assign_parser_config('size', [
@@ -352,7 +350,7 @@ You can now use the custom `size` parser method in your schema definitions:
         'lucky_number' => 5
     ]; // Valid data
 
-    $parsed_data = $my_schema->parse($user_data); // Returns a Zod object
+    $parsed_data = $my_schema->parse($user_data); // Returns a Zec object
 
     // Validate the parsed data
     if ($parsed_data->is_valid()) { // Returns true if data is valid
@@ -370,9 +368,9 @@ You can override a parser method by redefining it with the same name, with infer
 Here is an example of overriding the `email` Parser method:
 
 ```php
-    use function Zod\z;
-    use function Zod\bundler;
-    use Zod\FIELD as FK;
+    use function Zec\z;
+    use function Zec\bundler;
+    use Zec\FIELD as FK;
 
     // Override the email parser method
     bundler->assign_parser_config('email', [
@@ -417,7 +415,11 @@ Here is an example of overriding the `email` Parser method:
 This project is licensed under the MIT License - see the LICENSE.md file for details.
 
 ### MIT License
-Copyright (c) 2024 Mohamed Amine Sayagh
+
+Copyright (c) 2024 Mohamed Amine SAYAGH
+
+All rights reserved.
+
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights

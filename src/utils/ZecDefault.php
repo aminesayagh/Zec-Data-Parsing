@@ -1,10 +1,10 @@
 <?php
 declare (strict_types = 1);
 
-namespace Zod;
+namespace Zec;
 
-if(!trait_exists('ZodDefault')) {
-    trait ZodDefault {
+if(!trait_exists('ZecDefault')) {
+    trait ZecDefault {
         private $_default = null;
         public function set_default($value) {
             $this->_default = $value;

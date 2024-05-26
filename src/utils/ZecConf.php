@@ -1,13 +1,13 @@
 <?php
 declare(strict_types=1);
 
-namespace Zod;
+namespace Zec;
 
-use Zod\CONFIG_KEY as CK;
-use Zod\CONFIG_ROLE as CR;
+use Zec\CONFIG_KEY as CK;
+use Zec\CONFIG_ROLE as CR;
 
-if(!class_exists('ZodConf')) {
-    class ZodConf {
+if(!class_exists('ZecConf')) {
+    class ZecConf {
         private string $_key;
         private mixed $_value;
         private string $_type;
@@ -20,7 +20,7 @@ if(!class_exists('ZodConf')) {
             return $this->_key;
         }
         public function clone () {
-            return new ZodConf($this->_key, $this->_value, $this->_type);
+            return new ZecConf($this->_key, $this->_value, $this->_type);
         }
         public function get_value() {
             return $this->_value;
@@ -37,8 +37,8 @@ if(!class_exists('ZodConf')) {
     }
 }
 
-if(!trait_exists('ZodConfigs')) {
-    trait ZodConfigs {
+if(!trait_exists('ZecConfigs')) {
+    trait ZecConfigs {
         private array $_config = [];
         private static array $_default_configs = [
             CK::TRUST_ARGUMENTS => [false, CR::READWRITE],
@@ -50,7 +50,7 @@ if(!trait_exists('ZodConfigs')) {
                 $value = isset($args[$config_key]) ? $args[$config_key] : $config_value[0];
                 $role = $config_value[1];
 
-                $this->_config[$config_key] = new ZodConf($config_key, $value, $role);
+                $this->_config[$config_key] = new ZecConf($config_key, $value, $role);
             }
         }
 
@@ -58,10 +58,10 @@ if(!trait_exists('ZodConfigs')) {
             return $this->_config;
         }
         
-        public function configs_extend(Zod $zod) {
-            $zod_config = $zod->get_configs();
-            foreach($zod_config as $key => $value) {
-                $this->_config[$key] = new ZodConf($key, $value->get_value(), $value->get_type());
+        public function configs_extend(Zec $zec) {
+            $zec_config = $zec->get_configs();
+            foreach($zec_config as $key => $value) {
+                $this->_config[$key] = new ZecConf($key, $value->get_value(), $value->get_type());
             }
         }
         public function get_config(string $key) {

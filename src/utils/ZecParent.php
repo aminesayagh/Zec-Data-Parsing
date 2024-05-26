@@ -1,12 +1,12 @@
 <?php 
 declare (strict_types = 1);
 
-namespace Zod;
+namespace Zec;
 
-if(!trait_exists('ZodParent')) {
-    trait ZodParent {
-        private ?Zod $_parent = null;
-        private function _clone_parent(?Zod $parent): Zod {
+if(!trait_exists('ZecParent')) {
+    trait ZecParent {
+        private ?Zec $_parent = null;
+        private function _clone_parent(?Zec $parent): Zec {
             if(is_null($parent)) {
                 return $this;
             }

@@ -1,10 +1,10 @@
 <?php
 declare (strict_types = 1);
 
-namespace Zod;
+namespace Zec;
 
-if(!trait_exists('ZodUtils')) {
-    trait ZodUtils {
+if(!trait_exists('ZecUtils')) {
+    trait ZecUtils {
         public function is_valid() {
             if (count($this->_errors) == 0) {
                 return true;

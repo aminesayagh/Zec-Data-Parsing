@@ -1,13 +1,12 @@
 <?php
 declare (strict_types = 1);
 
-namespace Zod;
+namespace Zec;
 
-if(!trait_exists('ZodErrors')) {
-    trait ZodErrors {
+if(!trait_exists('ZecErrors')) {
+    trait ZecErrors {
         private array $_errors = [];
-        private function set_error(ZodError $error): void {
-            // check if error is already in the list
+        private function set_error(ZecError $error): void {
             foreach($this->_errors as $e) {
                 if($e->get_message() === $error->get_message()) {
                     return;
@@ -18,22 +17,31 @@ if(!trait_exists('ZodErrors')) {
         private function get_errors(): array {
             return $this->_errors;
         }
+        private function throw_errors(): void {
+            if(!$this->has_errors()) {
+                // throw new ZecError('No errors found');
+            }
+            throw new ZecError(
+                ZecError::generate_message($this->message_errors(), 'errors')
+            );
+        }
         private function clear_errors(): void {
             $this->_errors = [];
         }  
         private function message_errors() {
             $errors = $this->get_errors();
-            $message = '';
+            $errors_list = [];
             foreach($errors as $error) {
-                $message .= $error->get_message() . PHP_EOL;
+                // $message .= $error->get_message() . PHP_EOL;
+                $errors_list[] = $error->get_message();
             }
-            return $message;
+            return $errors_list;
         }
         private function has_errors(): bool {
             return count($this->_errors) > 0;
         }
-        private function errors_extend(Zod $zod): void {
-            $errors = $zod->get_errors();
+        private function errors_extend(Zec $zec): void {
+            $errors = $zec->get_errors();
             foreach($errors as $error) {
                 $this->set_error($error);
             }

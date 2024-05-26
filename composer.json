@@ -1,0 +1,22 @@
+{
+    "name": "mohamed-amine-sayagh/zec",
+    "description": "A Php Secure Data Parsing Library",
+    "type": "library",
+    "require": {
+        "php": ">=8"
+    },
+    "autoload": {
+        "psr-4": {
+            "YourNamespace\\": "src/"
+        }
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Mohamed Amine SAYAGH",
+            "email": "contact@masayagh.com",
+            "homepage": "https://masayagh.com"
+        }
+    ],
+    "minimum-stability": "stable"
+}

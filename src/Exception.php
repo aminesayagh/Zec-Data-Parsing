@@ -1,48 +1,61 @@
 <?php
 declare(strict_types=1);
 
-namespace Zod;
+namespace Zec;
 
-if (!class_exists('ZodError')) {
+if (!class_exists('ZecError')) {
     /**
-     * Represents an error that occurred during the execution of the Zod library.
+     * Represents an error that occurred during the execution of the Zec library.
      */
-    class ZodError extends \Exception {
+    class ZecError extends \Exception
+    {
+        private $_key = 'unknown';
+        private $_key_name = 'key'; 
+        private array|string $_message = '';
+        static $KEY_TYPE_DEFAULT = 'key';
         /**
          * The key associated with the error, if applicable.
          *
          * @var string|null
          */
-        private ?string $key;
-
-        /**
-         * Constructs a new ZodError instance.
-         *
-         * @param string $message The error message.
-         * @param string|null $key The key associated with the error, if applicable.
-         * @param array $options Additional options for the error.
-         */
-        public function __construct(string $message, ?string $key = null, array $options = []) {
-            $code = $options['code'] ?? 0;
-            $previous = $options['previous'] ?? null;
-            $this->key = $key;
-            parent::__construct($message . ' ' . $key, $code, $previous);
+        public function __construct(array $message, mixed ...$args)
+        {
+            if (is_array($message) && (isset($message['key']) && isset($message['message']))) {
+                $this->_key = $message['key'];
+                $this->_message = $message['message'];
+                parent::__construct(json_encode($this->_message),...$args);
+            } else {
+                throw new \Exception('Invalid message format');
+            }
         }
-    
-        /**
-         * Magic method to handle getting inaccessible properties.
-         *
-         * @param string $name The name of the property being accessed.
-         * @return mixed The value of the property being accessed.
-         */
-        public function __get(string $name) {
-            if($name === 'key') {
-                return $this->key;
+        static function generate_message(string|array $message, string $key = 'unknown', string $key_type = 'key'): array
+        {
+            return [
+                $key_type => $key,
+                'message' => $message,
+            ];
+        }
+        public function log() {
+
+            $messageArray = $this->get_message();
+            $formattedMessage = json_encode($messageArray, JSON_PRETTY_PRINT);
+            echo $formattedMessage . PHP_EOL;
+        }
+        public function __get(string $name)
+        {
+            if ($name === 'key') {
+                return $this->_key;
+            } else if ($name === 'message') {
+                return $this->message;
             }
             throw new \Exception("Property $name not found");
         }
-        public function get_message() {
-            return $this->message . ' ' . $this->key;
+        public function get_message(): array
+        {
+            return [
+                $this->_key_name => $this->_key,
+                'message' => $this->_message,
+            ];
         }
     }
 }

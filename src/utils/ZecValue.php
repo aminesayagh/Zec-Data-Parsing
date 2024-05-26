@@ -1,10 +1,10 @@
 <?php
 declare(strict_types=1);
 
-namespace Zod;
+namespace Zec;
 
-if (!trait_exists('ZodValue')) {
-    trait ZodValue
+if (!trait_exists('ZecValue')) {
+    trait ZecValue
     {
         private $_value = null;
 
