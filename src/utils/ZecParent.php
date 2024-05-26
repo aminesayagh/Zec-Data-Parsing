@@ -11,6 +11,7 @@ if(!trait_exists('ZecParent')) {
                 return $this;
             }
             $this->_parent = $parent;
+            echo 'parent: ' . json_encode($parent) . "\n";
             $this->pile_extend($parent);
             $this->configs_extend($parent);
 

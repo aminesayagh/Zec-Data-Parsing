@@ -11,6 +11,23 @@ if(!trait_exists('ZecUtils')) {
             }
             return false;
         }
+        static public function map_parse(array $data, callable $callback, array $par = []) {
+            $key = null;
+            $owner = $par['owner'];
+            if (!is_zec($owner)) {
+                throw new \Exception('Owner must be an instance of Zec');
+            }
+            foreach ($data as $index => $value) {
+                if (!is_int($index)) {
+                    throw new \Exception('Index on map parse must be an integer');
+                }
+                $key = $owner->set_key_flag((string)$index);
+                
+                call_user_func($callback, $index, $value);
+
+                $owner->clean_last_flag();
+            }
+        }
         static public function associative_parse(array $data, callable $callback, array $par = []) {
             $parsed_data = [];
             $index = 0;

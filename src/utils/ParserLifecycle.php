@@ -14,7 +14,7 @@ if(!trait_exists('ParserLifecycle')) {
             LC_P::ASSIGN => [LC_P::PARSE],
             LC_P::PARSE => [LC_P::VALIDATE, LC_P::ASSIGN],
             LC_P::VALIDATE => [LC_P::FINALIZE, LC_P::PARSE],
-            LC_P::FINALIZE => [LC_P::FINALIZE]
+            LC_P::FINALIZE => [LC_P::FINALIZE, LC_P::PARSE], // ex: I use the same finalized parser on each to parse next case on the array
         ];
         public function get_lifecycle_state(): string {
             return $this->_lifecycle_state;

@@ -63,6 +63,7 @@ if(!class_exists('Zed')) {
             throw new BadMethodCallException("Method $name not found");
         }
         static function proxy_set_arg(mixed $default, ?Zec $parent = null): array {
+
             return [
                 'default' => $default,
                 'parent' => $parent

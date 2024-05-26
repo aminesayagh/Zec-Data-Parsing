@@ -180,9 +180,7 @@ bundler()->assign_parser_config(PK::EMAIL, [
     ],
 
     FK::PARSER_CALLBACK => function (array $par): string|bool {
-        $value = $par['value'];
         $options = $par['argument'][PK::OPTIONS];
-        $default_value = $par['default'];
 
         $has_error = false;
 
@@ -209,6 +207,7 @@ bundler()->assign_parser_config(PK::EMAIL, [
     FK::PARSER_ARGUMENTS => function (Zec\Zec $z) {
         return $z->options([
             'message' => z()->required()->string(),
+            PK::EACH => z()->required()->instanceof(Zec\Zec::class)
         ]);
     },
     FK::DEFAULT_ARGUMENT => [
@@ -218,16 +217,22 @@ bundler()->assign_parser_config(PK::EMAIL, [
         $values = $par['value'];
         $message = $par['argument']['message'];
         $each = $par['argument'][PK::EACH];
-
-        echo 'Each: ' . json_encode($values) . PHP_EOL;
+        $default = $par['default'] ?? null;
         $has_error = false;
 
-        foreach ($values as $value) {
-            $zec_response = $each->parse($value, $par['default'], $par['owner']);
+        echo 'each: ' . json_encode($par) . PHP_EOL;
+
+        if (!($each instanceof Zec\Zec)) {
+            throw new \Exception('Each parser must be an instance of Zec');
+        }
+        $each = $each->set_default($default);
+
+        Zec\Zec::map_parse($values, function (int $index, mixed $value) use ($each, $par, &$has_error) {
+            $zec_response = $each->parse($value, Zec\Zec::proxy_set_arg(null ,$par['owner']));
             if (!$zec_response->is_valid()) {
                 $has_error = true;
             }
-        }
+        }, $par);
 
         if($has_error) {
             return $message;
