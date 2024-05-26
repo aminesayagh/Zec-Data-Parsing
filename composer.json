@@ -10,7 +10,7 @@
             "Zec\\": "src/"
         },
         "files": [
-            "src/index.php"
+            "index.php"
         ]
     },
     "license": "MIT",
