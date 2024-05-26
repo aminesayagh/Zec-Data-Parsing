@@ -6,9 +6,9 @@ namespace Zec;
 use BadMethodCallException;
 use Zec\PARSERS_KEY as PK; // PK: Parser Key
 
-require_once ZOD_PATH . '/src/parsers/Parser.php';
-require_once ZOD_PATH . '/src/parsers/Parsers.php';
-require_once ZOD_PATH . '/src/Exception.php';
+require_once ZEC_PATH . '/src/parsers/Parser.php';
+require_once ZEC_PATH . '/src/parsers/Parsers.php';
+require_once ZEC_PATH . '/src/Exception.php';
 
 
 if(!class_exists('Zod')) {

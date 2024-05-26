@@ -6,8 +6,8 @@ namespace Zec;
 use Zec\FIELD as FK;
 use Zec\LIFECYCLE_PARSER as LC_P;
 
-// require_once ZOD_PATH . '/src/config/init.php';
-require_once ZOD_PATH . '/src/CaretakerParsers.php';
+// require_once ZEC_PATH . '/src/config/init.php';
+require_once ZEC_PATH . '/src/CaretakerParsers.php';
 
 
 if (!class_exists('Bundler')) {
