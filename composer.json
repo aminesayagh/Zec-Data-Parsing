@@ -18,5 +18,7 @@
             "homepage": "https://masayagh.com"
         }
     ],
-    "minimum-stability": "stable"
+    "minimum-stability": "stable",
+    "version": "1.0.0",
+    "keywords": ["php", "secure", "data", "parsing", "library", "zec", "mohamed-amine-sayagh", "masayagh"]
 }
