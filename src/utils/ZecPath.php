@@ -56,9 +56,6 @@ if(!trait_exists('ZecPath')) {
             if(!is_zec($z)) {
                 throw new \Exception('Zec instance is required');
             }
-            $extend_pile = $z->get_pile_string();
-            echo 'extend_pile: ' . ($extend_pile) . "\n";
-            echo 'this_pile: ' . $this->get_pile_string() . "\n";
             $this->_pile = $this::pile_merge($z->get_pile(), $this->_pile);
             return $this;
         }
@@ -87,11 +84,9 @@ if(!trait_exists('ZecPath')) {
             $this->_pile = array_reverse($pile);
             return $this;
         }
-        public function clean_pile() {
-            $pile = $this;
+        public function reset_pile() {
             $this->_pile = [];
-            return $pile;
+            return $this;
         }
-        
     }
 }

@@ -4,10 +4,16 @@ The Zec Data Parsing and schema declaration Library is designed to bring the rob
 
 ## Usage Example
 
-Below is an example of how to use our library, before and after:
+Below is an example of how to use our library:
+    - Define a schema for user data validation.
+    - Parse user data and validate it.
+    - Handle validation results.
 
 ![Usage Before Example](images/before.png "Library Usage Example")
 ![Usage After Example](images/after.png "Library Usage Example")
+![Usage After Test Example](images/after-test.png "Library Usage Example")
+![Usage After Test Console Example](images/after-test-console.png "Library Usage Example")
+
 
 **Current Version:** v1.0.0
 

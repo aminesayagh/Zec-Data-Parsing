@@ -220,14 +220,13 @@ bundler()->assign_parser_config(PK::EMAIL, [
         $default = $par['default'] ?? null;
         $has_error = false;
 
-        echo 'each: ' . json_encode($par) . PHP_EOL;
 
         if (!($each instanceof Zec\Zec)) {
             throw new \Exception('Each parser must be an instance of Zec');
         }
         $each = $each->set_default($default);
 
-        Zec\Zec::map_parse($values, function (int $index, mixed $value) use ($each, $par, &$has_error) {
+        Zec\Zec::map_parse($values, function (int $index, Zec\Zec $each,mixed $value) use ($par, &$has_error) {
             $zec_response = $each->parse($value, Zec\Zec::proxy_set_arg(null ,$par['owner']));
             if (!$zec_response->is_valid()) {
                 $has_error = true;
