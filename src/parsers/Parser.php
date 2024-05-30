@@ -145,20 +145,16 @@ if (!class_exists('Parser')) {
                 'owner' => $zec_owner
             ]);
 
-            $path = is_null(
-                $zec_owner
-            ) ? null : $zec_owner->get_pile_string();
-
             if (is_string($response)) {
-                $zec_owner->set_error(new ZecError(
-                    ZecError::generate_message($response, $path)
-                ));
+                $zec_owner->set_error(
+                    ZecError::from_message_pile($response, $zec_owner->get_pile())
+                );
                 return self::proxy_response_zod(false);
             } else if (is_array($response)) {
                 foreach ($response as $value) {
-                    $zec_owner->set_error(new ZecError(
-                        ZecError::generate_message($value, $path)
-                    ));
+                    $zec_owner->set_error(
+                        ZecError::from_message_pile($value, $zec_owner->get_pile())
+                    );
                 }
                 return self::proxy_response_zod(false);
             } else if (is_bool($response) && $response == true) {

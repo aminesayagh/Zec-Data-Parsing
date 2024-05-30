@@ -33,6 +33,8 @@ $userData = [
     ]
 ];
 
+
+
 try {
     $userProfileParser->parse_or_throw($userData); // Throws an error
     echo "User data is valid\n";

@@ -3,6 +3,8 @@ declare (strict_types = 1);
 
 namespace Zec;
 
+use Exception;
+
 if(!trait_exists('ZecErrors')) {
     trait ZecErrors {
         private array $_errors = [];
@@ -19,11 +21,9 @@ if(!trait_exists('ZecErrors')) {
         }
         private function throw_errors(): void {
             if(!$this->has_errors()) {
-                // throw new ZecError('No errors found');
+                throw new Exception('No errors found');
             }
-            throw new ZecError(
-                ZecError::generate_message($this->message_errors(), 'errors')
-            );
+            throw new ZecError::from_errors($this->errors);
         }
         private function clear_errors(): void {
             $this->_errors = [];

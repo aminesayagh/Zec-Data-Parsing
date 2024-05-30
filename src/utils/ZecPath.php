@@ -4,9 +4,10 @@ declare(strict_types=1);
 namespace Zec;
 
 if(!trait_exists('ZecPath')) {
-    trait ZecPath{
+    trait ZecPath {
         private static string $TYPE_KEY_FLAG = 'flag';
         private static string $TYPE_KEY_PARSER = 'parser';
+        private static string $TYPE_KEY = 'key';
         private array $_pile = [];
         public function set_key_flag(string $value): Zec {
             if(!is_string($value)) {
@@ -39,7 +40,7 @@ if(!trait_exists('ZecPath')) {
             ];
             return $this;
         }
-        public function get_pile() {
+        public function get_pile(): array {
             return $this->_pile;
         }
         public function get_last_flag() {
@@ -69,6 +70,9 @@ if(!trait_exists('ZecPath')) {
                 if($p['key'] === self::$TYPE_KEY_PARSER) {
                     $pile_string .= '.' . $p['value'];
                 }
+                if($p['key'] === self::$TYPE_KEY) {
+                    $pile_string .= '->' . $p['value'];
+                }
             }
             return $pile_string;
         }
@@ -84,9 +88,25 @@ if(!trait_exists('ZecPath')) {
             $this->_pile = array_reverse($pile);
             return $this;
         }
+        public function clear_last_parser() {
+            $pile = $this->_pile;
+            $pile = array_reverse($pile);
+            foreach($pile as $key => $p) {
+                unset($pile[$key]);
+                if($p['key'] == $this::$TYPE_KEY_PARSER) {
+                    break;
+                }
+            }
+            $this->_pile = array_reverse($pile);
+            return $this;
+        }
         public function reset_pile() {
             $this->_pile = [];
             return $this;
         }
+        public function get_pile_length(): int {
+            return count($this->_pile);
+        }
+        
     }
 }

@@ -110,6 +110,7 @@ if(!class_exists('Zed')) {
                 } 
                 $this->set_key_parser($parser->name);
                 $response = $parser->parse($this->_value, Parser::proxy_set_arg($this->_default, $this));
+                $this->clear_last_parser();
                 if($response['close']) {
                     break;
                 }
