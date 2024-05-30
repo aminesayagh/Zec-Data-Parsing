@@ -23,7 +23,7 @@ if(!trait_exists('ZecErrors')) {
             if(!$this->has_errors()) {
                 throw new Exception('No errors found');
             }
-            throw new ZecError::from_errors($this->errors);
+            throw ZecError::from_errors($this->_errors);
         }
         private function clear_errors(): void {
             $this->_errors = [];

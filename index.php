@@ -18,6 +18,8 @@ require_once ZEC_PATH . '/src/utils/ParserPriority.php';
 
 require_once ZEC_PATH . '/src/utils/ZecPath.php';
 
+require_once ZEC_PATH . '/src/utils/ZecErrorFrom.php';
+
 require_once ZEC_PATH . '/src/utils/ZecErrors.php';
 
 require_once ZEC_PATH . '/src/utils/ZecConf.php';

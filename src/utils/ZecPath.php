@@ -43,6 +43,11 @@ if(!trait_exists('ZecPath')) {
         public function get_pile(): array {
             return $this->_pile;
         }
+        public function set_pile(array $pile): Zec {
+            $this->reset_pile();
+            $this->_pile = $pile;
+            return $this;
+        }
         public function get_last_flag() {
             $pile = $this->_pile;
             $last_flag = null;

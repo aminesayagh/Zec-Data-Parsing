@@ -3,14 +3,26 @@ declare(strict_types=1);
 
 namespace Zec;
 
+// STRUCT OF AN ERROR MESSAGE
+// {
+//     "message": "Error message",
+//     "key": "[flag].parser"
+//     "children": [
+//         {
+//             "message": "Error message",
+//             "key": "[flag].parser"
+//         }
+//     ]
+// }
+
 if (!class_exists('ZecError')) {
     /**
      * Represents an error that occurred during the execution of the Zec library.
      */
     class ZecError extends \Exception
     {
-        use ZecPath;
-        private $_key = 'unknown';
+        use ZecPath, ZecErrorFrom;
+        private $_key = null;
         private $_key_name = 'key'; 
         private array $_children = [];
         private array|string $_message = '';
@@ -31,48 +43,11 @@ if (!class_exists('ZecError')) {
                 $this->pile_merge($message['pile'] ?? [], []);
                 parent::__construct(json_encode($this->_message),...$args); 
             } else if (is_string($message)) {
-                $this->_key = 'unknown';
                 $this->_message = $message;
                 parent::__construct($message,...$args);
             } else {
                 throw new \Exception('Invalid message format');
             }
-        }
-        static function from_exception(\Exception $e): ZecError {
-            return new ZecError([
-                'message' => $e->getMessage(),
-                'pile' => [
-                    [
-                        'key' => 'exception',
-                        'value' => $e
-                    ]
-                ]
-            ], $e->getCode(), $e->getPrevious());
-        }
-        static function from_message(string $message): ZecError {
-            return new ZecError($message);
-        }
-        static function from_message_pile(string $message, array $pile): ZecError {
-            return new ZecError([
-                'message' => $message,
-                'pile' => $pile
-            ]);
-        }
-        static function from_message_key(string $message, string $key): ZecError {
-            return new ZecError([
-                'message' => $message,
-                'pile' => [
-                    [
-                        'key' => 'key',
-                        'value' => $key
-                    ]
-                ]
-            ]);
-        }
-        static function from_errors(array $errors): ZecError {
-            $error = ZecError::from_message('Multiple errors occurred');
-            $error->set_children($errors);
-            return $error;
         }
         public function set_pile(array $pile): void {
             $this->_pile = $pile;
@@ -96,10 +71,19 @@ if (!class_exists('ZecError')) {
         }
         public function get_message(): array
         {
-            return [
-                $this->_key_name => $this->get_key(),
-                'message' => $this->_message,
-            ];
+            $key = $this->get_key();
+            $response = [];
+            $response['message'] = $this->_message;
+            if (count($this->_children) > 0) {
+                $response['children'] = [];
+                foreach ($this->_children as $child) {
+                    $response['children'][] = $child->get_message();
+                }
+            }
+            if ($key !== '') {
+                $response['key'] = $key;   
+            }
+            return $response;
         }
         public function get_key(): string {
             $this->_key = $this->_key ?? $this->get_pile_string();
