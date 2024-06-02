@@ -1,16 +1,10 @@
 <?php
 declare(strict_types=1);
 
-use function Zec\z;
-use Zec\FIELD as FK; // FK: Field Key
-use Zec\PARSERS_KEY as PK; // PK: Parser Key
-
-require_once ZEC_PATH . '/src/CaretakerParsers.php';
-require_once ZEC_PATH . '/src/config/Bundler.php';
-require_once ZEC_PATH . '/src/Zec.php';
-
-use function Zec\bundler as bundler;
-use function Zec\is_zec;
+use Zec\CONST\FIELD as FK; // FK: Field Key
+use Zec\CONST\PARSERS_KEY as PK; // PK: Parser Key
+use function Zec\Utils\z as z;
+use function Zec\Bundler\bundler as bundler;
 
 bundler()->assign_parser_config(PK::EMAIL, [
     FK::PRIORITIZE => [

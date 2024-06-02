@@ -4,7 +4,10 @@ declare(strict_types=1);
 namespace Zec;
 
 use BadMethodCallException;
-use Zec\PARSERS_KEY as PK; // PK: Parser Key
+use Zec\CONST\PARSERS_KEY as PK; // PK: Parser Key
+use Zec\Traits;
+use function Zec\Utils\is_zec;
+use function Zec\bundler\bundler as bundler;
 
 require_once ZEC_PATH . '/src/parsers/Parser.php';
 require_once ZEC_PATH . '/src/parsers/Parsers.php';
@@ -13,7 +16,8 @@ require_once ZEC_PATH . '/src/Exception.php';
 
 if(!class_exists('Zed')) {
     class Zec extends Parsers {
-        use ZecErrors, ZecPath, ZecConfigs, ZecUtils, ZecDefault, ZecValue, ZecParent;        
+        use Traits\ZecErrors, Traits\ZecPath, Traits\ZecConfigs, Traits\ZecUtils, Traits\ZecDefault, Traits\ZecValue, Traits\ZecParent;
+        public const VERSION = '1.0.0'; 
         public function __construct(Zec|array|null $args = null) {
             parent::__construct();
             // if type of args is Zec then clone it as a parent
@@ -145,38 +149,5 @@ if(!class_exists('Zed')) {
             }
             return $this->get_value();
         }
-    }
-}
-
-if (!function_exists('zec')) {
-    /**
-     * Returns an instance of the Zec class.
-     *
-     * @param array $parsers The array of parsers to assign to the Zec instance.
-     * @param ZecErrors $errors The array of errors to assign to the Zec instance.
-     * @return Zec The instance of the Zec class.
-     */
-    function zec(Zec|array|null $args = null): Zec {
-        return new Zec($args);
-    }
-}
-
-if (!function_exists('is_zec')) {
-    /**
-     * Checks if the given value is an instance of the Zec class.
-     *
-     * @param mixed $value The value to check.
-     * @return bool Returns true if the value is an instance of Zec, false otherwise.
-     */
-    function is_zec($value): bool {
-        return is_a($value, \Zec\Zec::class);
-    }
-}
-
-
-if (!function_exists('z')) {
-    
-    function z(Zec|array|null $args = null): Zec {
-        return zec($args);
     }
 }

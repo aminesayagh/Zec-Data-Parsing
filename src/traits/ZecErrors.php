@@ -1,8 +1,9 @@
 <?php
 declare (strict_types = 1);
 
-namespace Zec;
-
+namespace Zec\Traits;
+use Zec\Zec;
+use Zec\ZecError;
 use Exception;
 
 if(!trait_exists('ZecErrors')) {
@@ -23,7 +24,35 @@ if(!trait_exists('ZecErrors')) {
             if(!$this->has_errors()) {
                 throw new Exception('No errors found');
             }
-            throw ZecError::from_errors($this->_errors);
+            throw ZecError::from_errors($this);
+        }
+        public function get_map_errors(): array {
+            $map = [];
+            $errors = $this->get_errors();
+            function edit_case(array $keys, array &$map, mixed $error): void {
+                $key = array_shift($keys);
+                if(count($keys) === 0) {
+                    if(!isset($map[$key])) {
+                        $map[$key] = [];
+                        $map[$key][] = $error;
+                    }
+                    return;
+                }
+                if(!isset($map[$key])) {
+                    $map[$key] = [];
+                }
+                edit_case($keys, $map[$key], $error);
+            }
+            foreach($errors as $error) {
+                $pile = $error->get_pile();
+                $keys = [];
+                foreach ($pile as $i => $p) {
+                     
+                    $keys[] = $p['value'];
+                }
+                edit_case($keys, $map, $error);
+            }
+            return $map;
         }
         private function clear_errors(): void {
             $this->_errors = [];

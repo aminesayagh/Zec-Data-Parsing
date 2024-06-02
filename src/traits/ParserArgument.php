@@ -1,9 +1,12 @@
 <?php
 declare(strict_types=1);
 
-namespace Zec;
-use Zec\FIELD as FK;
-use Zec\CONFIG_KEY as CK;
+namespace Zec\Traits;
+
+use Zec\CONST\CONFIG_KEY as CK;
+use Zec\Parser as Parser;
+use function Zec\Utils\is_zec as is_zec;
+use Zec\Zec as Zec;
 
 if (!trait_exists('ParserArgument')) {
     trait ParserArgument {

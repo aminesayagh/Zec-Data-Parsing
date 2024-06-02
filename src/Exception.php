@@ -3,57 +3,42 @@ declare(strict_types=1);
 
 namespace Zec;
 
-// STRUCT OF AN ERROR MESSAGE
-// {
-//     "message": "Error message",
-//     "key": "[flag].parser"
-//     "children": [
-//         {
-//             "message": "Error message",
-//             "key": "[flag].parser"
-//         }
-//     ]
-// }
-
 if (!class_exists('ZecError')) {
     /**
      * Represents an error that occurred during the execution of the Zec library.
      */
     class ZecError extends \Exception
     {
-        use ZecPath, ZecErrorFrom;
+        public const VERSION = '1.0.0'; 
+        use Traits\ZecPath, Traits\ZecErrorFrom;
         private $_key = null;
         private $_key_name = 'key'; 
         private array $_children = [];
-        private array|string $_message = '';
+        private string $_message = '';
         static $KEY_TYPE_DEFAULT = 'key';
-        /**
-         * The key associated with the error, if applicable.
-         *
-         * @var string|null
-         */
-        public function __construct(array|string $message, mixed ...$args)
+        public function __construct(array|string $body, mixed ...$args)
         {
-            if (is_array($message)) {
-                if (!isset($message['message']) && !isset($message['pile'])) {
+            if (is_array($body)) {
+                if (!isset($body['message']) && !isset($body['pile'])) {
                     throw new \Exception('Invalid message format');
                 }
-                $this->_message = $message['message'];
-                $this->set_pile($message['pile'] ?? []);
-                $this->pile_merge($message['pile'] ?? [], []);
-                parent::__construct(json_encode($this->_message),...$args); 
-            } else if (is_string($message)) {
-                $this->_message = $message;
-                parent::__construct($message,...$args);
+                $this->_message = $body['message'];
+                $this->set_pile($body['pile'] ?? []);
+                $this->pile_merge($body['pile'] ?? [], []);
+            } else if (is_string($body)) {
+                $this->_message = $body;
             } else {
                 throw new \Exception('Invalid message format');
             }
+            parent::__construct($this->_message,...$args); 
         }
         public function set_pile(array $pile): void {
             $this->_pile = $pile;
         }
         public function set_children(array $errors): void {
-            $this->_children = $errors;
+            foreach ($errors as $error) {
+                $this->_children[] = $error;
+            }
         }
         public function log() {
             $messageArray = $this->get_message();

@@ -4,7 +4,7 @@ declare(strict_types=1);
 namespace Zec;
 use Zec\CaretakerParsers;
 use Zec\Parser;
-use Zec\LIFECYCLE_PARSER as LC_P;
+use Zec\CONST\LIFECYCLE_PARSER as LC_P;
 
 require_once ZEC_PATH . '/src/CaretakerParsers.php';
 

@@ -1,8 +1,9 @@
 <?php 
 declare(strict_types=1);
 
-namespace Zec {
+namespace Zec\CONST {
     class FIELD {
+        const VERSION = '1.0.0';
         const PRIORITIZE = 'prioritize';
         const PARSER_ARGUMENTS = 'parser_arguments';
         const DEFAULT_ARGUMENT = 'default_argument';
@@ -13,9 +14,10 @@ namespace Zec {
     }
 }
 
-namespace Zec {
+namespace Zec\CONST {
     // Get a list of all const element on Zec\PARSER\KEY
     class PARSERS_KEY {
+        const VERSION = '1.0.0';
         const REQUIRED = 'required';
         const OPTIONAL = 'optional';
         const EMAIL = 'email';
@@ -33,16 +35,19 @@ namespace Zec {
     }
 
     class CONFIG_KEY {
+        const VERSION = '1.0.0';
         const TRUST_ARGUMENTS = 'trust_arguments';
         const STRICT = 'strict';
     }
 
     class CONFIG_ROLE {
+        const VERSION = '1.0.0';
         const READONLY = 'readonly';
         const READWRITE = 'readwrite';
     }
 
     class LIFECYCLE_PARSER {
+        const VERSION = '1.0.0';
         const CREATE = 'create'; // -> build, create a zec instance
         const BUILD = 'build'; // -> assign, parameter by zec Bundle
         const ASSIGN = 'assign'; // -> parse, assign to a zec instance

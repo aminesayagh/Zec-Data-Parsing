@@ -1,13 +1,15 @@
 <?php
 declare(strict_types=1);
 
-namespace Zec;
+namespace Zec\Traits;
+use Zec\Zec;
 
-use Zec\CONFIG_KEY as CK;
-use Zec\CONFIG_ROLE as CR;
+use Zec\CONST\CONFIG_KEY as CK;
+use Zec\CONST\CONFIG_ROLE as CR;
 
 if(!class_exists('ZecConf')) {
     class ZecConf {
+        public const VERSION = '1.0.0';
         private string $_key;
         private mixed $_value;
         private string $_type;

@@ -1,7 +1,8 @@
 <?php 
-require_once './index.php';
+require_once __DIR__ . '/index.php';
 
-use function Zec\z;
+use function Zec\Utils\z;
+
 
 $userProfileParser = z()->options([
     'name' => z()->string()->min(3)->max(50),

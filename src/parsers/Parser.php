@@ -1,16 +1,19 @@
 <?php
 declare(strict_types=1);
 
+
 namespace Zec;
 
 use Exception;
-use Zec\FIELD as FK;
-use Zec\CONFIG_KEY as CK;
-use Zec\LIFECYCLE_PARSER as LC;
+use Zec\CONST\FIELD as FK;
+use Zec\CONST\LIFECYCLE_PARSER as LC;
+use Zec\Traits;
+
+
 
 if (!class_exists('Parser')) {
     class Parser {
-        use ParserArgument, ParserOrder, ParserPriority, ParserLifecycle;
+        use Traits\ParserArgument, Traits\ParserOrder, Traits\ParserPriority, Traits\ParserLifecycle;
         private ?string $_name = null;
         private array $_prioritize = [];
         private mixed $_parser_callback = null;

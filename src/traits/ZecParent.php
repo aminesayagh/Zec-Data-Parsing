@@ -1,7 +1,8 @@
 <?php 
 declare (strict_types = 1);
 
-namespace Zec;
+namespace Zec\Traits;
+use Zec\Zec;
 
 if(!trait_exists('ZecParent')) {
     trait ZecParent {

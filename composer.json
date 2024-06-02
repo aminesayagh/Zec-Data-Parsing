@@ -8,10 +8,7 @@
     "autoload": {
         "psr-4": {
             "Zec\\": "src/"
-        },
-        "files": [
-            "index.php"
-        ]
+        }
     },
     "license": "MIT",
     "authors": [

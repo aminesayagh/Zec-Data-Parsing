@@ -1,8 +1,10 @@
 <?php
 declare (strict_types = 1);
 
-namespace Zec;
-use Zec\PARSERS_KEY as PK; // PK: Parser Key
+namespace Zec\Traits;
+
+use Zec\CONST\PARSERS_KEY as PK; // PK: Parser Key
+use function Zec\Utils\is_zec;
 
 if(!trait_exists('ZecUtils')) {
     trait ZecUtils {

@@ -1,7 +1,11 @@
 <?php
 declare(strict_types=1);
 
-namespace Zec;
+namespace Zec\Traits;
+
+use \Zec\Zec;
+use function \Zec\Utils\is_zec;
+
 
 if(!trait_exists('ZecPath')) {
     trait ZecPath {

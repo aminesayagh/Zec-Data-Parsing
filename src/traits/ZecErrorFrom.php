@@ -1,7 +1,9 @@
 <?php 
 declare (strict_types = 1);
 
-namespace Zec;
+namespace Zec\Traits;
+use Zec\ZecError as ZecError;
+use Zec\Zec as Zec;
 
 if(!trait_exists('ZecErrorFrom')) {
     trait ZecErrorFrom {
@@ -36,9 +38,9 @@ if(!trait_exists('ZecErrorFrom')) {
                 ]
             ]);
         }
-        static function from_errors(array $errors): ZecError {
+        static function from_errors(Zec $zec): ZecError {
             $error = ZecError::from_message('Multiple errors occurred');
-            $error->set_children($errors);
+            $error_map = $zec->get_map_errors();
             return $error;
         }
     }

@@ -1,8 +1,8 @@
 <?php
 declare(strict_types=1);
 
-namespace Zec;
-
+namespace Zec\Traits;
+use Zec\Parser;
 
 if (!trait_exists('ParserPriority')) {
     trait ParserPriority {

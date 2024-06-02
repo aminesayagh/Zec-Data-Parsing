@@ -1,9 +1,9 @@
 <?php 
 declare(strict_types=1);
 
-namespace Zec;
-use Zec\FIELD as FK;
-use Zec\LIFECYCLE_PARSER as LC_P;
+namespace Zec\Traits;
+use Zec\CONST\LIFECYCLE_PARSER as LC_P;
+use Zec\Parser as Parser;
 
 if(!trait_exists('ParserLifecycle')) {
     trait ParserLifecycle {

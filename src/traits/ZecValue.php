@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Zec;
+namespace Zec\Traits;
 
 if (!trait_exists('ZecValue')) {
     trait ZecValue

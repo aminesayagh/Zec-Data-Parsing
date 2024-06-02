@@ -2,12 +2,10 @@
 declare(strict_types=1);
 
 
-namespace Zec;
-use Zec\FIELD as FK;
-use Zec\LIFECYCLE_PARSER as LC_P;
-
-// require_once ZEC_PATH . '/src/config/init.php';
-require_once ZEC_PATH . '/src/CaretakerParsers.php';
+namespace Zec\Bundler;
+use Zec\CONST\FIELD as FK;
+use Zec\CaretakerParsers;
+use Zec\Parser;
 
 
 if (!class_exists('Bundler')) {
@@ -18,6 +16,7 @@ if (!class_exists('Bundler')) {
      * It provides functionality for bundling and managing default parsers.
      */
     class Bundler extends CaretakerParsers {
+        public const VERSION = '1.0.0';
         private static ?Bundler $_instance = null;
         private bool $_parser_ordered = false;
         const ARRAY_CONFIG_KEYS = [
