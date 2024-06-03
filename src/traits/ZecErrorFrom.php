@@ -7,7 +7,7 @@ use Zec\Zec as Zec;
 
 if(!trait_exists('ZecErrorFrom')) {
     trait ZecErrorFrom {
-        static function from_exception(\Exception $e): ZecError {
+        static function fromException(\Exception $e): ZecError {
             return new ZecError([
                 'message' => $e->getMessage(),
                 'pile' => [
@@ -18,16 +18,16 @@ if(!trait_exists('ZecErrorFrom')) {
                 ]
             ], $e->getCode(), $e->getPrevious());
         }
-        static function from_message(string $message): ZecError {
+        static function fromMessage(string $message): ZecError {
             return new ZecError($message);
         }
-        static function from_message_pile(string $message, array $pile): ZecError {
+        static function fromMessagePile(string $message, array $pile): ZecError {
             return new ZecError([
                 'message' => $message,
                 'pile' => $pile
             ]);
         }
-        static function from_message_key(string $message, string $key): ZecError {
+        static function fromMessageKey(string $message, string $key): ZecError {
             return new ZecError([
                 'message' => $message,
                 'pile' => [
@@ -38,9 +38,12 @@ if(!trait_exists('ZecErrorFrom')) {
                 ]
             ]);
         }
-        static function from_errors(Zec $zec): ZecError {
-            $error = ZecError::from_message('Multiple errors occurred');
-            $error_map = $zec->get_map_errors();
+        static function fromErrors(Zec $zec): ZecError {
+            $error = ZecError::fromMessage('Multiple errors occurred');
+            $error_map = $zec->getMapErrors();
+            // foreach($error_map as $key => $value) {
+            //     $error->set_children($value);
+            // }
             return $error;
         }
     }

@@ -10,64 +10,73 @@ use Zec\CONST\CONFIG_ROLE as CR;
 if(!class_exists('ZecConf')) {
     class ZecConf {
         public const VERSION = '1.0.0';
-        private string $_key;
-        private mixed $_value;
-        private string $_type;
+        private string $key;
+        private mixed $value;
+        private string $type;
         public function __construct(string $key, mixed $init_value, string $type) {
-            $this->_key = $key;
-            $this->_value = $init_value;
-            $this->_type = $type;
+            $this->key = $key;
+            $this->value = $init_value;
+            $this->type = $type;
         }
-        public function get_key() {
-            return $this->_key;
+        public function getKey() {
+            return $this->key;
         }
         public function clone () {
-            return new ZecConf($this->_key, $this->_value, $this->_type);
+            return new ZecConf($this->key, $this->value, $this->type);
         }
-        public function get_value() {
-            return $this->_value;
+        public function getType() {
+            return $this->type;
         }
-        public function get_type() {
-            return $this->_type;
-        }
-        public function set_value($value) {
-            if ($this->_type === 'readonly') {
+        public function setValue($value) {
+            if ($this->type === 'readonly') {
                 throw new \Exception('Cannot set value of readonly config');
             }
-            $this->_value = $value;
+            $this->value = $value;
+        }
+        public function getValue() {
+            return $this->value;
         }
     }
 }
 
 if(!trait_exists('ZecConfigs')) {
     trait ZecConfigs {
-        private array $_config = [];
-        private static array $_default_configs = [
+        private array $configs = [];
+        private static array $default_configs = [
             CK::TRUST_ARGUMENTS => [false, CR::READWRITE],
             CK::STRICT => [false, CR::READONLY],
         ];
-        private function init_config(?array $args = null) {
-            foreach(self::$_default_configs as $config_key => $config_value) {
-                // check the value from the args else check it from the default configs
+        private function initConfig(?array $args = null) {
+            foreach(self::$default_configs as $config_key => $config_value) {
                 $value = isset($args[$config_key]) ? $args[$config_key] : $config_value[0];
                 $role = $config_value[1];
 
-                $this->_config[$config_key] = new ZecConf($config_key, $value, $role);
+                $this->config[$config_key] = new ZecConf($config_key, $value, $role);
             }
         }
 
-        public function get_configs() {
-            return $this->_config;
+        public function getConfigs() {
+            return $this->config;
         }
         
-        public function configs_extend(Zec $zec) {
-            $zec_config = $zec->get_configs();
+        public function configsExtend(Zec $zec) {
+            $zec_config = $zec->getConfigs();
             foreach($zec_config as $key => $value) {
-                $this->_config[$key] = new ZecConf($key, $value->get_value(), $value->get_type());
+                if (!($value instanceof ZecConf)) {
+                    throw new \Exception('Invalid config value');
+                }
+                $this->config[$key] = new ZecConf($key, $value->getValue(), $value->getType());
             }
         }
-        public function get_config(string $key) {
-            return $this->_config[$key]->get_value();
+        public function getConfig(string $key) {
+            if (!isset($this->config[$key])) {
+                throw new \Exception("Config $key not found");
+            }
+            $config = $this->config[$key];
+            if (is_null($config)) {
+                throw new \Exception("Config $key not found");
+            }
+            return $config->getValue();
         }
     }
 }

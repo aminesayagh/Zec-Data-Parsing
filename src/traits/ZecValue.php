@@ -6,17 +6,17 @@ namespace Zec\Traits;
 if (!trait_exists('ZecValue')) {
     trait ZecValue
     {
-        private $_value = null;
+        private $value = null;
 
-        public function set_value($value)
+        public function setValue($value)
         {
-            $this->_value = $value;
+            $this->value = $value;
             return $this;
         }
 
-        public function get_value()
+        public function getValue()
         {
-            return $this->_value;
+            return $this->value;
         }
     }
 }

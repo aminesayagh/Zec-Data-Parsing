@@ -12,18 +12,18 @@ if(!trait_exists('ZecPath')) {
         private static string $TYPE_KEY_FLAG = 'flag';
         private static string $TYPE_KEY_PARSER = 'parser';
         private static string $TYPE_KEY = 'key';
-        private array $_pile = [];
-        public function set_key_flag(string $value): Zec {
+        private array $pile = [];
+        public function setKeyFlag(string $value): Zec {
             if(!is_string($value)) {
                 throw new \Exception('Flag value must be a string');
             }
-            $this->_pile[] = [
+            $this->pile[] = [
                 'key' => self::$TYPE_KEY_FLAG,
                 'value' => $value
             ];
             return $this;
         }
-        static function pile_merge(array $pile1, array $pile2): array {
+        static function pileMerge(array $pile1, array $pile2): array {
             $pile = [];
             foreach($pile1 as $p) {
                 $pile[] = $p;
@@ -34,26 +34,26 @@ if(!trait_exists('ZecPath')) {
             return $pile;
         }
         
-        public function set_key_parser(string $value): Zec {
+        public function setKeyParser(string $value): Zec {
             if(!is_string($value)) {
                 throw new \Exception('Parser value must be a string');
             }
-            $this->_pile[] = [
+            $this->pile[] = [
                 'key' => self::$TYPE_KEY_PARSER,
                 'value' => $value
             ];
             return $this;
         }
-        public function get_pile(): array {
-            return $this->_pile;
+        public function getPile(): array {
+            return $this->pile;
         }
-        public function set_pile(array $pile): Zec {
-            $this->reset_pile();
-            $this->_pile = $pile;
+        public function setPile(array $pile): Zec {
+            $this->resetPile();
+            $this->pile = $pile;
             return $this;
         }
         public function get_last_flag() {
-            $pile = $this->_pile;
+            $pile = $this->pile;
             $last_flag = null;
             foreach($pile as $p) {
                 if($p['key'] === self::$TYPE_KEY_FLAG) {
@@ -62,15 +62,15 @@ if(!trait_exists('ZecPath')) {
             }
             return $last_flag;
         }
-        public function pile_extend(Zec $z) {
+        public function pileExtend(Zec $z) {
             if(!is_zec($z)) {
                 throw new \Exception('Zec instance is required');
             }
-            $this->_pile = $this::pile_merge($z->get_pile(), $this->_pile);
+            $this->pile = $this::pileMerge($z->getPile(), $this->pile);
             return $this;
         }
-        public function get_pile_string(): string {
-            $pile = $this->_pile;
+        public function getPileString(): string {
+            $pile = $this->pile;
             $pile_string = '';
             foreach($pile as $p) {
                 if($p['key'] === self::$TYPE_KEY_FLAG) {
@@ -85,8 +85,8 @@ if(!trait_exists('ZecPath')) {
             }
             return $pile_string;
         }
-        public function clean_last_flag(null|string $flag = null) {
-            $pile = $this->_pile;
+        public function cleanLastFlag(null|string $flag = null) {
+            $pile = $this->pile;
             $pile = array_reverse($pile);
             foreach($pile as $key => $p) {
                 unset($pile[$key]);
@@ -94,11 +94,11 @@ if(!trait_exists('ZecPath')) {
                     break;
                 }
             }
-            $this->_pile = array_reverse($pile);
+            $this->pile = array_reverse($pile);
             return $this;
         }
         public function clear_last_parser() {
-            $pile = $this->_pile;
+            $pile = $this->pile;
             $pile = array_reverse($pile);
             foreach($pile as $key => $p) {
                 unset($pile[$key]);
@@ -106,15 +106,15 @@ if(!trait_exists('ZecPath')) {
                     break;
                 }
             }
-            $this->_pile = array_reverse($pile);
+            $this->pile = array_reverse($pile);
             return $this;
         }
-        public function reset_pile() {
-            $this->_pile = [];
+        public function resetPile() {
+            $this->pile = [];
             return $this;
         }
         public function get_pile_length(): int {
-            return count($this->_pile);
+            return count($this->pile);
         }
         
     }

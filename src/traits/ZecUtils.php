@@ -8,14 +8,13 @@ use function Zec\Utils\is_zec;
 
 if(!trait_exists('ZecUtils')) {
     trait ZecUtils {
-        public function is_valid() {
-            if (count($this->_errors) == 0) {
-                return true;
+        public function isValid(): bool {
+            if ($this->hasErrors()) {
+                return false;
             }
-            return false;
+            return true;
         }
-        static public function map_parse(array $data, callable $callback, array $par = []) {
-            $key = null;
+        static public function mapParse(array $data, callable $callback, array $par = []) {
             $owner = $par['owner'];
             $each = $par['argument'][PK::EACH];
             if (!is_zec($owner)) {
@@ -25,14 +24,14 @@ if(!trait_exists('ZecUtils')) {
                 if (!is_int($index)) {
                     throw new \Exception('Index on map parse must be an integer');
                 }
-                $key = $owner->set_key_flag((string)$index);
-                $each->reset_pile();
+                $key = $owner->setKeyFlag((string)$index);
+                $each->resetPile();
                 call_user_func($callback, $index, $each, $value);
 
-                $owner->clean_last_flag();
+                $owner->cleanLastFlag();
             }
         }
-        static public function associative_parse(array $data, callable $callback, array $par = []) {
+        static public function associativeParse(array $data, callable $callback, array $par = []) {
             $parsed_data = [];
             $index = 0;
             foreach($data as $key => $zec) {
@@ -40,9 +39,9 @@ if(!trait_exists('ZecUtils')) {
                     throw new \Exception('Value on associative parse must be an instance of Zec');
                 }
                 if ($index > 0) {
-                    $par['owner']->clean_last_flag();
+                    $par['owner']->cleanLastFlag();
                 }
-                $par['owner']->set_key_flag($key);
+                $par['owner']->setKeyFlag($key);
 
                 $default = null;
                 if (is_array($par['default']) && array_key_exists($key, $par['default'])) {
@@ -54,7 +53,7 @@ if(!trait_exists('ZecUtils')) {
                 call_user_func($callback, $key, $zec, $value, $index, $default);
                 $index++;
             }
-            $par['owner']->clean_last_flag();
+            $par['owner']->cleanLastFlag();
 
             return $parsed_data;
         }

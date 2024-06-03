@@ -6,7 +6,7 @@ use Zec\CONST\PARSERS_KEY as PK; // PK: Parser Key
 use function Zec\Utils\z as z;
 use function Zec\Bundler\bundler as bundler;
 
-bundler()->assign_parser_config(PK::EMAIL, [
+bundler()->assignParserConfig(PK::EMAIL, [
     FK::PRIORITIZE => [
         PK::STRING,
     ],
@@ -37,7 +37,7 @@ bundler()->assign_parser_config(PK::EMAIL, [
 
         return true;
     }
-])->assign_parser_config(PK::REQUIRED, [
+])->assignParserConfig(PK::REQUIRED, [
     FK::PRIORITIZE => [],
     FK::PARSER_ARGUMENTS => function (Zec\Zec $z) {
         return $z->options([
@@ -55,7 +55,7 @@ bundler()->assign_parser_config(PK::EMAIL, [
 
         return true;
     }
-])->assign_parser_config(PK::DATE, [
+])->assignParserConfig(PK::DATE, [
     FK::PRIORITIZE => [
         PK::STRING,
         PK::NUMBER
@@ -84,7 +84,7 @@ bundler()->assign_parser_config(PK::EMAIL, [
         }
         return true;
     }
-])->assign_parser_config(PK::BOOL, [
+])->assignParserConfig(PK::BOOL, [
     FK::PRIORITIZE => [],
     FK::PARSER_ARGUMENTS => function (Zec\Zec $z) {
         return $z->options([
@@ -101,7 +101,7 @@ bundler()->assign_parser_config(PK::EMAIL, [
         }
         return true;
     }
-])->assign_parser_config(PK::STRING, [
+])->assignParserConfig(PK::STRING, [
     FK::PRIORITIZE => [],
     FK::PARSER_ARGUMENTS => function (Zec\Zec $z) {
         return $z->options([
@@ -118,7 +118,7 @@ bundler()->assign_parser_config(PK::EMAIL, [
         }
         return true;
     }
-])->assign_parser_config(PK::URL, [
+])->assignParserConfig(PK::URL, [
     FK::PRIORITIZE => [PK::STRING],
     FK::PARSER_ARGUMENTS => function (Zec\Zec $z) {
         return $z->options([
@@ -138,7 +138,7 @@ bundler()->assign_parser_config(PK::EMAIL, [
         }
         return true;
     }
-])->assign_parser_config(PK::NUMBER, [
+])->assignParserConfig(PK::NUMBER, [
     FK::PRIORITIZE => [],
     FK::PARSER_ARGUMENTS => function (Zec\Zec $z) {
         return $z->options([
@@ -158,7 +158,7 @@ bundler()->assign_parser_config(PK::EMAIL, [
         }
         return true;
     }
-])->assign_parser_config(PK::OPTIONS, [
+])->assignParserConfig(PK::OPTIONS, [
     FK::PRIORITIZE => [],
     FK::PARSER_ARGUMENTS => function (Zec\Zec $z) {
         return $z->options([
@@ -178,13 +178,13 @@ bundler()->assign_parser_config(PK::EMAIL, [
 
         $has_error = false;
 
-        Zec\Zec::associative_parse($options, function ($key, $option, $value, $index, $default) use ($par, &$has_error) {
-            $zec_response = $option->parse($value, Zec\Zec::proxy_set_arg(
+        Zec\Zec::associativeParse($options, function ($key, $option, $value, $index, $default) use ($par, &$has_error) {
+            $zec_response = $option->parse($value, Zec\Zec::proxySetArg(
                 $default,
                 $par['owner']
             ));
 
-            if (!$zec_response->is_valid()) {
+            if (!$zec_response->isValid()) {
                 $has_error = true;
             }
             
@@ -196,7 +196,7 @@ bundler()->assign_parser_config(PK::EMAIL, [
 
         return true;
     }
-])->assign_parser_config(PK::EACH, [
+])->assignParserConfig(PK::EACH, [
     FK::PRIORITIZE => [],
     FK::PARSER_ARGUMENTS => function (Zec\Zec $z) {
         return $z->options([
@@ -218,11 +218,11 @@ bundler()->assign_parser_config(PK::EMAIL, [
         if (!($each instanceof Zec\Zec)) {
             throw new \Exception('Each parser must be an instance of Zec');
         }
-        $each = $each->set_default($default);
+        $each = $each->setDefault($default);
 
-        Zec\Zec::map_parse($values, function (int $index, Zec\Zec $each,mixed $value) use ($par, &$has_error) {
-            $zec_response = $each->parse($value, Zec\Zec::proxy_set_arg(null ,$par['owner']));
-            if (!$zec_response->is_valid()) {
+        Zec\Zec::mapParse($values, function (int $index, Zec\Zec $each,mixed $value) use ($par, &$has_error) {
+            $zec_response = $each->parse($value, Zec\Zec::proxySetArg(null ,$par['owner']));
+            if (!$zec_response->isValid()) {
                 $has_error = true;
             }
         }, $par);
@@ -233,7 +233,7 @@ bundler()->assign_parser_config(PK::EMAIL, [
 
         return true;
     }
-])->assign_parser_config(PK::MIN, [
+])->assignParserConfig(PK::MIN, [
     FK::PRIORITIZE => [
     ],
     FK::PARSER_ARGUMENTS => function (Zec\Zec $z) {
@@ -263,7 +263,7 @@ bundler()->assign_parser_config(PK::EMAIL, [
         }
         return true;
     }
-])->assign_parser_config(PK::MAX, [
+])->assignParserConfig(PK::MAX, [
     FK::PRIORITIZE => [],
     FK::PARSER_ARGUMENTS => function (Zec\Zec $z) {
         return $z->options([
@@ -294,7 +294,7 @@ bundler()->assign_parser_config(PK::EMAIL, [
         }
         return true;
     }
-])->assign_parser_config(PK::OPTIONAL, [
+])->assignParserConfig(PK::OPTIONAL, [
     FK::PRIORITIZE => [],
     FK::PARSER_ARGUMENTS => function (Zec\Zec $z) {
         return null;
@@ -306,7 +306,7 @@ bundler()->assign_parser_config(PK::EMAIL, [
         }
         return true;
     }
-])->assign_parser_config(PK::INSTANCEOF, [
+])->assignParserConfig(PK::INSTANCEOF, [
     FK::PRIORITIZE => [],
     FK::PARSER_ARGUMENTS => function (Zec\Zec $z) {
         return $z->options([
@@ -327,7 +327,7 @@ bundler()->assign_parser_config(PK::EMAIL, [
         }
         return true;
     }
-])->assign_parser_config(PK::ASSOCIATIVE, [
+])->assignParserConfig(PK::ASSOCIATIVE, [
     FK::PRIORITIZE => [],
     FK::PARSER_ARGUMENTS => function (Zec\Zec $z) {
         return $z->options([
@@ -351,7 +351,7 @@ bundler()->assign_parser_config(PK::EMAIL, [
         foreach ($value as $k => $v) {
             $key_response = $key_parser->parse($k, null, $par['owner']);
             $value_response = $value_parser->parse($v, null, $par['owner']);
-            if (!$key_response->is_valid() || !$value_response->is_valid()) {
+            if (!$key_response->isValid() || !$value_response->isValid()) {
                 $has_error = true;
             }
         }

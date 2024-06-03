@@ -17,8 +17,8 @@ if (!class_exists('Bundler')) {
      */
     class Bundler extends CaretakerParsers {
         public const VERSION = '1.0.0';
-        private static ?Bundler $_instance = null;
-        private bool $_parser_ordered = false;
+        private static ?Bundler $instance = null;
+        private bool $parser_ordered = false;
         const ARRAY_CONFIG_KEYS = [
             FK::PRIORITIZE,
             FK::PARSER_ARGUMENTS,
@@ -45,14 +45,14 @@ if (!class_exists('Bundler')) {
             // class parent
             parent::__construct();
         }
-        private function is_parser_config(array $value) : bool {
+        private function isParserConfig(array $value) : bool {
             return count(array_intersect_key($value, array_flip(self::ARRAY_CONFIG_KEYS))) === count(self::ARRAY_CONFIG_KEYS);
         }
-        private function get_complete_parser_config(string $name, array $value, array $default = null): array {
+        private function getCompleteParserConfig(string $name, array $value, array $default = null): array {
             $parser_config = array_merge(
                 $default ?? $this->DEFAULT_PARSER_CONFIG
             , $value);
-            if(!$this->is_parser_config($parser_config)) {
+            if(!$this->isParserConfig($parser_config)) {
                 throw new \Exception("The parser configuration for the parser with the key $name is not valid.");
             }
             
@@ -66,15 +66,15 @@ if (!class_exists('Bundler')) {
          * @param int $priority The priority of the parser configuration (default is 10).
          * @return $this The current instance of the Bundler.
          */
-        public function assign_parser_config(string $name, array $value, int $priority = 10) {
+        public function assignParserConfig(string $name, array $value, int $priority = 10) {
             
             $is_init_state = in_array(FK::IS_INIT_STATE, $value);
-            $before_config = parent::get_parser($name);
+            $before_config = parent::getParser($name);
             $parser_config = null;
             if(is_null($before_config)) {
-                $parser_config = $this->get_complete_parser_config($name, $value);
+                $parser_config = $this->getCompleteParserConfig($name, $value);
             } else {
-                $parser_config = $this->get_complete_parser_config($name, $value, $before_config->get_config());
+                $parser_config = $this->getCompleteParserConfig($name, $value, $before_config->getConfig());
             }
             $value_parser = array_merge(
                 $parser_config,
@@ -82,25 +82,20 @@ if (!class_exists('Bundler')) {
                 'priority' => $priority,
                 ]
             );
-            $new_parser = $this->add_parser(new Parser($name, $value_parser));
+            $new_parser = $this->addParser(new Parser($name, $value_parser));
             if(!$is_init_state) {
-                $new_parser->increment_order();
+                $new_parser->incrementOrder();
             }
             return $this;
         }
-        /**
-         * Returns an instance of the Bundler class.
-         *
-         * @return Bundler The instance of the Bundler class.
-         */
-        static function get_instance(): Bundler {
-            if (!isset(self::$_instance)) {
-                self::$_instance = new Bundler();
+        static function getInstance(): Bundler {
+            if (!isset(self::$instance)) {
+                self::$instance = new Bundler();
             }
-            return self::$_instance;
+            return self::$instance;
         }
-        static function generate_sort_parser(string $name, array &$cache): int {
-            $parser = self::get_instance()->get_parser($name, ['order' => false]);
+        static function generateSortParser(string $name, array &$cache): int {
+            $parser = self::getInstance()->getParser($name, ['order' => false]);
             if ($parser->order_of_parsing == 0) {
                 return 0;
             }
@@ -109,10 +104,10 @@ if (!class_exists('Bundler')) {
             }
             $parser_name = $parser->name;
             $parser_prioritize = $parser->prioritize;
-            $order = $parser->get_order_parsing();
+            $order = $parser->getOrderParsing();
             
             foreach ($parser_prioritize as $prioritize) {
-                $order_parent = self::generate_sort_parser($prioritize, $cache);
+                $order_parent = self::generateSortParser($prioritize, $cache);
                 if ($order_parent > $order) {
                     $order += $order_parent;
                 } else if ($order_parent == $order) {
@@ -122,40 +117,40 @@ if (!class_exists('Bundler')) {
             $cache[$parser_name] = $order;
             return $order;
         }
-        private function generate_sort_parsers () {
+        private function generateSortParsers () {
             $cache = [];
             // log_msg(count($this->parsers));
             foreach ($this->parsers as $parser) {
-                self::generate_sort_parser($parser->name, $cache);
+                self::generateSortParser($parser->name, $cache);
             }
 
             foreach ($cache as $key => $value) {
-                $parsers = $this->get_parsers($key);
+                $parsers = $this->getParsers($key);
                 foreach ($parsers as $parser) {
-                    $parser->set_order_parsing($value);
+                    $parser->setOrderParsing($value);
                 }
             }
-            $this->_parser_ordered = true;
+            $this->parser_ordered = true;
         }
-        public function get_parser(string $key, array $arg = []): ?Parser {
+        public function getParser(string $key, array $arg = []): ?Parser {
             $had_to_be_ordered = array_key_exists('order', $arg) ? $arg['order'] : true;
-            if (!$this->_parser_ordered && $had_to_be_ordered) {
-                $this->generate_sort_parsers();
+            if (!$this->parser_ordered && $had_to_be_ordered) {
+                $this->generateSortParsers();
             }
             
 
-            $parser = parent::get_parser($key);
+            $parser = parent::getParser($key);
             if (is_null($parser)) {
                 return null;
             }
             return $parser->clone();
         }
-        public function add_parser(Parser $parser): ?Parser {
-            $this->_parser_ordered = false;
-            $this->remove_parser($parser->name, $parser->priority);
-            return parent::add_parser($parser);
+        public function addParser(Parser $parser): ?Parser {
+            $this->parser_ordered = false;
+            $this->removeParser($parser->name, $parser->priority);
+            return parent::addParser($parser);
         }
-        private function remove_parser(string $name, int $priority): void {
+        private function removeParser(string $name, int $priority): void {
             $this->parsers = array_filter($this->parsers, function($parser) use ($name, $priority) {
                 return $parser->name !== $name || $parser->priority !== $priority;
             });
@@ -170,7 +165,7 @@ if(!function_exists('bundler')) {
      * @return Bundler The instance of the Bundler class.
      */
     function bundler(): Bundler {
-        return Bundler::get_instance();
+        return Bundler::getInstance();
     }
 }    
 

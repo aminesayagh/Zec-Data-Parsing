@@ -8,27 +8,27 @@ use Exception;
 
 if(!trait_exists('ZecErrors')) {
     trait ZecErrors {
-        private array $_errors = [];
-        private function set_error(ZecError $error): void {
-            foreach($this->_errors as $e) {
-                if($e->get_message() === $error->get_message()) {
+        private array $errors = [];
+        private function setError(ZecError $error): void {
+            foreach($this->errors as $e) {
+                if($e->message === $error->message) {
                     return;
                 }
             }
-            $this->_errors[] = $error;
+            $this->errors[] = $error;
         }
-        private function get_errors(): array {
-            return $this->_errors;
+        private function getErrors(): array {
+            return $this->errors;
         }
-        private function throw_errors(): void {
-            if(!$this->has_errors()) {
+        private function throwErrors(): void {
+            if(!$this->hasErrors()) {
                 throw new Exception('No errors found');
             }
-            throw ZecError::from_errors($this);
+            throw ZecError::fromErrors($this);
         }
-        public function get_map_errors(): array {
+        public function getMapErrors(): array {
             $map = [];
-            $errors = $this->get_errors();
+            $errors = $this->getErrors();
             function edit_case(array $keys, array &$map, mixed $error): void {
                 $key = array_shift($keys);
                 if(count($keys) === 0) {
@@ -44,9 +44,9 @@ if(!trait_exists('ZecErrors')) {
                 edit_case($keys, $map[$key], $error);
             }
             foreach($errors as $error) {
-                $pile = $error->get_pile();
+                $pile = $error->getPile();
                 $keys = [];
-                foreach ($pile as $i => $p) {
+                foreach ($pile as $p) {
                      
                     $keys[] = $p['value'];
                 }
@@ -54,25 +54,16 @@ if(!trait_exists('ZecErrors')) {
             }
             return $map;
         }
-        private function clear_errors(): void {
-            $this->_errors = [];
-        }  
-        private function message_errors() {
-            $errors = $this->get_errors();
-            $errors_list = [];
-            foreach($errors as $error) {
-                // $message .= $error->get_message() . PHP_EOL;
-                $errors_list[] = $error->get_message();
-            }
-            return $errors_list;
+        private function clearErrors(): void {
+            $this->errors = [];
         }
-        private function has_errors(): bool {
-            return count($this->_errors) > 0;
+        private function hasErrors(): bool {
+            return count($this->errors) > 0;
         }
-        private function errors_extend(Zec $zec): void {
-            $errors = $zec->get_errors();
+        private function errorsExtend(Zec $zec): void {
+            $errors = $zec->getErrors();
             foreach($errors as $error) {
-                $this->set_error($error);
+                $this->setError($error);
             }
         }
     }

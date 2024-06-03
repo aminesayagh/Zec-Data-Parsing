@@ -11,10 +11,9 @@ if (!class_exists('ZecError')) {
     {
         public const VERSION = '1.0.0'; 
         use Traits\ZecPath, Traits\ZecErrorFrom;
-        private $_key = null;
-        private $_key_name = 'key'; 
-        private array $_children = [];
-        private string $_message = '';
+        private $key = null;
+        private $key_name = 'key'; 
+        private array $children = [];
         static $KEY_TYPE_DEFAULT = 'key';
         public function __construct(array|string $body, mixed ...$args)
         {
@@ -22,47 +21,46 @@ if (!class_exists('ZecError')) {
                 if (!isset($body['message']) && !isset($body['pile'])) {
                     throw new \Exception('Invalid message format');
                 }
-                $this->_message = $body['message'];
-                $this->set_pile($body['pile'] ?? []);
-                $this->pile_merge($body['pile'] ?? [], []);
+                $this->message = $body['message'];
+                $this->setPile($body['pile'] ?? []);
+                $this->pileMerge($body['pile'] ?? [], []);
             } else if (is_string($body)) {
-                $this->_message = $body;
+                $this->message = $body;
             } else {
                 throw new \Exception('Invalid message format');
             }
-            parent::__construct($this->_message,...$args); 
+            parent::__construct($this->message, ...$args); 
         }
-        public function set_pile(array $pile): void {
-            $this->_pile = $pile;
+        public function setPile(array $pile): void {
+            $this->pile = $pile;
         }
         public function set_children(array $errors): void {
             foreach ($errors as $error) {
-                $this->_children[] = $error;
+                $this->children[] = $error;
             }
         }
         public function log() {
-            $messageArray = $this->get_message();
+            $messageArray = $this->generateMessage();
             $formattedMessage = json_encode($messageArray, JSON_PRETTY_PRINT);
             echo $formattedMessage . PHP_EOL;
         }
         public function __get(string $name)
         {
             if ($name === 'key') {
-                return $this->get_key();
+                return $this->getKey();
             } else if ($name === 'message') {
-                return $this->message;
+                return $this->getMessage();
             }
             throw new \Exception("Property $name not found");
         }
-        public function get_message(): array
-        {
-            $key = $this->get_key();
+        private function generateMessage(): array {
+            $key = $this->getKey();
             $response = [];
-            $response['message'] = $this->_message;
-            if (count($this->_children) > 0) {
+            $response['message'] = $this->message;
+            if (count($this->children) > 0) {
                 $response['children'] = [];
-                foreach ($this->_children as $child) {
-                    $response['children'][] = $child->get_message();
+                foreach ($this->children as $child) {
+                    $response['children'][] = $child->generateMessage();
                 }
             }
             if ($key !== '') {
@@ -70,9 +68,9 @@ if (!class_exists('ZecError')) {
             }
             return $response;
         }
-        public function get_key(): string {
-            $this->_key = $this->_key ?? $this->get_pile_string();
-            return $this->_key;
+        public function getKey(): string {
+            $this->key = $this->key ?? $this->getPileString();
+            return $this->key;
         }
     }
 }

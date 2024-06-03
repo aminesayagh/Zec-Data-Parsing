@@ -10,63 +10,67 @@ use Zec\Zec as Zec;
 
 if (!trait_exists('ParserArgument')) {
     trait ParserArgument {
-        private array $_arguments = [];
-        private mixed $_parser_arguments;
-        private mixed $_handler_argument = null;
-        private bool $_is_valid_argument = false;
-        private array $_default_argument = [];
-        public function set_is_valid_argument() {
-            if($this->_is_valid_argument === true) {
+        private array $arguments = [];
+        private mixed $parser_arguments;
+        private mixed $handler_argument = null;
+        private bool $is_valid_argument = false;
+        private array $default_argument = [];
+        public function setIsValidArgument() {
+            if($this->is_valid_argument === true) {
                 throw new \Exception('Argument is already valid');
             }
-            $this->_is_valid_argument = true;
+            $this->is_valid_argument = true;
         }
-        public function init_argument(array $default_argument, callable $parser_arguments) {
-            $this->set_default_argument($default_argument);
-            $this->set_parser_arguments($parser_arguments);
+        public function initArgument(array $default_argument, callable $parser_arguments) {
+            $this->setDefaultArgument($default_argument);
+            $this->setParserArguments($parser_arguments);
         }
-        private function set_default_argument(array $default_argument): void {
+        private function setDefaultArgument(array $default_argument): void {
             if (!is_array($default_argument)) {
                 throw new \Exception('Default argument must be an array');
             }
-            $this->_default_argument = $default_argument;
+            $this->default_argument = $default_argument;
         }
-        private function set_parser_arguments(callable $_parser_arguments): void {
-            if (!is_callable($_parser_arguments)) {
+        private function setParserArguments(callable $parser_arguments): void {
+            if (!is_callable($parser_arguments)) {
                 throw new \Exception('Parser argument must be a callable');
             }
-            $this->_parser_arguments = $_parser_arguments;
+            $this->parser_arguments = $parser_arguments;
         }
-        public function get_argument(?Zec $owner = null): array {
-            $has_to_parse_argument = is_null($owner) ? false : !$owner->get_config(CK::TRUST_ARGUMENTS);
-            if (!$has_to_parse_argument) {
-                $this->set_is_valid_argument();
+        public function getArgument(?Zec $owner = null): array {
+            try{
+                $has_to_parse_argument = is_null($owner) ? false : !$owner->getConfig(CK::TRUST_ARGUMENTS);
+                if (!$has_to_parse_argument) {
+                    $this->setIsValidArgument();
+                }
+                return $this->validArgument($owner);
+            }catch(\Exception $err) {
+                throw new \Exception('Error on getArgument ' . json_encode($owner));
             }
-            return $this->valid_argument($owner);
         }
-        private function merge_argument(): array {
-            return array_merge($this->_default_argument, $this->_arguments);
+        private function mergeArgument(): array {
+            return array_merge($this->default_argument, $this->arguments);
         }
-        private function valid_argument(Zec $parent = null): array {
-            $merged_argument = $this->merge_argument();
-            if (!$this->_is_valid_argument) {
-                // $argument_zec_validator = call_user_func($this->_parser_arguments, z([
+        private function validArgument(Zec $parent = null): array {
+            $merged_argument = $this->mergeArgument();
+            if (!$this->is_valid_argument) {
+                // $argument_zec_validator = call_user_func($this->parser_arguments, z([
                 //     CONFIG_KEY::TRUST_ARGUMENTS => true
                 // ]));
-                // $argument_zec_validator->parse_or_throw($merged_argument, [
+                // $argument_zec_validator->parseOrThrow($merged_argument, [
                 //     'parent' => $parent,
                 // ]);
-                $this->set_is_valid_argument();
+                $this->setIsValidArgument();
             }
             return $merged_argument;
         }
-        public function set_argument(mixed $argument): Parser {
+        public function setArgument(mixed $argument): Parser {
             
-            $this->_arguments = $this->_default_argument_handler($argument);
-            $this->_is_valid_argument = false;
+            $this->arguments = $this->defaultArgumentHandler($argument);
+            $this->is_valid_argument = false;
             return $this;
         }
-        private function _default_argument_handler(mixed $argument): array {
+        private function defaultArgumentHandler(mixed $argument): array {
             if (is_null($argument)) return [];
 
             if (is_array($argument)) {
@@ -81,7 +85,7 @@ if (!trait_exists('ParserArgument')) {
 
                 if (!$is_associative) {
                     return [
-                        $this->_name => $argument
+                        $this->name => $argument
                     ];
                 }
 

@@ -37,7 +37,7 @@ $userData = [
 
 
 try {
-    $userProfileParser->parse_or_throw($userData); // Throws an error
+    $userProfileParser->parseOrThrow($userData); // Throws an error
     echo "User data is valid\n";
 } catch (\Zec\ZecError $e) {
     echo "User data is invalid: ";

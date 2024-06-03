@@ -6,22 +6,22 @@ use Zec\Zec;
 
 if(!trait_exists('ZecParent')) {
     trait ZecParent {
-        private ?Zec $_parent = null;
-        private function _clone_parent(?Zec $parent): Zec {
+        private ?Zec $parent = null;
+        private function cloneParent(?Zec $parent): Zec {
             if(is_null($parent)) {
                 return $this;
             }
-            $this->_parent = $parent;
-            $this->pile_extend($parent);
-            $this->configs_extend($parent);
+            $this->parent = $parent;
+            $this->pileExtend($parent);
+            $this->configsExtend($parent);
 
             return $this;
         }
-        private function _send_errors_to_parent(): void {
-            if(is_null($this->_parent)) {
+        private function sendErrorsToParent(): void {
+            if(is_null($this->parent)) {
                 return;
             }
-            $this->_parent->errors_extend($this);
+            $this->parent->errorsExtend($this);
         }
     }
 }

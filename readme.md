@@ -111,8 +111,8 @@ Use safe_parse for error-safe parsing, returning structured success/error respon
 Quickly validate data after parsing:
 
 ```php
-    $is_valid = $my_schema->parse("Hello, World!")->is_valid(); // Returns true
-    $is_invalid = $my_schema->parse(123)->is_valid(); // Returns false
+    $is_valid = $my_schema->parse("Hello, World!")->isValid(); // Returns true
+    $is_invalid = $my_schema->parse(123)->isValid(); // Returns false
 ```
 
 ### Exception Handling with Parsing
@@ -121,7 +121,7 @@ Handle exceptions using parse_or_throw for critical data validation:
 
 ```php
     try {
-        $response = $my_schema->parse_or_throw(123); // Throws ZecError
+        $response = $my_schema->parseOrThrow(123); // Throws ZecError
     } catch (ZecError $error) {
         $error_message = $error->message; // Returns "Invalid type: expected string, received integer"
     }
@@ -161,18 +161,18 @@ You can enhance the schema definition by incorporating additional validation opt
     ]);
 
     // Handling validation results
-    if ($valid_user->is_valid()) {
+    if ($valid_user->isValid()) {
         echo 'User is valid.';
     } else {
         echo 'User is invalid. Errors: ';
-        var_dump($valid_user->get_errors());
+        var_dump($valid_user->getErrors());
     }
 
-    if ($invalid_user->is_valid()) {
+    if ($invalid_user->isValid()) {
         echo 'User is valid.';
     } else {
         echo 'User is invalid. Errors: ';
-        var_dump($invalid_user->get_errors());
+        var_dump($invalid_user->getErrors());
     }
 ```
 
@@ -277,12 +277,12 @@ This example demonstrates validating a user data structure that includes nested 
     ]); // Returns a Zec object
 
     // Validate the parsed data
-    if ($user->is_valid()) {
+    if ($user->isValid()) {
         echo 'User is valid.';
-        var_dump($user->get_value()); // Outputs the validated data
+        var_dump($user->getValue()); // Outputs the validated data
     } else {
         echo 'User is invalid.';
-        var_dump($user->get_errors()); // Outputs validation errors
+        var_dump($user->getErrors()); // Outputs validation errors
     }
 ```
 
@@ -304,7 +304,7 @@ Here is how you can implement this custom parser:
     use Zec\FIELD as FK;
     
     // Define the custom size parser method
-    bundler->assign_parser_config('size', [
+    bundler->assignParserConfig('size', [
         FK::IS_INIT_STATE => false, // we can't run parser with only size
         FK::DEFAULT_ARGUMENT => [
             'size' => 0,
@@ -359,11 +359,11 @@ You can now use the custom `size` parser method in your schema definitions:
     $parsed_data = $my_schema->parse($user_data); // Returns a Zec object
 
     // Validate the parsed data
-    if ($parsed_data->is_valid()) { // Returns true if data is valid
+    if ($parsed_data->isValid()) { // Returns true if data is valid
         echo 'All data is valid.';
     } else {
         echo 'Data validation failed. Errors: ';
-        var_dump($parsed_data->get_errors()); // Outputs validation errors
+        var_dump($parsed_data->getErrors()); // Outputs validation errors
     }
 ```
 
@@ -379,7 +379,7 @@ Here is an example of overriding the `email` Parser method:
     use Zec\FIELD as FK;
 
     // Override the email parser method
-    bundler->assign_parser_config('email', [
+    bundler->assignParserConfig('email', [
         FK::IS_INIT_STATE => true, // we can run parser with email as a init state
         FK::DEFAULT_ARGUMENT => [
             'message' => 'Invalid email address',

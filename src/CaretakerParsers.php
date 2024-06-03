@@ -22,15 +22,7 @@ if (!class_exists('CaretakerParsers')) {
         {
             $this->parsers = $parsers;
         }
-        /**
-         * Retrieves the parser with the specified key from the given array of parsers, with the highest priority.
-         *
-         * @param string $key The key of the parser to retrieve.
-         * @param array|null $parsers The array of parsers to search in. If null, the default parsers will be used.
-         * @return Parser The parser with the specified key.
-         * @throws ZecError If the parser with the specified key is not found.
-         */
-        public function get_parser(string $name): ?Parser {
+        public function getParser(string $name): ?Parser {
             $parsers = $this->parsers;
 
             $selected_parsers = array_filter($parsers, function (Parser $value) use ($name) {
@@ -45,7 +37,7 @@ if (!class_exists('CaretakerParsers')) {
 
             // get the parser with the highest priority
             foreach ($selected_parsers as $value) {
-                if (is_null($selected_parser) || !$selected_parser->is_prioritized($value->get_priority())) {
+                if (is_null($selected_parser) || !$selected_parser->isPrioritized($value->getPriority())) {
                     $selected_parser = $value;
                 }
             }
@@ -55,11 +47,11 @@ if (!class_exists('CaretakerParsers')) {
             }
 
             $selected_parser_cloned_and_initialized = clone $selected_parser;
-            $selected_parser_cloned_and_initialized->set_lifecycle_state(LC_P::ASSIGN);
+            $selected_parser_cloned_and_initialized->setLifecycleState(LC_P::ASSIGN);
 
             return $selected_parser_cloned_and_initialized;
         }
-        public function get_parsers(string $name): array {
+        public function getParsers(string $name): array {
             $parsers = $this->parsers;
 
             $selected_parsers = array_filter($parsers, function (Parser $value) use ($name) {
@@ -72,13 +64,7 @@ if (!class_exists('CaretakerParsers')) {
 
             return $selected_parsers;
         }
-        /**
-         * Checks if a parser is present in the list of parsers.
-         *
-         * @param Parser $parser The parser to check.
-         * @return bool Returns true if the parser is found, false otherwise.
-         */
-        public function has_parser(Parser $parser): bool
+        public function hasParser(Parser $parser): bool
         {
             return in_array($parser, $this->parsers);
         }
@@ -88,7 +74,7 @@ if (!class_exists('CaretakerParsers')) {
          * @param string $key The parser key to check.
          * @return bool Returns true if the parser key exists, false otherwise.
          */
-        public function has_parser_key(string $key): bool
+        public function hasParserKey(string $key): bool
         {
             return in_array($key, array_map(function ($value) {
                 return $value->name;
@@ -100,9 +86,9 @@ if (!class_exists('CaretakerParsers')) {
          * @param Parser $parser The parser to add.
          * @return Parser|null The added parser, or null if the parser already exists.
          */
-        public function add_parser(Parser $parser): ?Parser
+        public function addParser(Parser $parser): ?Parser
         {
-            if ($this->has_parser($parser)) {
+            if ($this->hasParser($parser)) {
                 return null;
             }
             

@@ -23,10 +23,10 @@ if(!class_exists('Zed')) {
             // if type of args is Zec then clone it as a parent
             $parent = is_zec($args) ? $args : null;
             if(!is_null($parent)) {
-                $this->_clone_parent($parent);
+                $this->cloneParent($parent);
             }
 
-            $this->init_config($args);
+            $this->initConfig($args);
         }
         public function __clone(): void {
             $this->parsers = array_filter($this->parsers, function($parser) {
@@ -39,41 +39,36 @@ if(!class_exists('Zed')) {
                 return $parser->clone();
             });
         }
-        /**
-         * Dynamically handles method calls for the Zec class.
-         *
-         * @param string $name The name of the method being called.
-         * @param mixed $arguments The arguments passed to the method.
-         * @return mixed The result of the method call.
-         * @throws ZecError If the method or parser is not found.
-         */
         public function __call(string $name, ?array $arguments): mixed{
-
+            // check if the method exists
             if (method_exists($this, $name)) {
                 return call_user_func_array([$this, $name], $arguments);
             }
-            if (bundler()->has_parser_key($name)) {
-                $parser = bundler()->get_parser($name);
+            // check if the parser exists
+            if (bundler()->hasParserKey($name)) {
+                // get the parser
+                $parser = bundler()->getParser($name);
                 
+                // set the arguments if they exist
                 if(is_array($arguments) && count($arguments) > 0) {
                     $arguments = $arguments[0];
-                    $parser->set_argument($arguments);
+                    $parser->setArgument($arguments);
                 }
                 
-                $this->add_parser($parser);
+                // add the parser to the Zec instance
+                $this->addParser($parser);
                 return $this;
             }
-
+            // throw an error if the method or parser is not found
             throw new BadMethodCallException("Method $name not found");
         }
-        static function proxy_set_arg(mixed $default, ?Zec $parent = null): array {
-
+        static function proxySetArg(mixed $default, ?Zec $parent = null): array {
             return [
                 'default' => $default,
                 'parent' => $parent
             ];
         }
-        public static function proxy_get_arg(?array $args): array {
+        public static function proxyGetArg(?array $args): array {
             if (is_null($args)) {
                 return [
                     'default' => null,
@@ -87,67 +82,48 @@ if(!class_exists('Zed')) {
         }
         
         public function parse(mixed $value, array $args): Zec {
-
             // clean errors
-            $this->clear_errors();
+            $this->clearErrors();
 
             // set the value
-            $this->set_value($value);
+            $this->setValue($value);
 
             if (is_null($args)) {
                 $args = [];
             }
-            $args = self::proxy_get_arg($args);
+            $args = self::proxyGetArg($args);
 
-            $this->set_default($args['default']);
-            $this->_clone_parent($args['parent']);
+            $this->setDefault($args['default']);
+            $this->cloneParent($args['parent']);
 
-            $has_required = $this->has_parser_key(PK::REQUIRED);
+            $has_required = $this->hasParserKey(PK::REQUIRED);
             if (!$has_required && is_null($value)) {
                 return $this;
             }
             
-            foreach ($this->list_parsers() as $parser) {
+            foreach ($this->listParsers() as $parser) {
                 // identify $parser as a instance of Parser
                 if (!is_a($parser, Parser::class)) {
                     continue;
                 } 
-                $this->set_key_parser($parser->name);
-                $response = $parser->parse($this->_value, Parser::proxy_set_arg($this->_default, $this));
+                $this->setKeyParser($parser->name);
+                $response = $parser->parse($this->value, Parser::proxySetArg($this->default, $this));
                 $this->clear_last_parser();
                 if($response['close']) {
                     break;
                 }
             }
 
-            $this->_send_errors_to_parent();
+            $this->sendErrorsToParent();
 
             return $this;
         }
-        public function set_default(mixed $default): Zec {
-            if(is_null($default)) {
-                return $this;
+        public function parseOrThrow(mixed $value, mixed $default = null): mixed {
+            $this->parse($value, Zec::proxySetArg($default, null));
+            if (!$this->isValid()) {
+                $this->throwErrors();
             }
-            $parser_of_default = clone $this;
-            $parser_of_default->parse_or_throw($default);
-
-            $this->_default = $default;
-            return $this;
-        }
-        /**
-         * Parses the given value and throws an error if it is not valid.
-         *
-         * @param mixed $value The value to parse.
-         * @param mixed $default The default value to use if the parsed value is invalid.
-         * @return Zec The parsed value.
-         * @throws mixed The error(s) if the parsed value is invalid.
-         */
-        public function parse_or_throw(mixed $value, mixed $default = null): mixed {
-            $this->parse($value, Zec::proxy_set_arg($default, null));
-            if (!$this->is_valid()) {
-                $this->throw_errors();
-            }
-            return $this->get_value();
+            return $this->getValue();
         }
     }
 }
