@@ -1,68 +1,137 @@
 <?php
-declare (strict_types = 1);
+declare(strict_types=1);
 
 namespace Zec\Traits;
+
 use Zec\Zec;
 use Zec\ZecError;
 use Exception;
 
-if(!trait_exists('ZecErrors')) {
-    trait ZecErrors {
+if (!class_exists('ZecErrorNode')) {
+    class ZecErrorNode
+    {
+        private string $key;
+        private ZecError $error;
+        private null|string $parent;
+        public function __construct(string $key, ZecError $error, string|null $parent = null)
+        {
+            $this->key = $key;
+            $this->error = $error;
+            $this->parent = $parent;
+        }
+        public function getKey(): string
+        {
+            return $this->key;
+        }
+        public function getError(): ZecError
+        {
+            return $this->error;
+        }
+        public function getParent(): string
+        {
+            return $this->parent;
+        }
+        public function setParent(string $parent): void
+        {
+            // if the current parent is a string, and contains the new parent as a substring then return
+            if (is_string($this->parent) && strpos($this->parent, $parent) !== false) {
+                return;
+            }
+            $this->parent = $parent;
+        }
+        public function generateMessage(): array
+        {
+            $message = $this->error->generateMessage();
+            if (!is_null($this->parent)) {
+                $message['parent'] = $this->parent;
+            }
+
+            return $message;
+        }
+        static public function getChildren(array $map): array
+        {
+            $children = [];
+            foreach ($map as $child) {
+                if (!isset($child['parent'])) {
+                    $new_child = $child;
+                    $key = $child['key'];
+                    $filtered = array_filter($map, function ($item) use ($key) {
+                        return isset($item['parent']) && $item['key'] !== $key;
+                    });
+                    $filtered = array_map(function ($item) use ($key) {
+                        if (isset($item['parent']) && $item['parent'] === $key) {
+                            unset($item['parent']);
+                        }
+                        return $item;
+                    }, $filtered);
+                    if (count($filtered) > 0) {
+                        $new_child['children'] = self::getChildren($filtered);
+                    }
+                    $children[] = $new_child;
+                }
+            }
+            return $children;
+        }
+    }
+}
+
+if (!trait_exists('ZecErrors')) {
+    trait ZecErrors
+    {
         private array $errors = [];
-        private function setError(ZecError $error): void {
-            foreach($this->errors as $e) {
-                if($e->message === $error->message) {
+        private function setError(ZecError $error): void
+        {
+            foreach ($this->errors as $e) {
+                if ($e->message === $error->message) {
                     return;
                 }
             }
             $this->errors[] = $error;
         }
-        private function getErrors(): array {
+        private function getErrors(): array
+        {
             return $this->errors;
         }
-        private function throwErrors(): void {
-            if(!$this->hasErrors()) {
+        private function throwErrors(): void
+        {
+            if (!$this->hasErrors()) {
                 throw new Exception('No errors found');
             }
             throw ZecError::fromErrors($this);
         }
-        public function getMapErrors(): array {
+        public function getMapErrors(): array
+        {
             $map = [];
-            $errors = $this->getErrors();
-            function edit_case(array $keys, array &$map, mixed $error): void {
-                $key = array_shift($keys);
-                if(count($keys) === 0) {
-                    if(!isset($map[$key])) {
-                        $map[$key] = [];
-                        $map[$key][] = $error;
-                    }
-                    return;
+            foreach ($this->errors as $error) {
+                if (!($error instanceof ZecError)) {
+                    throw new Exception('Error must be an instance of ZecError');
                 }
-                if(!isset($map[$key])) {
-                    $map[$key] = [];
-                }
-                edit_case($keys, $map[$key], $error);
+
+                $map[] = new ZecErrorNode($error->key, $error);
             }
-            foreach($errors as $error) {
-                $pile = $error->getPile();
-                $keys = [];
-                foreach ($pile as $p) {
-                     
-                    $keys[] = $p['value'];
+            foreach ($map as &$item) {
+                $error = $item->getError();
+                foreach ($map as $parent) {
+                    $error_parent = $parent->getError();
+                    if ($error->isParent($error_parent->getPile())) {
+                        $item->setParent($parent->getKey());
+                    }
                 }
-                edit_case($keys, $map, $error);
             }
             return $map;
         }
-        private function clearErrors(): void {
+        private function clearErrors(): void
+        {
             $this->errors = [];
         }
-        private function hasErrors(): bool {
+        private function hasErrors(): bool
+        {
             return count($this->errors) > 0;
         }
-        private function errorsExtend(Zec $zec): void {
+        private function errorsExtend(Zec $zec): void
+        {
             $errors = $zec->getErrors();
-            foreach($errors as $error) {
+            foreach ($errors as $error) {
                 $this->setError($error);
             }
         }

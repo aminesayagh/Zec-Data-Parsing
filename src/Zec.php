@@ -4,8 +4,19 @@ declare(strict_types=1);
 namespace Zec;
 
 use BadMethodCallException;
-use Zec\CONST\PARSERS_KEY as PK; // PK: Parser Key
-use Zec\Traits;
+// use Zec\CONST\PARSERS_KEY as PK; // PK: Parser Key
+use Zec\CONST\{
+    PARSERS_KEY as PK
+};
+use Zec\Traits\{
+    ZecErrors,
+    ZecPath,
+    ZecConfigs,
+    ZecUtils,
+    ZecDefault,
+    ZecValue,
+    ZecParent
+};
 use function Zec\Utils\is_zec;
 use function Zec\bundler\bundler as bundler;
 
@@ -16,7 +27,7 @@ require_once ZEC_PATH . '/src/Exception.php';
 
 if(!class_exists('Zed')) {
     class Zec extends Parsers {
-        use Traits\ZecErrors, Traits\ZecPath, Traits\ZecConfigs, Traits\ZecUtils, Traits\ZecDefault, Traits\ZecValue, Traits\ZecParent;
+        use ZecErrors, ZecPath, ZecConfigs, ZecUtils, ZecDefault, ZecValue, ZecParent;
         public const VERSION = '1.0.0'; 
         public function __construct(Zec|array|null $args = null) {
             parent::__construct();
@@ -75,7 +86,7 @@ if(!class_exists('Zed')) {
                 $parser->setDefault($this->default);
                 $parser->setOwner($this);
                 $response = $parser->parse($this->value);
-                $this->clear_last_parser();
+                $this->clearLastParser();
                 if($response['close']) {
                     break;
                 }

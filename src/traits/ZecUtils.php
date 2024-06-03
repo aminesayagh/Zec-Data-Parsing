@@ -4,6 +4,7 @@ declare (strict_types = 1);
 namespace Zec\Traits;
 
 use Zec\CONST\PARSERS_KEY as PK; // PK: Parser Key
+use Zec\Zec;
 use function Zec\Utils\is_zec;
 
 if(!trait_exists('ZecUtils')) {
@@ -17,14 +18,17 @@ if(!trait_exists('ZecUtils')) {
         static public function mapParse(array $data, callable $callback, array $par = []) {
             $owner = $par['owner'];
             $each = $par['argument'][PK::EACH];
-            if (!is_zec($owner)) {
+            if (!($each instanceof Zec)) {
+                throw new \Exception('Owner must be an instance of Zec');
+            }
+            if (!($owner instanceof Zec)) {
                 throw new \Exception('Owner must be an instance of Zec');
             }
             foreach ($data as $index => $value) {
                 if (!is_int($index)) {
                     throw new \Exception('Index on map parse must be an integer');
                 }
-                $each->resetPile();
+                $owner->setKeyFlag((string)$index);
                 $each->cloneParent($owner);
                 call_user_func($callback, $index, $each, $value);
 

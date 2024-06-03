@@ -2,6 +2,10 @@
 declare(strict_types=1);
 
 namespace Zec;
+use Zec\Traits\{
+    ZecPath,
+    ZecErrorFrom
+};
 
 if (!class_exists('ZecError')) {
     /**
@@ -10,7 +14,7 @@ if (!class_exists('ZecError')) {
     class ZecError extends \Exception
     {
         public const VERSION = '1.0.0'; 
-        use Traits\ZecPath, Traits\ZecErrorFrom;
+        use ZecPath, ZecErrorFrom;
         private $key = null;
         private $key_name = 'key'; 
         private array $children = [];
@@ -34,9 +38,9 @@ if (!class_exists('ZecError')) {
         public function setPile(array $pile): void {
             $this->pile = $pile;
         }
-        public function set_children(array $errors): void {
-            foreach ($errors as $error) {
-                $this->children[] = $error;
+        public function setChildren(array $map): void {
+            foreach ($map as $item) {
+                $this->children[] = $item;
             }
         }
         public function log() {
@@ -53,15 +57,19 @@ if (!class_exists('ZecError')) {
             }
             throw new \Exception("Property $name not found");
         }
-        private function generateMessage(): array {
+        public function generateMessage(): array {
             $key = $this->getKey();
             $response = [];
             $response['message'] = $this->message;
+            
             if (count($this->children) > 0) {
-                $response['children'] = [];
+                $map = [];
                 foreach ($this->children as $child) {
-                    $response['children'][] = $child->generateMessage();
+                    $message = $child->generateMessage();
+                    $map[] = $message;
                 }
+                $response['children'] = Traits\ZecErrorNode::getChildren($map);
+                
             }
             if ($key !== '') {
                 $response['key'] = $key;   
@@ -74,3 +82,5 @@ if (!class_exists('ZecError')) {
         }
     }
 }
+
+

@@ -43,3 +43,4 @@ try {
     echo "User data is invalid: ";
     $e->log(); // Log the error
 }
+

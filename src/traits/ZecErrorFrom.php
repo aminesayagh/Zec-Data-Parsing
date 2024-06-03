@@ -27,23 +27,11 @@ if(!trait_exists('ZecErrorFrom')) {
                 'pile' => $pile
             ]);
         }
-        static function fromMessageKey(string $message, string $key): ZecError {
-            return new ZecError([
-                'message' => $message,
-                'pile' => [
-                    [
-                        'key' => 'key',
-                        'value' => $key
-                    ]
-                ]
-            ]);
-        }
         static function fromErrors(Zec $zec): ZecError {
             $error = ZecError::fromMessage('Multiple errors occurred');
             $error_map = $zec->getMapErrors();
-            // foreach($error_map as $key => $value) {
-            //     $error->set_children($value);
-            // }
+            $error->setChildren($error_map);
+            
             return $error;
         }
     }

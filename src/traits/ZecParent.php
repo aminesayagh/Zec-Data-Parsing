@@ -12,6 +12,7 @@ if(!trait_exists('ZecParent')) {
                 return $this;
             }
             $this->parent = $parent;
+            $this->resetPile();
             $this->pileExtend($parent);
             $this->configsExtend($parent);
 
