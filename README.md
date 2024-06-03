@@ -1,19 +1,100 @@
 # Zec: PHP Data Parsing Library
 
-The Zec Data Parsing and schema declaration Library is designed to bring the robust schema definition and validation capabilities similar to those in the Zec library (JavaScript) to PHP applications. This library offers flexible, modular, and extensible data validation tools that empower developers to enforce strict data integrity rules easily and reliably.
+The Zec Data Parsing and schema declaration Library is designed to bring schema definition and validation capabilities to PHP applications.
+
+## Installation
+
+```bash
+composer require mohamed-amine-sayagh/zec
+```
 
 ## Usage Example
 
-Below is an example of how to use our library:
-    - Define a schema for user data validation.
-    - Parse user data and validate it.
-    - Handle validation results.
+Here's an example of how to use the Zec library to define and validate a user profile schema:
 
-![Usage Before Example](images/before.png "Library Usage Example")
-![Usage After Example](images/after.png "Library Usage Example")
-![Usage After Test Example](images/after-test.png "Library Usage Example")
-![Usage After Test Console Example](images/after-test-console.png "Library Usage Example")
+### Define a schema for user data validation
 
+```php
+    use function Zec\Utils\z;
+
+    // Define the user profile schema
+    $userProfileParser = z()->options([
+        'name' => z()->string()->min(3)->max(50),  // Name must be a string between 3 and 50 characters
+        'age' => z()->number()->min(18),           // Age must be a number and at least 18
+        'email' => z()->email(),                   // Email must be a valid email address
+        'address' => z()->options([               
+            'street' => z()->string(),             
+            'city' => z()->string()                
+        ]),
+        'hobbies' => z()->each(z()->string()),     // Hobbies must be an array of strings
+        'metadata' => z()->optional()->each(z()->options([  // Metadata is optional and must be an array of objects
+            'key' => z()->string(),                // Each object must have a key as a string
+            'value' => z()->string()               // Each object must have a value as a string
+        ]))
+    ]);
+```
+
+### Parse user data and validate it
+
+```php
+    // Parse and validate user data
+    $userData = [
+        'name' => 'Jane Doe',
+        'age' => 1, // 1 is not a valid age
+        'email' => 'jane.doe@examplecom', // missing dot
+        'address' => [
+            'street' => '123 Elm St',
+            'city' => 3 // city is not a string
+        ],
+        'hobbies' => ['photography', 'traveling', 'reading', 5], // 5 is not a string     
+        'metadata' => [
+            ['key' => 'memberSince', 'value' => '2019'],
+            ['key' => 'newsletter', 'value' => 'true']
+        ]
+    ];
+
+    try {
+        $userProfileParser->parseOrThrow($userData); // Throws an error
+        echo "User data is valid\n";
+    } catch (\Zec\ZecError $e) {
+        echo "User data is invalid: ";
+        $e->log(); // Log the error
+    }
+```
+
+### Expected Error Response
+
+```plaintext
+    User data is invalid: {
+        "message": "Multiple errors occurred",
+        "children": [
+            {
+                "message": "Invalid option values",
+                "key": ".options",
+                "children": [
+                    {
+                        "message": "Invalid value",
+                        "key": ".options[age].min"
+                    },
+                    {
+                        "message": "Invalid email address",
+                        "key": ".options[email].email"
+                    },
+                    {
+                        "message": "Invalid each value",
+                        "key": ".options[hobbies].each",
+                        "children": [
+                            {
+                                "message": "Invalid string value",
+                                "key": ".options[hobbies].each[3].string"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+```
 
 **Current Version:** v1.0.0
 

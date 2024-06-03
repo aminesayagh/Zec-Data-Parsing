@@ -25,7 +25,7 @@ $userData = [
     'email' => 'jane.doe@examplecom', // missing dot
     'address' => [
         'street' => '123 Elm St',
-        'city' => 3
+        'city' => 'Somewhere'
     ],
     'hobbies' => ['photography', 'traveling', 'reading', 5], // 5 is not a string     
     'metadata' => [
