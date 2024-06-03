@@ -4,9 +4,15 @@ The Zec Data Parsing and schema declaration Library is designed to bring schema 
 
 ## Installation
 
+### Composer
+
 ```bash
 composer require mohamed-amine-sayagh/zec
 ```
+
+### Requirements
+
+- PHP 8.0 or higher
 
 ## Usage Example
 
@@ -96,7 +102,7 @@ Here's an example of how to use the Zec library to define and validate a user pr
     }
 ```
 
-**Current Version:** v1.0.0
+**Current Version:** v1.0.0, **Release Date:** 2024-10-01, **Author:** Mohamed Amine SAYAGH, **Release Notes:** Initial release of the Zec PHP Data Parsing Library., **Release Link:** [Zec 1.0.0](
 
 **Note:** This library is currently in development. Official documentation and further resources will be available soon.
 
@@ -108,13 +114,11 @@ Here's an example of how to use the Zec library to define and validate a user pr
 
 ## Table of Contents
 
-- [Introduction](#introduction)
 - [Installation](#installation)
 - [Collaboration](#collaboration)
 - [How to Contribute](#how-to-contribute)
 - [Usage](#usage)
   - [Basic Parsing](#basic-parsing)
-  - [Safe Parsing](#safe-parsing)
   - [Validation](#validation)
   - [Exception Handling with Parsing](#exception-handling-with-parsing)
   - [Parsing of an array of options](#parsing-of-an-array-of-options)
@@ -124,10 +128,6 @@ Here's an example of how to use the Zec library to define and validate a user pr
 - [Overriding A Parser Method](#overriding-a-parser-method)
 - [License](#license)
 
-## Introduction
-
-The Zec Data Parsing and schema declaration Library is designed to bring the robust schema definition and validation capabilities similar to those in the Zec library (JavaScript) to PHP applications. This library offers flexible, modular, and extensible data validation tools that empower developers to enforce strict data integrity rules easily and reliably.
-
 ### Some other great aspects
 
 - **Robust Schema Validation**: Provides strong typing and validation similar to the Zec library, ensuring accurate data handling.
@@ -136,12 +136,6 @@ The Zec Data Parsing and schema declaration Library is designed to bring the rob
 - **Ease of Testing**: Simplifies testing by enforcing strict data validation.
 - **Flexible Configuration**: Supports dynamic parser configurations and customizations without altering the core library.
 - **Community-Focused**: Open for contributions, enhancing collective improvement and support.
-
-## Installation
-
-**Note: The PHP Data Parsing Library is currently under active development and is not yet ready for production use.**
-
-We appreciate your interest and encourage you to watch this space for updates. Once the library reaches a stable release, installation instructions will be provided here to help you get started with integrating it into your PHP projects.
 
 ## Collaboration
 
@@ -167,24 +161,14 @@ We look forward to building a powerful data parsing tool with a vibrant communit
 Define and validate data types using simple schema definitions:
 
 ```php
-    use function Zec\z;
+    use function Zec\Utils\z;
     $my_schema = z()->string();
     
     $response_valid = $my_schema->parse("Hello, World!"); // Returns Zec data object
     $value = $response_valid->value; // Returns "Hello, World!"
 
     $response_invalid = $my_schema->parse(123); // Returns Zec data object
-    $errors = $response_invalid->errors; // Returns an array of Zec error object
-```
-
-### Safe Parsing
-
-Use safe_parse for error-safe parsing, returning structured success/error responses:
-
-```php
-    $response = $my_schema->safe_parse("Hello, World!"); // Returns Zec data object
-    $value = $response->value; // Returns "Hello, World!"
-    $errors = $response->errors; // Returns null
+    $errors = $response_invalid->errors; // Returns an array of ZecError object an exception extends class
 ```
 
 ### Validation
@@ -205,6 +189,7 @@ Handle exceptions using parse_or_throw for critical data validation:
         $response = $my_schema->parseOrThrow(123); // Throws ZecError
     } catch (ZecError $error) {
         $error_message = $error->message; // Returns "Invalid type: expected string, received integer"
+        $error->log(); // Logs the error
     }
 ```
 
