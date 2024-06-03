@@ -20,5 +20,8 @@
     ],
     "minimum-stability": "stable",
     "version": "1.0.0",
-    "keywords": ["php", "secure", "data", "parsing", "library", "zec", "mohamed-amine-sayagh", "masayagh"]
+    "keywords": ["php", "secure", "data", "parsing", "library", "zec", "mohamed-amine-sayagh", "masayagh"],
+    "require-dev": {
+        "phpunit/phpunit": "^11.1"
+    }
 }

@@ -7,7 +7,7 @@ use Zec\Zec;
 if(!trait_exists('ZecParent')) {
     trait ZecParent {
         private ?Zec $parent = null;
-        private function cloneParent(?Zec $parent): Zec {
+        private function cloneParent(?Zec &$parent): Zec {
             if(is_null($parent)) {
                 return $this;
             }

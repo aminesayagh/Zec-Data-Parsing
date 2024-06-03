@@ -25,7 +25,7 @@ $userData = [
     'email' => 'jane.doe@examplecom', // missing dot
     'address' => [
         'street' => '123 Elm St',
-        'city' => 'Somewhere'
+        'city' => 3
     ],
     'hobbies' => ['photography', 'traveling', 'reading', 5], // 5 is not a string     
     'metadata' => [
@@ -44,3 +44,5 @@ try {
     $e->log(); // Log the error
 }
 
+
+// array for 

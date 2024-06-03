@@ -48,30 +48,6 @@ if (!class_exists('ZecErrorNode')) {
 
             return $message;
         }
-        static public function getChildren(array $map): array
-        {
-            $children = [];
-            foreach ($map as $child) {
-                if (!isset($child['parent'])) {
-                    $new_child = $child;
-                    $key = $child['key'];
-                    $filtered = array_filter($map, function ($item) use ($key) {
-                        return isset($item['parent']) && $item['key'] !== $key;
-                    });
-                    $filtered = array_map(function ($item) use ($key) {
-                        if (isset($item['parent']) && $item['parent'] === $key) {
-                            unset($item['parent']);
-                        }
-                        return $item;
-                    }, $filtered);
-                    if (count($filtered) > 0) {
-                        $new_child['children'] = self::getChildren($filtered);
-                    }
-                    $children[] = $new_child;
-                }
-            }
-            return $children;
-        }
     }
 }
 
@@ -134,6 +110,7 @@ if (!trait_exists('ZecErrors')) {
             foreach ($errors as $error) {
                 $this->setError($error);
             }
+            $this->sendErrorsToParent();
         }
     }
 }

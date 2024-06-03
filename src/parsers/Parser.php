@@ -96,7 +96,7 @@ if (!class_exists('Parser')) {
                 'value' => $value,
                 'default' => $this->default,
                 'argument' => $argument,
-                'owner' => $this->owner,
+                'owner' => $this->owner
             ]);
 
             if (is_string($response)) {

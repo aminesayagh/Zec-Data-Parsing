@@ -68,8 +68,8 @@ if (!class_exists('ZecError')) {
                     $message = $child->generateMessage();
                     $map[] = $message;
                 }
-                $response['children'] = Traits\ZecErrorNode::getChildren($map);
-                
+                echo json_encode($map, JSON_PRETTY_PRINT) . PHP_EOL;
+                $response['children'] = Utils\sort_errors($map);
             }
             if ($key !== '') {
                 $response['key'] = $key;   

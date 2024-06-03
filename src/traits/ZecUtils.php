@@ -37,15 +37,17 @@ if(!trait_exists('ZecUtils')) {
         }
         static public function associativeParse(array $data, callable $callback, array $par = []) {
             $parsed_data = [];
+            $owner = $par['owner'];
+
             $index = 0;
-            foreach($data as $key => $zec) {
-                if(!is_zec($zec)) {
+            foreach($data as $key => $option) {
+                if(!($option instanceof Zec)) {
                     throw new \Exception('Value on associative parse must be an instance of Zec');
                 }
                 if ($index > 0) {
-                    $par['owner']->cleanLastFlag();
+                    $owner->cleanLastFlag();
                 }
-                $par['owner']->setKeyFlag($key);
+                $owner->setKeyFlag($key);
 
                 $default = null;
                 if (is_array($par['default']) && array_key_exists($key, $par['default'])) {
@@ -54,12 +56,12 @@ if(!trait_exists('ZecUtils')) {
 
                 $value = array_key_exists($key, $par['value']) ? $par['value'][$key] : null;
 
-                $zec->setDefault($default);
-                $zec->cloneParent($par['owner']);
-                call_user_func($callback, $key, $zec, $value, $index, $default);
+                $option->cloneParent($owner);
+                $option->setDefault($default);
+                call_user_func($callback, $key, $option, $value, $index, $default);
                 $index++;
             }
-            $par['owner']->cleanLastFlag();
+            $owner->cleanLastFlag();
 
             return $parsed_data;
         }
