@@ -10,6 +10,8 @@ require_once ZEC_PATH . '/src/const/KEY.php';
 
 require_once ZEC_PATH . '/src/traits/ParserArgument.php';
 require_once ZEC_PATH . '/src/traits/ParserLifecycle.php';
+require_once ZEC_PATH . '/src/traits/ParserOwner.php';
+require_once ZEC_PATH . '/src/traits/ParserDefault.php';
 require_once ZEC_PATH . '/src/traits/ParserOrder.php';
 require_once ZEC_PATH . '/src/traits/ParserPriority.php';
 require_once ZEC_PATH . '/src/traits/ZecPath.php';

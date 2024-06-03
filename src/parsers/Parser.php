@@ -13,7 +13,7 @@ use Zec\Traits;
 
 if (!class_exists('Parser')) {
     class Parser {
-        use Traits\ParserArgument, Traits\ParserOrder, Traits\ParserPriority, Traits\ParserLifecycle;
+        use Traits\ParserArgument, Traits\ParserOrder, Traits\ParserPriority, Traits\ParserLifecycle, Traits\ParserDefault, Traits\ParserOwner;
         private ?string $name = null;
         private array $prioritize = [];
         private mixed $parser_callback = null;
@@ -42,7 +42,6 @@ if (!class_exists('Parser')) {
 
             $this->setLifecycleState(LC::BUILD);
         }
-        // constructor of copy of the parser
         public function __get($name) {
             switch ($name) {
                 case 'name':
@@ -63,11 +62,6 @@ if (!class_exists('Parser')) {
                     throw new Exception("Property $name not found", $name);
             }
         }
-        /**
-         * Clones the current parser object.
-         *
-         * @return Parser The cloned parser object.
-         */
         public function clone(): Parser { 
             return (new Parser($this->name, [
                 FK::PRIORITIZE => $this->prioritize,
@@ -83,83 +77,37 @@ if (!class_exists('Parser')) {
                 FK::PARSER_CALLBACK => $this->parser_callback
             ], $this->argument_parser->getArgument());
         }
-        private function proxyParserArgument(array $args) {
-            $args = is_null($args) ? [] : $args;
-            $default = isset($args['default']) ? $args['default'] : null; // default value of the content to parser
-            $owner = isset($args['owner']) ? $args['owner'] : null; // owner of the parser
-
-            // if the owner is not an instance of Zec, set it to null
-            $owner = $owner instanceof Zec ? $owner : null;
-
-            if (is_null($owner)) {
-                throw new Exception('The owner field must be an instance of Zec');
-            }
-            return [
-                'default' => $default,
-                'owner' => $owner
-            ];
-        }
-        static function proxyGetArg(array $args): array {
-            $args = is_null($args) ? [] : $args;
-            $default = isset($args['default']) ? $args['default'] : null; // default value of the content to parser
-            $owner = isset($args['owner']) ? $args['owner'] : null; // owner of the parser
-
-            // if the owner is not an instance of Zec, set it to null
-            $owner = $owner instanceof Zec ? $owner : null;
-
-            if (is_null($owner)) {
-                throw new Exception('The owner field must be an instance of Zec');
-            }
-            return [
-                'default' => $default,
-                'owner' => $owner
-            ];
-        }
-        static function proxySetArg(mixed $default, Zec $owner): array {
-            return [
-                'default' => $default,
-                'owner' => $owner
-            ];
-        }
         static function proxyResponseZod(bool $is_valid, bool $close = false): array {
             return [
                 'is_valid' => $is_valid,
                 'close' => $close
             ];
         }
-        public function parse(mixed $value, array $args): array {
+        public function parse(mixed $value): array {
             if (!is_callable($this->parser_callback)) {
                 throw new Exception('The parser_callback field must be a callback function');
             }
             $this->setLifecycleState(LC::PARSE);
-
-            $args = $this->proxyParserArgument($args);
             
-            $default = $args['default'];
-            $zec_owner = $args['owner'];
-            if (is_null($zec_owner)) {
-                throw new Exception('The owner field must be an instance of Zec');
-            }
-            
-            $argument = $this->getArgument($zec_owner); // get the argument of the parser, and check the config of the zec_owner
+            $argument = $this->getArgument($this->owner); // get the argument of the parser, and check the config of the zec_owner
 
             // Call the parser callback function
             $response = call_user_func($this->parser_callback, [
                 'value' => $value,
-                'default' => $default, // default value of the parser
+                'default' => $this->default,
                 'argument' => $argument,
-                'owner' => $zec_owner
+                'owner' => $this->owner,
             ]);
 
             if (is_string($response)) {
-                $zec_owner->setError(
-                    ZecError::fromMessagePile($response, $zec_owner->getPile())
+                $this->owner->setError(
+                    ZecError::fromMessagePile($response, $this->owner->getPile())
                 );
                 return self::proxyResponseZod(false);
             } else if (is_array($response)) {
                 foreach ($response as $value) {
-                    $zec_owner->setError(
-                        ZecError::fromMessagePile($value, $zec_owner->getPile())
+                    $this->owner->setError(
+                        ZecError::fromMessagePile($value, $this->owner->getPile())
                     );
                 }
                 return self::proxyResponseZod(false);

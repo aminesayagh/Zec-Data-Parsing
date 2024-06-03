@@ -24,8 +24,8 @@ if(!trait_exists('ZecUtils')) {
                 if (!is_int($index)) {
                     throw new \Exception('Index on map parse must be an integer');
                 }
-                $key = $owner->setKeyFlag((string)$index);
                 $each->resetPile();
+                $each->cloneParent($owner);
                 call_user_func($callback, $index, $each, $value);
 
                 $owner->cleanLastFlag();
@@ -50,6 +50,8 @@ if(!trait_exists('ZecUtils')) {
 
                 $value = array_key_exists($key, $par['value']) ? $par['value'][$key] : null;
 
+                $zec->setDefault($default);
+                $zec->cloneParent($par['owner']);
                 call_user_func($callback, $key, $zec, $value, $index, $default);
                 $index++;
             }

@@ -20,7 +20,6 @@ if(!class_exists('Zed')) {
         public const VERSION = '1.0.0'; 
         public function __construct(Zec|array|null $args = null) {
             parent::__construct();
-            // if type of args is Zec then clone it as a parent
             $parent = is_zec($args) ? $args : null;
             if(!is_null($parent)) {
                 $this->cloneParent($parent);
@@ -62,44 +61,10 @@ if(!class_exists('Zed')) {
             // throw an error if the method or parser is not found
             throw new BadMethodCallException("Method $name not found");
         }
-        static function proxySetArg(mixed $default, ?Zec $parent = null): array {
-            return [
-                'default' => $default,
-                'parent' => $parent
-            ];
-        }
-        public static function proxyGetArg(?array $args): array {
-            if (is_null($args)) {
-                return [
-                    'default' => null,
-                    'parent' => null
-                ];
-            }
-            return [
-                'default' => isset($args['default']) ? $args['default'] : null,
-                'parent' => isset($args['parent']) ? $args['parent'] : null
-            ];
-        }
-        
-        public function parse(mixed $value, array $args): Zec {
-            // clean errors
+        public function parse(mixed $value): Zec {
+            // Init
             $this->clearErrors();
-
-            // set the value
             $this->setValue($value);
-
-            if (is_null($args)) {
-                $args = [];
-            }
-            $args = self::proxyGetArg($args);
-
-            $this->setDefault($args['default']);
-            $this->cloneParent($args['parent']);
-
-            $has_required = $this->hasParserKey(PK::REQUIRED);
-            if (!$has_required && is_null($value)) {
-                return $this;
-            }
             
             foreach ($this->listParsers() as $parser) {
                 // identify $parser as a instance of Parser
@@ -107,7 +72,9 @@ if(!class_exists('Zed')) {
                     continue;
                 } 
                 $this->setKeyParser($parser->name);
-                $response = $parser->parse($this->value, Parser::proxySetArg($this->default, $this));
+                $parser->setDefault($this->default);
+                $parser->setOwner($this);
+                $response = $parser->parse($this->value);
                 $this->clear_last_parser();
                 if($response['close']) {
                     break;
@@ -115,11 +82,10 @@ if(!class_exists('Zed')) {
             }
 
             $this->sendErrorsToParent();
-
             return $this;
         }
-        public function parseOrThrow(mixed $value, mixed $default = null): mixed {
-            $this->parse($value, Zec::proxySetArg($default, null));
+        public function parseOrThrow(mixed $value): mixed {
+            $this->parse($value);
             if (!$this->isValid()) {
                 $this->throwErrors();
             }

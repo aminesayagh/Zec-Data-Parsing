@@ -179,10 +179,7 @@ bundler()->assignParserConfig(PK::EMAIL, [
         $has_error = false;
 
         Zec\Zec::associativeParse($options, function ($key, $option, $value, $index, $default) use ($par, &$has_error) {
-            $zec_response = $option->parse($value, Zec\Zec::proxySetArg(
-                $default,
-                $par['owner']
-            ));
+            $zec_response = $option->parse($value);
 
             if (!$zec_response->isValid()) {
                 $has_error = true;
@@ -220,8 +217,8 @@ bundler()->assignParserConfig(PK::EMAIL, [
         }
         $each = $each->setDefault($default);
 
-        Zec\Zec::mapParse($values, function (int $index, Zec\Zec $each,mixed $value) use ($par, &$has_error) {
-            $zec_response = $each->parse($value, Zec\Zec::proxySetArg(null ,$par['owner']));
+        Zec\Zec::mapParse($values, function (int $index, Zec\Zec $each, mixed $value) use ($par, &$has_error) {
+            $zec_response = $each->parse($value);
             if (!$zec_response->isValid()) {
                 $has_error = true;
             }
