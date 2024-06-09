@@ -13,6 +13,7 @@ if (!class_exists('ZecError')) {
         public const VERSION = '1.0.0'; 
         use ZecPath, ZecErrorFrom, Meta;
         private ?string $validation;
+        private bool $is_to_log = true;
         private ?array $errors;
         public function __construct(string $message, mixed ...$args) {
             $this->message = $message;
@@ -33,11 +34,20 @@ if (!class_exists('ZecError')) {
         public function path(array $path): void {
             $this->path = $path;
         }
-        public function info(): array {
+        public function info(): array|null {
             // if errors is set, return errors
+            // check if meta has a key (parser_accept_log) if yes, and the key value is false return empty array
+            // else continue
+            $info = [];
+            if (isset($this->meta['parser_accept_log']) && !$this->meta['parser_accept_log']) {
+                return null;
+            }
             if (isset($this->errors) && !is_null($this->errors)) {
                 foreach ($this->errors as $error) {
-                    $info[] = $error->info();
+                    $infoValue = $error->info();
+                    if (!is_null($infoValue)) {
+                        $info[] = $infoValue;
+                    }
                 }
                 return $info;
             }
@@ -56,7 +66,7 @@ if (!class_exists('ZecError')) {
         }
         public function log() {
             $info = $this->info();
-            echo json_encode($info, JSON_PRETTY_PRINT);
+            echo json_encode($info, JSON_PRETTY_PRINT) . PHP_EOL;
         }
     }
 }

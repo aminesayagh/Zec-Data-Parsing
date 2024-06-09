@@ -12,16 +12,18 @@ use Zec\Traits;
 
 
 if (!class_exists('Parser')) {
-    class Parser {
+    class Parser
+    {
         use Traits\ParserArgument, Traits\ParserOrder, Traits\ParserPriority, Traits\ParserLifecycle, Traits\ParserDefault, Traits\ParserOwner;
         private ?string $name = null;
         private array $prioritize = [];
         private mixed $parser_callback = null;
         private bool $is_to_log = true;
-        public function __construct(string $name, array $args = []) {
+        public function __construct(string $name, array $args)
+        {
 
             $this->name = $name;
-            $this->is_to_log = $args[FK::LOG_ERROR] ?? true;
+            $this->is_to_log = $args[FK::LOG_ERROR];
 
             $this->setPrioritize($args[FK::PRIORITIZE]);
             $this->setPriorityOfParser($args[FK::PRIORITY]);
@@ -35,7 +37,8 @@ if (!class_exists('Parser')) {
 
             $this->setLifecycleState(LC::BUILD);
         }
-        public function __get($name) {
+        public function __get($name)
+        {
             return match ($name) {
                 'name' => $this->name,
                 'prioritize' => $this->prioritize,
@@ -47,33 +50,39 @@ if (!class_exists('Parser')) {
                 default => throw new Exception("Property $name not found"),
             };
         }
-        public function clone(): Parser { 
+        public function clone(): Parser
+        {
+            // TODO: Implement the clone method based on the builder pattern
             return (new Parser($this->name, [
                 FK::PRIORITIZE => $this->prioritize,
                 FK::PRIORITY => $this->priority,
                 FK::PARSER_ARGUMENTS => $this->parser_arguments,
                 FK::DEFAULT_ARGUMENT => $this->default_argument,
-                FK::PARSER_CALLBACK => $this->parser_callback, 
+                FK::PARSER_CALLBACK => $this->parser_callback,
+                FK::LOG_ERROR => $this->is_to_log
             ]))->setArgument($this->getArgument());
         }
-        public function getConfig(): array {
+        public function getConfig(): array
+        {
             return array_merge([
                 FK::PRIORITIZE => $this->prioritize,
                 FK::PARSER_CALLBACK => $this->parser_callback
             ], $this->argument_parser->getArgument());
         }
-        static function proxyResponseZod(bool $is_valid, bool $close = false): array {
+        static function proxyResponseZod(bool $is_valid, bool $close = false): array
+        {
             return [
                 'is_valid' => $is_valid,
                 'close' => $close
             ];
         }
-        public function parse(mixed $value): array {
+        public function parse(mixed $value): array
+        {
             if (!is_callable($this->parser_callback)) {
                 throw new Exception('The parser_callback field must be a callback function');
             }
             $this->setLifecycleState(LC::PARSE);
-            
+
             $argument = $this->getArgument($this->owner); // get the argument of the parser, and check the config of the zec_owner
 
             // Call the parser callback function
@@ -84,21 +93,23 @@ if (!class_exists('Parser')) {
                 'owner' => $this->owner
             ]);
 
-            $parser_accept_log = $this->is_to_log; 
-            if (is_string($response) && $parser_accept_log) {
+            if (is_string($response)) {
                 $this->owner->setError(
                     ZecError::fromMessagePath($response, $this->owner->getPath(), [
+                        // TODO: store this keys as a const on ZecError
                         'value' => $value,
                         'parser' => $this->name,
+                        'parser_accept_log' => $this->is_to_log
                     ])
                 );
                 return self::proxyResponseZod(false);
-            } else if (is_array($response) && $parser_accept_log) {
+            } else if (is_array($response)) {
                 foreach ($response as $value) {
                     $this->owner->setError(
                         ZecError::fromMessagePath($value, $this->owner->getPath(), [
                             'value' => $value,
                             'parser' => $this->name,
+                            'parser_accept_log' => $this->is_to_log
                         ])
                     );
                 }
@@ -112,7 +123,8 @@ if (!class_exists('Parser')) {
 
             throw new Exception('The parser_callback field must return a string or a boolean');
         }
-        private function setPrioritize(array $prioritize): Parser {
+        private function setPrioritize(array $prioritize): Parser
+        {
             if (!isset($prioritize)) {
                 throw new Exception('The accept field is already set');
             }
@@ -123,7 +135,8 @@ if (!class_exists('Parser')) {
             $this->prioritize = $prioritize;
             return $this;
         }
-        private function setParserCallback(callable $parser): Parser {
+        private function setParserCallback(callable $parser): Parser
+        {
             // if $this->parser is not a callback function, return an error
             if (!is_callable($parser)) {
                 throw new Exception('The parser field must be a callback function');
