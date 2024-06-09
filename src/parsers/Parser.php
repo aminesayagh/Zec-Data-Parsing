@@ -17,18 +17,11 @@ if (!class_exists('Parser')) {
         private ?string $name = null;
         private array $prioritize = [];
         private mixed $parser_callback = null;
-        
+        private bool $is_to_log = true;
         public function __construct(string $name, array $args = []) {
-            $default_args = [
-                FK::PRIORITIZE => [],
-                FK::PRIORITY => self::$DEFAULT_PRIORITY,
-                FK::PARSER_ARGUMENTS => null,
-                FK::DEFAULT_ARGUMENT => [],
-                FK::PARSER_CALLBACK => null
-            ];
-            $args = array_merge($default_args, $args);
 
             $this->name = $name;
+            $this->is_to_log = $args[FK::LOG_ERROR] ?? true;
 
             $this->setPrioritize($args[FK::PRIORITIZE]);
             $this->setPriorityOfParser($args[FK::PRIORITY]);
@@ -91,7 +84,8 @@ if (!class_exists('Parser')) {
                 'owner' => $this->owner
             ]);
 
-            if (is_string($response)) {
+            $parser_accept_log = $this->is_to_log; 
+            if (is_string($response) && $parser_accept_log) {
                 $this->owner->setError(
                     ZecError::fromMessagePath($response, $this->owner->getPath(), [
                         'value' => $value,
@@ -99,7 +93,7 @@ if (!class_exists('Parser')) {
                     ])
                 );
                 return self::proxyResponseZod(false);
-            } else if (is_array($response)) {
+            } else if (is_array($response) && $parser_accept_log) {
                 foreach ($response as $value) {
                     $this->owner->setError(
                         ZecError::fromMessagePath($value, $this->owner->getPath(), [

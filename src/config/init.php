@@ -10,6 +10,7 @@ if (!class_exists('ParserBuild')) {
     class ParserBuild {
         private string|null $name = null;
         private int $priority = 10;
+        private bool $to_log = true;
         private bool $is_init_state = true;
         private array $prioritize = [];
         private array $parser_arguments = [];
@@ -41,6 +42,10 @@ if (!class_exists('ParserBuild')) {
                 $this->prioritize[] = $p;
             }
             $this->is_init_state = false;
+            return $this;
+        }
+        public function unLog(): ParserBuild { 
+            $this->to_log = false;
             return $this;
         }
         public function priority(int $priority): ParserBuild {
@@ -105,6 +110,7 @@ if (!class_exists('ParserBuild')) {
             $build_argument[FK::PARSER_CALLBACK] = $this->parser_callback;
             $build_argument[FK::IS_INIT_STATE] = $this->is_init_state;
             $build_argument['signed'] = $this::class;
+            $build_argument[FK::LOG_ERROR] = $this->to_log;
             return $build_argument;
         }
     }
@@ -320,6 +326,7 @@ $eachConfig = parser_build()
 
         return true;
     })
+    ->unLog()
     ->build();
 
 $minConfig = parser_build()
@@ -387,6 +394,7 @@ $optionalConfig = parser_build()
         }
         return true;
     })
+    ->unLog()
     ->build();
 
 $instanceofConfig = parser_build()
