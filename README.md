@@ -71,35 +71,36 @@ Here's an example of how to use the Zec library to define and validate a user pr
 ### Expected Error Response
 
 ```plaintext
-    User data is invalid: {
-        "message": "Multiple errors occurred",
-        "children": [
-            {
-                "message": "Invalid option values",
-                "key": ".options",
-                "children": [
-                    {
-                        "message": "Invalid value",
-                        "key": ".options[age].min"
-                    },
-                    {
-                        "message": "Invalid email address",
-                        "key": ".options[email].email"
-                    },
-                    {
-                        "message": "Invalid each value",
-                        "key": ".options[hobbies].each",
-                        "children": [
-                            {
-                                "message": "Invalid string value",
-                                "key": ".options[hobbies].each[3].string"
-                            }
-                        ]
-                    }
-                ]
-            }
-        ]
-    }
+    User data is invalid: [
+        {
+            "value": 1,
+            "parser": "min",
+            "parser_accept_log": true,
+            "message": "Invalid value",
+            "path": [
+                "age"
+            ]
+        },
+        {
+            "value": "jane.doe@examplecom",
+            "parser": "email",
+            "parser_accept_log": true,
+            "message": "Invalid email address",
+            "path": [
+                "email"
+            ]
+        },
+        {
+            "value": 5,
+            "parser": "string",
+            "parser_accept_log": true,
+            "message": "Invalid string value",
+            "path": [
+                "hobbies",
+                "3"
+            ]
+        }
+    ]
 ```
 
 **Current Version:** v1.0.0, **Release Date:** 2024-10-01, **Author:** Mohamed Amine SAYAGH, **Release Notes:** Initial release of the Zec PHP Data Parsing Library., **Release Link:** [Zec 1.0.0](

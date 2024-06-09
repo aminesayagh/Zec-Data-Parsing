@@ -1,1 +1,0 @@
-Zec 1.00 is now available. To try it out:
