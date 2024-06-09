@@ -6,81 +6,58 @@ use Zec\Traits\{
     ZecPath,
     ZecErrorFrom
 };
+use Zec\Meta;
 
 if (!class_exists('ZecError')) {
-    /**
-     * Represents an error that occurred during the execution of the Zec library.
-     */
-    class ZecError extends \Exception
-    {
+    class ZecError extends \Exception {
         public const VERSION = '1.0.0'; 
-        use ZecPath, ZecErrorFrom;
-        private $key = null;
-        private $key_name = 'key'; 
-        private array $children = [];
-        static $KEY_TYPE_DEFAULT = 'key';
-        public function __construct(array|string $body, mixed ...$args)
-        {
-            if (is_array($body)) {
-                if (!isset($body['message']) && !isset($body['pile'])) {
-                    throw new \Exception('Invalid message format');
+        use ZecPath, ZecErrorFrom, Meta;
+        private ?string $validation;
+        private ?array $errors;
+        public function __construct(string $message, mixed ...$args) {
+            $this->message = $message;
+            parent::__construct($this->message, ...$args);
+        }
+        public function __get(string $name) {
+            if (array_key_exists($name, $this->meta)) {
+                return $this->meta[$name];
+            }
+            return match ($name) {
+                'message' => $this->message,
+                'validation' => $this->validation,
+                'errors' => $this->errors,
+                'path' => $this->path,
+                default => throw new \Exception("Property $name not found"),
+            };
+        }
+        public function path(array $path): void {
+            $this->path = $path;
+        }
+        public function info(): array {
+            // if errors is set, return errors
+            if (isset($this->errors) && !is_null($this->errors)) {
+                foreach ($this->errors as $error) {
+                    $info[] = $error->info();
                 }
-                $this->message = $body['message'];
-                $this->setPile($body['pile'] ?? []);
-                $this->pileMerge($body['pile'] ?? [], []);
-            } else if (is_string($body)) {
-                $this->message = $body;
-            } else {
-                throw new \Exception('Invalid message format');
+                return $info;
             }
-            parent::__construct($this->message, ...$args); 
-        }
-        public function setPile(array $pile): void {
-            $this->pile = $pile;
-        }
-        public function setChildren(array $map): void {
-            foreach ($map as $item) {
-                $this->children[] = $item;
+            $info = [];
+            foreach ($this->meta as $key => $value) {
+                $info[$key] = $value;
             }
+            $info['message'] = $this->message;
+            if (isset($this->validation) && !is_null($this->validation)) {
+                $info['validation'] = $this->validation;
+            }
+            if ($this->hasPath()) {
+                $info['path'] = $this->getPath();
+            }
+            return $info;
         }
         public function log() {
-            $messageArray = $this->generateMessage();
-            $formattedMessage = json_encode($messageArray, JSON_PRETTY_PRINT);
-            echo $formattedMessage . PHP_EOL;
-        }
-        public function __get(string $name)
-        {
-            if ($name === 'key') {
-                return $this->getKey();
-            } else if ($name === 'message') {
-                return $this->getMessage();
-            }
-            throw new \Exception("Property $name not found");
-        }
-        public function generateMessage(): array {
-            $key = $this->getKey();
-            $response = [];
-            $response['message'] = $this->message;
-            
-            if (count($this->children) > 0) {
-                $map = [];
-                foreach ($this->children as $child) {
-                    $message = $child->generateMessage();
-                    $map[] = $message;
-                }
-                echo json_encode($map, JSON_PRETTY_PRINT) . PHP_EOL;
-                $response['children'] = Utils\sort_errors($map);
-            }
-            if ($key !== '') {
-                $response['key'] = $key;   
-            }
-            return $response;
-        }
-        public function getKey(): string {
-            $this->key = $this->key ?? $this->getPileString();
-            return $this->key;
+            $info = $this->info();
+            echo json_encode($info, JSON_PRETTY_PRINT);
         }
     }
 }
-
 

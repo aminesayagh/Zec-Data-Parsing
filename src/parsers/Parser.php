@@ -43,24 +43,16 @@ if (!class_exists('Parser')) {
             $this->setLifecycleState(LC::BUILD);
         }
         public function __get($name) {
-            switch ($name) {
-                case 'name':
-                    return $this->name;
-                case 'prioritize':
-                    return $this->prioritize;
-                case 'priority':
-                    return $this->priority;
-                case 'order_of_parsing':
-                    return $this->order_of_parsing;
-                case 'parser_arguments':
-                    return $this->parser_arguments;
-                case 'default_argument':
-                    return $this->default_argument;
-                case 'parser_callback':
-                    return $this->parser_callback;
-                default:
-                    throw new Exception("Property $name not found", $name);
-            }
+            return match ($name) {
+                'name' => $this->name,
+                'prioritize' => $this->prioritize,
+                'priority' => $this->priority,
+                'order_of_parsing' => $this->order_of_parsing,
+                'parser_arguments' => $this->parser_arguments,
+                'default_argument' => $this->default_argument,
+                'parser_callback' => $this->parser_callback,
+                default => throw new Exception("Property $name not found"),
+            };
         }
         public function clone(): Parser { 
             return (new Parser($this->name, [
@@ -71,7 +63,7 @@ if (!class_exists('Parser')) {
                 FK::PARSER_CALLBACK => $this->parser_callback, 
             ]))->setArgument($this->getArgument());
         }
-        public function getConfig() {
+        public function getConfig(): array {
             return array_merge([
                 FK::PRIORITIZE => $this->prioritize,
                 FK::PARSER_CALLBACK => $this->parser_callback
@@ -101,13 +93,19 @@ if (!class_exists('Parser')) {
 
             if (is_string($response)) {
                 $this->owner->setError(
-                    ZecError::fromMessagePile($response, $this->owner->getPile())
+                    ZecError::fromMessagePath($response, $this->owner->getPath(), [
+                        'value' => $value,
+                        'parser' => $this->name,
+                    ])
                 );
                 return self::proxyResponseZod(false);
             } else if (is_array($response)) {
                 foreach ($response as $value) {
                     $this->owner->setError(
-                        ZecError::fromMessagePile($value, $this->owner->getPile())
+                        ZecError::fromMessagePath($value, $this->owner->getPath(), [
+                            'value' => $value,
+                            'parser' => $this->name,
+                        ])
                     );
                 }
                 return self::proxyResponseZod(false);

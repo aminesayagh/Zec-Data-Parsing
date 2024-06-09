@@ -51,12 +51,12 @@ if(!trait_exists('ZecConfigs')) {
                 $value = isset($args[$config_key]) ? $args[$config_key] : $config_value[0];
                 $role = $config_value[1];
 
-                $this->config[$config_key] = new ZecConf($config_key, $value, $role);
+                $this->configs[$config_key] = new ZecConf($config_key, $value, $role);
             }
         }
 
         public function getConfigs() {
-            return $this->config;
+            return $this->configs;
         }
         
         public function configsExtend(Zec $zec) {
@@ -65,14 +65,14 @@ if(!trait_exists('ZecConfigs')) {
                 if (!($value instanceof ZecConf)) {
                     throw new \Exception('Invalid config value');
                 }
-                $this->config[$key] = new ZecConf($key, $value->getValue(), $value->getType());
+                $this->configs[$key] = new ZecConf($key, $value->getValue(), $value->getType());
             }
         }
         public function getConfig(string $key) {
-            if (!isset($this->config[$key])) {
+            if (!isset($this->configs[$key])) {
                 throw new \Exception("Config $key not found");
             }
-            $config = $this->config[$key];
+            $config = $this->configs[$key];
             if (is_null($config)) {
                 throw new \Exception("Config $key not found");
             }

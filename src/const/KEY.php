@@ -4,13 +4,15 @@ declare(strict_types=1);
 namespace Zec\CONST {
     class FIELD {
         const VERSION = '1.0.0';
+        const NAME = 'name';
         const PRIORITIZE = 'prioritize';
         const PARSER_ARGUMENTS = 'parser_arguments';
         const DEFAULT_ARGUMENT = 'default_argument';
         const PRIORITY = 'priority';
         const PARSER_CALLBACK = 'parser_callback';
         const IS_INIT_STATE = 'is_init_state';
-        CONST ARGUMENT = 'argument';
+        const ARGUMENT = 'argument';
+        const LOG_ERROR = 'log_error';
     }
 }
 

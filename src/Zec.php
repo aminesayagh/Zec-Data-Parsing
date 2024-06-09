@@ -38,6 +38,7 @@ if(!class_exists('Zed')) {
 
             $this->initConfig($args);
         }
+        // override
         public function __clone(): void {
             $this->parsers = array_filter($this->parsers, function($parser) {
                 if (is_null($parser)) {
@@ -78,15 +79,12 @@ if(!class_exists('Zed')) {
             $this->setValue($value);
             
             foreach ($this->listParsers() as $parser) {
-                // identify $parser as a instance of Parser
                 if (!is_a($parser, Parser::class)) {
                     continue;
                 } 
-                $this->setKeyParser($parser->name);
-                $parser->setDefault($this->default);
+                $parser->default($this->default);
                 $parser->setOwner($this);
                 $response = $parser->parse($this->value);
-                $this->clearLastParser();
                 if($response['close']) {
                     break;
                 }

@@ -28,11 +28,11 @@ if(!trait_exists('ZecUtils')) {
                 if (!is_int($index)) {
                     throw new \Exception('Index on map parse must be an integer');
                 }
-                $owner->setKeyFlag((string)$index);
+                $owner->addItem((string)$index);
                 $each->cloneParent($owner);
                 call_user_func($callback, $index, $each, $value);
 
-                $owner->cleanLastFlag();
+                $owner->popItem();
             }
         }
         static public function associativeParse(array $data, callable $callback, array $par = []) {
@@ -45,9 +45,9 @@ if(!trait_exists('ZecUtils')) {
                     throw new \Exception('Value on associative parse must be an instance of Zec');
                 }
                 if ($index > 0) {
-                    $owner->cleanLastFlag();
+                    $owner->popItem();
                 }
-                $owner->setKeyFlag($key);
+                $owner->addItem($key);
 
                 $default = null;
                 if (is_array($par['default']) && array_key_exists($key, $par['default'])) {
@@ -57,11 +57,11 @@ if(!trait_exists('ZecUtils')) {
                 $value = array_key_exists($key, $par['value']) ? $par['value'][$key] : null;
 
                 $option->cloneParent($owner);
-                $option->setDefault($default);
+                $option->default($default);
                 call_user_func($callback, $key, $option, $value, $index, $default);
                 $index++;
             }
-            $owner->cleanLastFlag();
+            $owner->popItem();
 
             return $parsed_data;
         }

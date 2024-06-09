@@ -12,8 +12,8 @@ if(!trait_exists('ZecParent')) {
                 return $this;
             }
             $this->parent = $parent;
-            $this->resetPile();
-            $this->pileExtend($parent);
+            $this->resetPath();
+            $this->setPath($parent->getPath());
             $this->configsExtend($parent);
 
             return $this;

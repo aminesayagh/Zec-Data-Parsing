@@ -7,7 +7,7 @@ use Zec\Zec;
 if(!trait_exists('ZecDefault')) {
     trait ZecDefault {
         private mixed $default = null;
-        public function setDefault(mixed $value): Zec {
+        public function default(mixed $value): Zec {
             if(is_null($value)) {
                 return $this;
             }

@@ -9,81 +9,28 @@ use Zec\Parser;
 
 
 if (!class_exists('Bundler')) {
-    /**
-     * Class Bundler
-     * 
-     * This class extends the CaretakerParsers class and represents a bundler.
-     * It provides functionality for bundling and managing default parsers.
-     */
     class Bundler extends CaretakerParsers {
         public const VERSION = '1.0.0';
         private static ?Bundler $instance = null;
         private bool $parser_ordered = false;
-        const ARRAY_CONFIG_KEYS = [
-            FK::PRIORITIZE,
-            FK::PARSER_ARGUMENTS,
-            FK::DEFAULT_ARGUMENT,
-            FK::PARSER_CALLBACK
-        ];
-
-        private $DEFAULT_PARSER_CONFIG = [
-            FK::PRIORITIZE => [],
-            FK::PARSER_ARGUMENTS => null,
-            FK::DEFAULT_ARGUMENT => [
-                'message' => 'Error on the {{name}} field'
-            ],
-            FK::PARSER_CALLBACK => null,
-        ];
-        /**
-         * Class Bundler
-         * 
-         * This class represents a bundler for the Zec library.
-         * It extends the parent class and provides additional functionality.
-         */
         private function __construct()
         {
             // class parent
             parent::__construct();
         }
-        private function isParserConfig(array $value) : bool {
-            return count(array_intersect_key($value, array_flip(self::ARRAY_CONFIG_KEYS))) === count(self::ARRAY_CONFIG_KEYS);
-        }
-        private function getCompleteParserConfig(string $name, array $value, array $default = null): array {
-            $parser_config = array_merge(
-                $default ?? $this->DEFAULT_PARSER_CONFIG
-            , $value);
-            if(!$this->isParserConfig($parser_config)) {
-                throw new \Exception("The parser configuration for the parser with the key $name is not valid.");
+        public function assignParserConfig(array $config) {
+            if (!isset($config['signed']) || $config['signed'] !== \ParserBuild::class) {
+                throw new \Exception('The signed key is required and must be a class ' . \ParserBuild::class);
             }
-            
-            return $parser_config;
-        }
-        /**
-         * Assigns a parser configuration to the bundler.
-         *
-         * @param string $key The key of the parser configuration.
-         * @param array $value The value of the parser configuration.
-         * @param int $priority The priority of the parser configuration (default is 10).
-         * @return $this The current instance of the Bundler.
-         */
-        public function assignParserConfig(string $name, array $value, int $priority = 10) {
-            
-            $is_init_state = in_array(FK::IS_INIT_STATE, $value);
+            $name = $config['name'];
+            $is_init_state = $config['is_init_state'];
             $before_config = parent::getParser($name);
-            $parser_config = null;
-            if(is_null($before_config)) {
-                $parser_config = $this->getCompleteParserConfig($name, $value);
-            } else {
-                $parser_config = $this->getCompleteParserConfig($name, $value, $before_config->getConfig());
-            }
-            $value_parser = array_merge(
-                $parser_config,
-                [
-                'priority' => $priority,
-                ]
+            $parser_config = array_merge(
+                isset($before_config) ? $before_config->getConfig() : [],
+                $config
             );
-            $new_parser = $this->addParser(new Parser($name, $value_parser));
-            if(!$is_init_state) {
+            $new_parser = $this->addParser(new Parser($name, $parser_config));
+            if (!$is_init_state) {
                 $new_parser->incrementOrder();
             }
             return $this;

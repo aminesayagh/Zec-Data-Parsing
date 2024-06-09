@@ -9,7 +9,7 @@ use Zec\Parser as Parser;
 if (!trait_exists("ParserDefault")) {
     trait ParserDefault {
         private mixed $default = null;
-        public function setDefault(mixed $default): void {
+        public function default(mixed $default): void {
             $this->default = $default;
         }
         public function getDefault(): mixed {
