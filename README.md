@@ -126,7 +126,6 @@ Here's an example of how to use the Zec library to define and validate a user pr
   - [Advanced Parser Configuration](#advanced-parser-configuration)
   - [Complex Example: User Data Validation](#complex-example-user-data-validation)
 - [Creating Custom Parser Methods](#creating-custom-parser-methods)
-- [Overriding A Parser Method](#overriding-a-parser-method)
 - [License](#license)
 
 ### Some other great aspects
@@ -288,7 +287,7 @@ This example demonstrates validating a user data structure that includes nested 
         'friends' => z()->each(
             function ($user) {
                 return $user->nullable();
-            }
+            } // Each friend is a user object (nullable)
         ),
         'password' => z()->optional()->options([
             'password' => z()->string(),  // Path: 'password.password'
@@ -312,7 +311,7 @@ This example demonstrates validating a user data structure that includes nested 
                     'subject' => z()->string(),
                 ]),
             ]),
-        ])
+        ]) // Union type for document, can be student or teacher document
     ]);
 
     // Parse a valid user object
@@ -369,21 +368,17 @@ Here is how you can implement this custom parser:
     use function Zec\z;
     use function Zec\bundler;
     use Zec\FIELD as FK;
-    
-    // Define the custom size parser method
-    bundler->assignParserConfig('size', [
-        FK::IS_INIT_STATE => false, // we can't run parser with only size
-        FK::DEFAULT_ARGUMENT => [
-            'size' => 0,
-            'message' => 'Invalid size'
-        ]
-        FK::PARSER_ARGUMENTS => function () {
-            return z()->options([
-                'size' => z()->required()->number(),
-                'message' => z()->optional()->string(),
-            ]);
-        },
-        FK::PARSER_FUNCTION => function (array $args): string|bool { // return string if error, bool if success
+
+    $custom_size_parser = parser_build()
+        ->name('size')
+        ->prioritize('string', 'number', 'array') // Prioritize the parser for string, number, and array types
+        ->argument('message', 'Invalid size', function (Zec\Zec $z) {
+            return $z->required()->string();
+        }) // argument for custom message, default is 'Invalid size'
+        ->argument('size', 0, function (Zec\Zec $z) {
+            return $z->required()->number();
+        }) // argument for size, default is 0
+        ->function(function (array $args): string|bool {
             $value = $args['value'];
             $expected_size = $args['size'];
             $message = $args['message'];
@@ -402,19 +397,19 @@ Here is how you can implement this custom parser:
                 return true;
             }
             return $message ?? 'Invalid size';
-        }
-    ], 
-        $priority = 4, // priority of the parser, the default priority of parser is 10, parser with 5 as priority will run before parser with 10 as priority if they have the same parser name
-    );
+        })->priority(4); // priority of the parser, the default priority of parser is 10, parser with 5 as priority will override before parser with 10 as priority if they have the same parser name
+        ->build(); // Build the parser
+
+    bundler->addParser($custom_size_parser);
 ```
 
 You can now use the custom `size` parser method in your schema definitions:
 
 ```php
     $my_schema = z()->options([
-        'username' => z()->string()->size(5),
-        'favorite_numbers' => z()->array()->size(5),
-        'lucky_number' => z()->number()->size(5)
+        'username' => z()->string()->size(5), // Username must be a string of length 5
+        'favorite_numbers' => z()->array()->size(5), // Favorite numbers must be an array of length 5
+        'lucky_number' => z()->number()->size(5), // Lucky number must be 5
     ]);
 
     $user_data = [
@@ -432,55 +427,6 @@ You can now use the custom `size` parser method in your schema definitions:
         echo 'Data validation failed. Errors: ';
         var_dump($parsed_data->getErrors()); // Outputs validation errors
     }
-```
-
-## Overriding A Parser Method
-
-You can override a parser method by redefining it with the same name, with inferior priority then the default one 10, This allows you to customize the behavior of existing parsers to suit your specific requirements.
-
-Here is an example of overriding the `email` Parser method:
-
-```php
-    use function Zec\z;
-    use function Zec\bundler;
-    use Zec\FIELD as FK;
-
-    // Override the email parser method
-    bundler->assignParserConfig('email', [
-        FK::IS_INIT_STATE => true, // we can run parser with email as a init state
-        FK::DEFAULT_ARGUMENT => [
-            'message' => 'Invalid email address',
-            'domain' => ['custom_domain.com'],
-            'pattern' => '/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/', // Custom pattern for email validation
-        ],
-        FK::PARSER_ARGUMENTS => function () {
-            return z()->options([
-                'message' => z()->string(),
-                'domain' => z()->array(),
-                'pattern' => z()->string()
-            ]);
-        },
-        FK::PARSER_FUNCTION => function (array $args): string|bool {
-            $value = $args['value'];
-            $message = $args['message']; // Custom error exist already from the default parser, we can update it from the argument
-            $domain = $args['domain'];
-
-            if (!filter_var($value, FILTER_VALIDATE_EMAIL)) {
-                return $message;
-            }
-
-            if ($domain && is_array($domain)) {
-                $email_domain = explode('@', $value)[1];
-                if (!in_array($email_domain, $domain)) {
-                    return $message;
-                }
-            }
-
-            return true;
-        }
-    ], 
-        $priority = 5, // priority of the parser, the default priority of parser is 10, parser with 5 as priority will run before parser with 10 as priority if they have the same parser name
-    );
 ```
 
 ## License

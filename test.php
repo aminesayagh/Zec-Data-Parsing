@@ -44,5 +44,3 @@ try {
     $e->log(); // Log the error
 }
 
-
-// array for 
