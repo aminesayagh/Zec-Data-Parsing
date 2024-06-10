@@ -43,7 +43,7 @@ $requiredConfig = parser_build()
     })
     ->parserCallback(function (array $par): string|bool {
         $value = $par['value'];
-        if (is_null($value) || $value === '') {
+        if ($value == null || $value === '') {
             return $par['argument']['message'];
         }
 
@@ -275,7 +275,7 @@ $maxConfig = parser_build()
 $optionalConfig = parser_build()
     ->name(PK::OPTIONAL)
     ->parserCallback(function (array $par): string|bool {
-        if (is_null($par['value'])) {
+        if ($par['value'] == null) {
             return false;
         }
         return true;

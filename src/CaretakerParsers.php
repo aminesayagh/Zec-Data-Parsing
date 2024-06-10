@@ -37,12 +37,12 @@ if (!class_exists('CaretakerParsers')) {
 
             // get the parser with the highest priority
             foreach ($selected_parsers as $value) {
-                if (is_null($selected_parser) || !$selected_parser->isPrioritized($value->getPriority())) {
+                if ($selected_parser == null || !$selected_parser->isPrioritized($value->getPriority())) {
                     $selected_parser = $value;
                 }
             }
 
-            if (is_null($selected_parser)) {
+            if ($selected_parser == null) {
                 return null;
             }
 

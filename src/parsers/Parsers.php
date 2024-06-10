@@ -19,7 +19,7 @@ if(!class_exists('Parsers')) {
                 return null;
             }
             $new_parser = parent::addParser($parser);
-            if (is_null($new_parser)) {
+            if ($new_parser == null) {
                 return null;
             }
             $this->is_sorted = false;

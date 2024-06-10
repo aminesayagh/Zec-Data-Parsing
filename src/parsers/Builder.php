@@ -68,7 +68,7 @@ if (!class_exists('ParserBuild')) {
             if (!is_string($name)) {
                 throw new \Exception('Argument name must be a string');
             }
-            if (!is_array($default) && !is_string($default) && !is_int($default) && !is_bool($default) && !is_null($default)) {
+            if (!is_array($default) && !is_string($default) && !is_int($default) && !is_bool($default) && $default !== null) {
                 throw new \Exception('Default argument must be an array, string, integer, boolean, or null');
             }
             if (!is_callable($parserArgument)) {
@@ -88,13 +88,13 @@ if (!class_exists('ParserBuild')) {
         }
         public function build(): array
         {
-            if (is_null($this->name)) {
+            if ($this->name == null) {
                 throw new \Exception('Name must not be null');
             }
             if (empty($this->parser_arguments)) {
                 throw new \Exception('Parser arguments must not be empty');
             }
-            if (is_null($this->parser_callback)) {
+            if ($this->parser_callback == null) {
                 throw new \Exception('Parser callback must not be null');
             }
             if (!is_array($this->prioritize)) {

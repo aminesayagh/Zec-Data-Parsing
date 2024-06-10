@@ -39,7 +39,7 @@ if (!trait_exists('ParserArgument')) {
         }
         public function getArgument(?Zec $owner = null): array {
             try{
-                $has_to_parse_argument = is_null($owner) ? false : !$owner->getConfig(CK::TRUST_ARGUMENTS);
+                $has_to_parse_argument = $owner == null ? false : !$owner->getConfig(CK::TRUST_ARGUMENTS);
                 if (!$has_to_parse_argument) {
                     $this->setIsValidArgument();
                 }
@@ -71,7 +71,7 @@ if (!trait_exists('ParserArgument')) {
             return $this;
         }
         private function defaultArgumentHandler(mixed $argument): array {
-            if (is_null($argument)) return [];
+            if ($argument == null) return [];
 
             if (is_array($argument)) {
                 $is_associative = false;

@@ -46,10 +46,10 @@ if (!class_exists('ZecError')) {
             if (isset($parser_accept_log) && !$parser_accept_log) {
                 return null;
             }
-            if (isset($this->errors) && !is_null($this->errors)) {
+            if (isset($this->errors) && $this->errors !== null) {
                 foreach ($this->errors as $error) {
                     $infoValue = $error->info();
-                    if (!is_null($infoValue)) {
+                    if ($infoValue !== null) {
                         $info[] = $infoValue;
                     }
                 }
@@ -60,7 +60,7 @@ if (!class_exists('ZecError')) {
                 $info[$key] = $value;
             }
             $info['message'] = $this->message;
-            if (isset($this->validation) && !is_null($this->validation)) {
+            if (isset($this->validation) && $this->validation !== null) {
                 $info['validation'] = $this->validation;
             }
             if ($this->hasPath()) {

@@ -89,7 +89,7 @@ if (!class_exists('Bundler')) {
             
 
             $parser = parent::getParser($key);
-            if (is_null($parser)) {
+            if ($parser == null) {
                 return null;
             }
             return $parser->clone();

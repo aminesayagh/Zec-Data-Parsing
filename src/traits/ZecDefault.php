@@ -8,7 +8,7 @@ if(!trait_exists('ZecDefault')) {
     trait ZecDefault {
         private mixed $default = null;
         public function default(mixed $value): Zec {
-            if(is_null($value)) {
+            if($value == null) {
                 return $this;
             }
             $parser_of_default = clone $this;

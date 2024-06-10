@@ -8,7 +8,7 @@ if(!trait_exists('ZecParent')) {
     trait ZecParent {
         private ?Zec $parent = null;
         private function cloneParent(?Zec &$parent): Zec {
-            if(is_null($parent)) {
+            if($parent == null) {
                 return $this;
             }
             $this->parent = $parent;
@@ -19,7 +19,7 @@ if(!trait_exists('ZecParent')) {
             return $this;
         }
         private function sendErrorsToParent(): void {
-            if(is_null($this->parent)) {
+            if($this->parent == null) {
                 return;
             }
             $this->parent->errorsExtend($this);

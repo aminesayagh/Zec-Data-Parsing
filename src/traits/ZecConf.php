@@ -73,7 +73,7 @@ if(!trait_exists('ZecConfigs')) {
                 throw new \Exception("Config $key not found");
             }
             $config = $this->configs[$key];
-            if (is_null($config)) {
+            if ($config == null) {
                 throw new \Exception("Config $key not found");
             }
             return $config->getValue();
