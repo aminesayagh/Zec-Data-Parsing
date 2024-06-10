@@ -76,8 +76,7 @@ if (!class_exists('Parser')) {
                 'close' => $close
             ];
         }
-        public function parse(mixed $value): array
-        {
+        public function parse(mixed $value): array {
             if (!is_callable($this->parser_callback)) {
                 throw new Exception('The parser_callback field must be a callback function');
             }
@@ -93,24 +92,24 @@ if (!class_exists('Parser')) {
                 'owner' => $this->owner
             ]);
 
+            $meta = [
+                'value' => $value,
+                'parser' => $this->name,
+                'parser_accept_log' => $this->is_to_log
+            ];
+            if (isset($argument[$this->name])) {
+                $meta[$this->name] = $argument[$this->name];
+            }
+
             if (is_string($response)) {
                 $this->owner->setError(
-                    ZecError::fromMessagePath($response, $this->owner->getPath(), [
-                        // TODO: store this keys as a const on ZecError
-                        'value' => $value,
-                        'parser' => $this->name,
-                        'parser_accept_log' => $this->is_to_log
-                    ])
+                    ZecError::fromMessagePath($response, $this->owner->getPath(), $meta)
                 );
                 return self::proxyResponseZod(false);
             } else if (is_array($response)) {
                 foreach ($response as $value) {
                     $this->owner->setError(
-                        ZecError::fromMessagePath($value, $this->owner->getPath(), [
-                            'value' => $value,
-                            'parser' => $this->name,
-                            'parser_accept_log' => $this->is_to_log
-                        ])
+                        ZecError::fromMessagePath($value, $this->owner->getPath(), $meta)
                     );
                 }
                 return self::proxyResponseZod(false);

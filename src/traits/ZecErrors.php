@@ -7,49 +7,6 @@ use Zec\Zec;
 use Zec\ZecError;
 use Exception;
 
-// if (!class_exists('ZecErrorNode')) {
-//     class ZecErrorNode
-//     {
-//         private string $key;
-//         private ZecError $error;
-//         private null|string $parent;
-//         public function __construct(string $key, ZecError $error, string|null $parent = null)
-//         {
-//             $this->key = $key;
-//             $this->error = $error;
-//             $this->parent = $parent;
-//         }
-//         public function getKey(): string
-//         {
-//             return $this->key;
-//         }
-//         public function getError(): ZecError
-//         {
-//             return $this->error;
-//         }
-//         public function getParent(): string
-//         {
-//             return $this->parent;
-//         }
-//         public function setParent(string $parent): void
-//         {
-//             // if the current parent is a string, and contains the new parent as a substring then return
-//             if (is_string($this->parent) && strpos($this->parent, $parent) !== false) {
-//                 return;
-//             }
-//             $this->parent = $parent;
-//         }
-//         public function generateMessage(): array
-//         {
-//             $message = $this->error->info();
-//             if (!is_null($this->parent)) {
-//                 $message['parent'] = $this->parent;
-//             }
-
-//             return $message;
-//         }
-//     }
-// }
 
 if (!trait_exists('ZecErrors')) {
     trait ZecErrors

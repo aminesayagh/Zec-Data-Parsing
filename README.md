@@ -73,27 +73,25 @@ Here's an example of how to use the Zec library to define and validate a user pr
 ```plaintext
     User data is invalid: [
         {
-            "value": 1,
             "parser": "min",
-            "parser_accept_log": true,
+            "value": 1,
+            "min": 18,
             "message": "Invalid value",
             "path": [
                 "age"
             ]
         },
         {
-            "value": "jane.doe@examplecom",
             "parser": "email",
-            "parser_accept_log": true,
+            "value": "jane.doe@examplecom",
             "message": "Invalid email address",
             "path": [
                 "email"
             ]
         },
         {
-            "value": 5,
             "parser": "string",
-            "parser_accept_log": true,
+            "value": 5,
             "message": "Invalid string value",
             "path": [
                 "hobbies",

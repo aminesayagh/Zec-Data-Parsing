@@ -7,6 +7,8 @@ use Zec\CONST\FIELD as FK;
 use Zec\CaretakerParsers;
 use Zec\Parser;
 
+use Zec\Parsers\ParserBuild;
+
 
 if (!class_exists('Bundler')) {
     class Bundler extends CaretakerParsers {
@@ -19,8 +21,8 @@ if (!class_exists('Bundler')) {
             parent::__construct();
         }
         public function assignParserConfig(array $config) {
-            if (!isset($config['signed']) || $config['signed'] !== \ParserBuild::class) {
-                throw new \Exception('The signed key is required and must be a class ' . \ParserBuild::class);
+            if (!isset($config['signed']) || $config['signed'] !== ParserBuild::class) {
+                throw new \Exception('The signed key is required and must be a class ' . ParserBuild::class);
             }
             $name = $config['name'];
             $is_init_state = $config['is_init_state'];

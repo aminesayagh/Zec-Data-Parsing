@@ -18,6 +18,9 @@ if (!class_exists('ZecError')) {
         public function __construct(string $message, mixed ...$args) {
             $this->message = $message;
             parent::__construct($this->message, ...$args);
+            $this->setMeta('parser_accept_log', $this->is_to_log, false, 'private');
+            $this->setMeta('parser_version', self::VERSION, true, 'private');
+            $this->setMeta('parser', null);
         }
         public function __get(string $name) {
             if (array_key_exists($name, $this->meta)) {
@@ -39,7 +42,8 @@ if (!class_exists('ZecError')) {
             // check if meta has a key (parser_accept_log) if yes, and the key value is false return empty array
             // else continue
             $info = [];
-            if (isset($this->meta['parser_accept_log']) && !$this->meta['parser_accept_log']) {
+            $parser_accept_log = $this->getAdminMeta('parser_accept_log');
+            if (isset($parser_accept_log) && !$parser_accept_log) {
                 return null;
             }
             if (isset($this->errors) && !is_null($this->errors)) {
@@ -52,7 +56,7 @@ if (!class_exists('ZecError')) {
                 return $info;
             }
             $info = [];
-            foreach ($this->meta as $key => $value) {
+            foreach ($this->getMetadata() as $key => $value) {
                 $info[$key] = $value;
             }
             $info['message'] = $this->message;
@@ -67,6 +71,9 @@ if (!class_exists('ZecError')) {
         public function log() {
             $info = $this->info();
             echo json_encode($info, JSON_PRETTY_PRINT) . PHP_EOL;
+        }
+        public function setError(ZecError $error): void {
+            $this->errors[] = $error;
         }
     }
 }

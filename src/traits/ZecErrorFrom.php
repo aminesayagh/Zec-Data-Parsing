@@ -12,14 +12,17 @@ if(!trait_exists('ZecErrorFrom')) {
         }
         static function fromErrors(Zec $zec): ZecError {
             $error = ZecError::fromMessage('Multiple errors occurred');
-            $error->errors = $zec->getErrors();
+            $errors = $zec->getErrors();
+            foreach ($errors as $err) {
+                $error->setError($err);
+            }
             return $error;
         }
         static function fromMessagePath(string $message, array $path, array $meta = []): ZecError {
             $error = ZecError::fromMessage($message);
             $error->setPath($path);
             foreach ($meta as $key => $value) {
-                $error->$key = $value;
+                $error->setMeta($key, $value);
             }
             return $error;
         }
