@@ -8,13 +8,13 @@ if (!trait_exists('ZecValue')) {
     {
         private $value = null;
 
-        public function setValue($value)
+        public function setValue(mixed $value)
         {
             $this->value = $value;
             return $this;
         }
 
-        public function getValue()
+        public function getValue(): mixed
         {
             return $this->value;
         }
