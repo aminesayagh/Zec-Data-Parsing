@@ -4,8 +4,7 @@ require_once __DIR__ . '/../index.php';
 use PHPUnit\Framework\TestCase;
 use function Zec\Utils\z;
 
-class UserProfileParserTest extends TestCase
-{
+class UserProfileParserTest extends TestCase {
     private $userProfileParser;
 
     protected function setUp(): void

@@ -34,6 +34,8 @@ namespace Zec\CONST {
         const EACH = 'each';
         const INSTANCEOF = 'instanceof';
         const ASSOCIATIVE = 'associative';
+        const LENGTH = 'length';
+        const ENUM = 'enum';
     }
 
     class CONFIG_KEY {

@@ -243,6 +243,54 @@ $minConfig = parser_build()
     })
     ->build();
 
+$lengthConfig = parser_build()
+    ->name(PK::LENGTH)
+    ->prioritize(PK::STRING, PK::NUMBER, PK::ASSOCIATIVE, PK::EACH)
+    ->argument('message', 'Invalid value', function (Zec\Zec $z) {
+        return $z->required()->string();
+    })
+    ->argument('min', 0, function (Zec\Zec $z) {
+        return $z->optional()->number();
+    })
+    ->argument('max', 0, function (Zec\Zec $z) {
+        return $z->optional()->number();
+    })
+    ->argument('length', 0, function (Zec\Zec $z) {
+        return $z->optional()->number();
+    })
+    ->parserCallback(function (array $par): string|bool {
+        $value = $par['value'];
+        $min = $par['argument']['min'];
+        $max = $par['argument']['max'];
+        $length = $par['argument']['length'];
+        $message = $par['argument']['message'];
+
+        $min_value = 0;
+        if(is_string($value)) {
+            $min_value = strlen($value);
+        } else if (is_int($value)) {
+            $min_value = $value;
+        } else if (is_array($value)) {
+            $min_value = count($value);
+        }
+
+        if ($min != 0 && $min_value < $min) {
+            return $message;
+        }
+
+        if ($max != 0 && $min_value > $max) {
+            return $message;
+        }
+
+        if ($length != 0 && $min_value != $length) {
+            return $message;
+        }
+
+        return true;
+    })
+    ->build();
+
+
 $maxConfig = parser_build()
     ->name(PK::MAX)
     ->argument('message', 'Invalid value', function (Zec\Zec $z) {
@@ -336,17 +384,39 @@ $associativeConfig = parser_build()
     })
     ->build();
 
-bundler()->assignParserConfig($emailConfig)
-    ->assignParserConfig($requiredConfig)
-    ->assignParserConfig($dateConfig)
-    ->assignParserConfig($boolConfig)
-    ->assignParserConfig($stringConfig)
-    ->assignParserConfig($urlConfig)
-    ->assignParserConfig($numberConfig)
-    ->assignParserConfig($optionsConfig)
-    ->assignParserConfig($eachConfig)
-    ->assignParserConfig($minConfig)
-    ->assignParserConfig($maxConfig)
-    ->assignParserConfig($optionalConfig)
-    ->assignParserConfig($instanceofConfig)
-    ->assignParserConfig($associativeConfig);
+$enumConfig = parser_build()
+    ->name(PK::ENUM)
+    ->argument('message', 'Invalid enum value', function (Zec\Zec $z) {
+        return $z->required()->string();
+    })
+    ->argument('enum', [], function (Zec\Zec $z) {
+        return $z->required()->each($z->string());
+    })
+    ->parserCallback(function (array $par): string|bool {
+        $value = $par['value'];
+        $enum = $par['argument']['enum'];
+        $message = $par['argument']['message'];
+
+        if (!in_array($value, $enum)) {
+            return $message;
+        }
+        return true;
+    })
+    ->build();
+
+bundler()->assignParserConfig($emailConfig) // email
+    ->assignParserConfig($requiredConfig) // required
+    ->assignParserConfig($dateConfig) // date
+    ->assignParserConfig($lengthConfig) // length (string, number, array)
+    ->assignParserConfig($boolConfig) // bool
+    ->assignParserConfig($stringConfig) // string
+    ->assignParserConfig($urlConfig) // url
+    ->assignParserConfig($numberConfig) // number
+    ->assignParserConfig($optionsConfig) // options
+    ->assignParserConfig($eachConfig) // each
+    ->assignParserConfig($minConfig) // min
+    ->assignParserConfig($maxConfig) // max
+    ->assignParserConfig($optionalConfig) // optional
+    ->assignParserConfig($instanceofConfig) // instanceof
+    ->assignParserConfig($associativeConfig) // associative
+    ->assignParserConfig($enumConfig); // enum

@@ -52,6 +52,13 @@ if (!class_exists('ParserBuild')) {
             $this->to_log = false;
             return $this;
         }
+        /**
+         * Set the priority for the parser build.
+         *
+         * @param int $priority The priority value to set.
+         * @return ParserBuild The current instance of the ParserBuild.
+         * @throws \Exception If the priority is less than 0 or greater than 100.
+         */
         public function priority(int $priority): ParserBuild
         {
             if ($priority < 0) {
@@ -63,6 +70,15 @@ if (!class_exists('ParserBuild')) {
             $this->priority = $priority;
             return $this;
         }
+        /**
+         * Adds an argument to the parser build.
+         *
+         * @param string $name The name of the argument.
+         * @param mixed $default The default value of the argument.
+         * @param mixed $parserArgument The parser argument.
+         * @return ParserBuild Returns the current instance of the ParserBuild.
+         * @throws \Exception If the argument name is not a string, the default argument is not an array, string, integer, boolean, or null, or the parser argument is not callable.
+         */
         public function argument(string $name, mixed $default, mixed $parserArgument): ParserBuild
         {
             if (!is_string($name)) {
@@ -78,6 +94,13 @@ if (!class_exists('ParserBuild')) {
             $this->parser_arguments[$name] = $parserArgument;
             return $this;
         }
+        /**
+         * Sets the parser callback function.
+         *
+         * @param callable $callback The callback function to be set as the parser callback.
+         * @return ParserBuild Returns the current instance of the ParserBuild class.
+         * @throws \Exception Throws an exception if the provided callback is not callable.
+         */
         public function parserCallback(callable $callback): ParserBuild
         {
             if (!is_callable($callback)) {
@@ -86,8 +109,14 @@ if (!class_exists('ParserBuild')) {
             $this->parser_callback = $callback;
             return $this;
         }
-        public function build(): array
-        {
+        /**
+         * Builds and returns an array representing the parser configuration.
+         *
+         * @throws \Exception if any required properties are null or empty
+         *
+         * @return array The built parser configuration
+         */
+        public function build(): array {
             if ($this->name == null) {
                 throw new \Exception('Name must not be null');
             }
