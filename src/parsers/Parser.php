@@ -94,13 +94,12 @@ if (!class_exists('Parser')) {
 
             $meta = [
                 'value' => $value,
-                'parser' => $this->name,
-                'parser_accept_log' => $this->is_to_log
+                ZecError::PARSER => $this->name,
+                ZecError::PARSER_ACCEPT_LOG => $this->is_to_log
             ];
             if (isset($argument[$this->name])) {
                 $meta[$this->name] = $argument[$this->name];
             }
-
             if (is_string($response)) {
                 $this->owner->setError(
                     ZecError::fromMessagePath($response, $this->owner->getPath(), $meta)

@@ -11,6 +11,9 @@ use Zec\Meta;
 if (!class_exists('ZecError')) {
     class ZecError extends \Exception {
         public const VERSION = '1.0.0'; 
+        public const PARSER_ACCEPT_LOG = 'parser_accept_log';
+        public const PARSER = 'parser';
+        public const PARSER_VERSION = 'parser_version';
         use ZecPath, ZecErrorFrom, Meta;
         private ?string $validation;
         private bool $is_to_log = true;
@@ -18,9 +21,9 @@ if (!class_exists('ZecError')) {
         public function __construct(string $message, mixed ...$args) {
             $this->message = $message;
             parent::__construct($this->message, ...$args);
-            $this->setMeta('parser_accept_log', $this->is_to_log, false, 'private');
-            $this->setMeta('parser_version', self::VERSION, true, 'private');
-            $this->setMeta('parser', null);
+            $this->setMeta(ZecError::PARSER_ACCEPT_LOG, $this->is_to_log, false, 'private');
+            $this->setMeta(ZecError::PARSER_VERSION, self::VERSION, true, 'private');
+            $this->setMeta(ZecError::PARSER, null);
         }
         public function __get(string $name) {
             if (array_key_exists($name, $this->meta)) {
@@ -37,18 +40,16 @@ if (!class_exists('ZecError')) {
         public function path(array $path): void {
             $this->path = $path;
         }
-        public function info(): array|null {
-            // if errors is set, return errors
-            // check if meta has a key (parser_accept_log) if yes, and the key value is false return empty array
-            // else continue
+
+        public function info(bool $asChild = false): array|null {
             $info = [];
-            $parser_accept_log = $this->getAdminMeta('parser_accept_log');
+            $parser_accept_log = $this->getAdminMeta(ZecError::PARSER_ACCEPT_LOG);
             if (isset($parser_accept_log) && !$parser_accept_log) {
                 return null;
             }
             if (isset($this->errors) && $this->errors !== null) {
                 foreach ($this->errors as $error) {
-                    $infoValue = $error->info();
+                    $infoValue = $error->info(true);
                     if ($infoValue !== null) {
                         $info[] = $infoValue;
                     }
@@ -66,7 +67,10 @@ if (!class_exists('ZecError')) {
             if ($this->hasPath()) {
                 $info['path'] = $this->getPath();
             }
-            return $info;
+            if ($asChild) {
+                return $info;
+            }
+            return [$info];
         }
         public function log() {
             $info = $this->info();

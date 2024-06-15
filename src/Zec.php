@@ -25,6 +25,19 @@ if (!class_exists('Zec')) {
      * @package Zec
      * 
      * The main class for Zec library that handles parsing and validation.
+     * @method Zec string(array|string|number|null $arguments = null)
+     * @method Zec number(array|string|number|null $arguments = null)
+     * @method Zec bool(array|string|number|null $arguments = null)
+     * @method Zec date(array|string|number|null $arguments = null)
+     * @method Zec email(array|string|number|null $arguments = null)
+     * @method Zec url(array|string|number|null $arguments = null)
+     * @method Zec options(array|string|number|null $arguments = null)
+     * @method Zec each(array|string|number|Zec|null $arguments = null)
+     * @method Zec optional(array|string|number|null $arguments = null)
+     * @method Zec nullable(array|string|number|null $arguments = null)
+     * @method Zec min(array|string|number|null $arguments = null)
+     * @method Zec max(array|string|number|null $arguments = null)
+     * @method Zec length(array|string|number|null $arguments = null)
      */
     class Zec extends Parsers
     {
@@ -67,7 +80,7 @@ if (!class_exists('Zec')) {
          * 
          * @param string $name The method name being called.
          * @param array|null $arguments The arguments passed to the method.
-         * @return mixed
+         * @return Zec
          * @throws BadMethodCallException If the method or parser is not found.
          */
         public function __call(string $name, ?array $arguments): mixed

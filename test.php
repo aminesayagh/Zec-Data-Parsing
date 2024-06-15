@@ -4,43 +4,62 @@ require_once __DIR__ . '/index.php';
 use function Zec\Utils\z;
 
 
-$userProfileParser = z()->options([
-    'name' => z()->string()->min(3)->max(50),
-    'age' => z()->number()->min(18),
-    'email' => z()->email(),
-    'address' => z()->options([
-        'street' => z()->string(),
-        'city' => z()->string()
+$parser = z()->options([
+    'name' => z()->string(),
+    'age' => z()->number()->min([
+        'min' => 18,
+        'message' => 'Value must be at least 18'
     ]),
-    'hobbies' => z()->each(z()->string()),
-    'metadata' => z()->optional()->each(z()->options([
-        'key' => z()->string(),
-        'value' => z()->string()
-    ]))  // Flexible field for additional data
+    'email' => z()->email(),
+    'hobbies' => z()->each(z()->string()->min([
+        'min' => 3,
+        'message' => 'Value must be at least 3 characters long'
+    ]))
 ]);
-
-$userData = [
-    'name' => 'Jane Doe',
-    'age' => 1, // 1 is not a valid age
-    'email' => 'jane.doe@examplecom', // missing dot
-    'address' => [
-        'street' => '123 Elm St',
-        'city' => 'Somewhere'
+$validErrorResponse = [
+    [
+        'parser' => 'min',
+        'min' => 18,
+        'value' => 1,
+        'message' => 'Value must be at least 18',
+        'path' => [
+            'age'
+        ]
     ],
-    'hobbies' => ['photography', 'traveling', 'reading', 5], // 5 is not a string     
-    'metadata' => [
-        ['key' => 'memberSince', 'value' => '2019'],
-        ['key' => 'newsletter', 'value' => 'true']
+    [
+        'parser' => 'email',
+        'value' => 'jane.doe@examplecom',
+        'message' => 'Invalid email address',
+        'path' => [
+            'email'
+        ]
+    ],
+    [
+        'parser' => 'string',
+        'value' => 5,
+        'message' => 'Invalid string value',
+        'path' => [
+            'hobbies',
+            '3'
+        ]
+    ],
+    [
+        'parser' => 'string',
+        'value' => 6,
+        'message' => 'Invalid string value',
+        'path' => [
+            'hobbies',
+            '4'
+        ]
     ]
 ];
-
-
-
 try {
-    $userProfileParser->parseOrThrow($userData); // Throws an error
-    echo "User data is valid\n";
+    $response = $parser->parseOrThrow([
+        'name' => 'Jane Doe',
+        'age' => 1,
+        'email' => 'jane.doe@examplecom',
+        'hobbies' => ['photography', 'traveling', 'reading', 5, 6]
+    ]);
 } catch (\Zec\ZecError $e) {
-    echo "User data is invalid: ";
-    $e->log(); // Log the error
+    $e->log();
 }
-

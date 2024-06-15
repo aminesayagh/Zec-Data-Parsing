@@ -5,9 +5,9 @@ require_once __DIR__ . '/../index.php';
 
 class UnitTestCase {
     public $name;
-    private $validValue;
-    private $invalidValue;
-    private $parser;
+    public $validValue;
+    public $invalidValue;
+    public $parser;
     public function __construct($name) 
     {
         $this->name = $name;

@@ -11,6 +11,14 @@ if(!trait_exists('ZecErrorFrom')) {
             return new ZecError($message);
         }
         static function fromErrors(Zec $zec): ZecError {
+            // if there are no errors, return an error message
+            if (!$zec->hasErrors()) {
+                throw new \Exception('No errors found');
+            }
+            if ($zec->countPublicErrors() === 1) {
+                $error = $zec->getErrors()[0];
+                return $error;
+            }
             $error = ZecError::fromMessage('Multiple errors occurred');
             $errors = $zec->getErrors();
             foreach ($errors as $err) {

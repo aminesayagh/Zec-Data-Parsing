@@ -7,7 +7,11 @@ use Zec\Zec;
 if(!trait_exists('ZecParent')) {
     trait ZecParent {
         private ?Zec $parent = null;
-        private function cloneParent(?Zec &$parent): Zec {
+
+        public function resetParent(): void {
+            $this->parent = null;
+        }
+        private function cloneParent(?Zec $parent): Zec {
             if($parent == null) {
                 return $this;
             }

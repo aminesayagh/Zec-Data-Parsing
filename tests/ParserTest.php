@@ -49,8 +49,10 @@ class StringTest extends TestCase {
         );
         $this->addTestCase(
             t('string_date')
-                ->setValudValue('2022-01-12')
-                ->invalidValue(new Date())
+                ->validValue('2022-01-12')
+                ->invalidValue(
+                    new DateTime('2022-01-12') // Replace with a valid date string or a valid instance of the DateTime class
+                )
                 ->invalidValue('2022')
                 ->setParser($string->date())
         );
@@ -93,7 +95,9 @@ class StringTest extends TestCase {
         $this->addTestCase(
             t('date')
                 ->validValue('2022-01-12')
-                ->validValue(new Date())
+                ->validValue(
+                    new DateTime('2022-01-12') // Replace with a valid date string or a valid instance of the DateTime class
+                )
                 ->invalidValue('2022')
                 ->setParser($date)
         );
@@ -115,5 +119,15 @@ class StringTest extends TestCase {
                 ->invalidValue('element')
                 ->setParser($url)
         );
+    }
+    public function testParser() {
+        foreach ($this->listParserToTest as $testCase) {
+            foreach ($testCase->validValue as $value) {
+                $this->assertTrue($testCase->parser->parse($value)->isValid());
+            }
+            foreach ($testCase->invalidValue as $value) {
+                $this->assertFalse($testCase->parser->parse($value)->isValid());
+            }
+        }
     }
 }
