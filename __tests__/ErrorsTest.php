@@ -19,17 +19,17 @@ class ErrorsTest extends TestCase
                     'message' => 'Value must be at most 10 characters long'
                 ]);
         try {
-            $response = $parser->parseOrThrow('ab');
-            $this->assertNan($response);
+            $parser->parseOrThrow('ab');
+            $this->fail('Expected exception not thrown');
         } catch (\Exception $e) {
-            $this->assertEquals($e->getMessage(), 'Value must be at least 3 characters long');
+            $this->assertEquals('Value must be at least 3 characters long', $e->getMessage(), 'Error message is not equal');
         }
 
         try {
-            $response = $parser->parseOrThrow('abcdefg hijk');
-            $this->assertNan($response);
+            $parser->parseOrThrow('abcdefg hijk');
+            $this->fail('Expected exception not thrown');
         } catch (\Exception $e) {
-            $this->assertEquals($e->getMessage(), 'Value must be at most 10 characters long');
+            $this->assertEquals('Value must be at most 10 characters long', $e->getMessage(), 'Error message is not equal');
         }
     }
     // public function testOptionalErrors() {}
@@ -45,17 +45,15 @@ class ErrorsTest extends TestCase
                 'value' => 'ab',
                 'min' => 3,
                 'message' => 'Value must be at least 3 characters long',
-                'path' => [
-                    '0'
-                ]
+                'path' => ['0']
             ]
         ];
         try {
-            $response = $parser->parseOrThrow(['ab', 'abc', 'abcd']);
-            $this->assertNan($response);
+            $parser->parseOrThrow(['ab', 'abc', 'abcd']);
+            $this->fail('Expected exception not thrown');
         } catch (\Zec\ZecError $e) {
             $this->assertEquals($e->getMessage(), 'Value must be at least 3 characters long');
-            $this->assertEquals($e->info(), $validErrorResponse);
+            $this->assertEquals($validErrorResponse, $e->info(), 'Error message is not equal');
         }
     }
     public function testOptionsSingleErrors()
@@ -78,15 +76,15 @@ class ErrorsTest extends TestCase
             ]
         ];
         try {
-            $response = $parser->parseOrThrow([
+            $parser->parseOrThrow([
                 'name' => 'Jane Doe',
                 'age' => 1,
                 'email' => 'jane.doe@examplecom'
             ]);
-            $this->assertNan($response);
+            $this->fail('Expected exception not thrown');
         } catch (\Zec\ZecError $e) {
-            $this->assertEquals($e->getMessage(), 'Invalid email address');
-            $this->assertEquals($e->info(), $validErrorResponse);
+            $this->assertEquals('Invalid email address', $e->getMessage(), 'Error message is not equal');
+            $this->assertEquals($validErrorResponse, $e->info(), 'Error message is not equal');
         }
     }
     public function testOptionsErrors()
@@ -121,15 +119,15 @@ class ErrorsTest extends TestCase
             ]
         ];
         try {
-            $response = $parser->parseOrThrow([
+            $parser->parseOrThrow([
                 'name' => 'Jane Doe',
                 'age' => 1,
                 'email' => 'jane.doe@examplecom'
             ]);
-            $this->assertNan($response);
+            $this->fail('Expected exception not thrown');
         } catch (\Zec\ZecError $e) {
-            $this->assertEquals($e->getMessage(), 'Multiple errors occurred');
-            $this->assertEquals($e->info()[1], $validErrorResponse[1], 'Info message are not equal');
+            $this->assertEquals('Multiple errors occurred', $e->getMessage(), 'Error message is not equal');
+            $this->assertEquals($validErrorResponse[1], $e->info()[1], 'Info message are not equal');
         }
     }
     public function testEachOnOptionErrors()
@@ -184,16 +182,16 @@ class ErrorsTest extends TestCase
             ]
         ];
         try {
-            $response = $parser->parseOrThrow([
+            $parser->parseOrThrow([
                 'name' => 'Jane Doe',
                 'age' => 1,
                 'email' => 'jane.doe@examplecom',
                 'hobbies' => ['photography', 'traveling', 'reading', 5, 6]
             ]);
-            $this->assertNan($response);
+            $this->fail('Expected exception not thrown');
         } catch (\Zec\ZecError $e) {
-            $this->assertEquals($e->getMessage(), 'Multiple errors occurred');
-            $this->assertEquals($e->info(), $validErrorResponse);
+            $this->assertEquals('Multiple errors occurred', $e->getMessage(), 'Error message is not equal');
+            $this->assertEquals($validErrorResponse, $e->info(), 'Info message are not equal');
         }
     }
     public function testOptionsNestedErrors()
@@ -230,7 +228,7 @@ class ErrorsTest extends TestCase
             ]
         ];
         try {
-            $response = $parser->parseOrThrow([
+            $parser->parseOrThrow([
                 'address' => [
                     'street' => '123 Elm St',
                     'city' => [
@@ -239,13 +237,14 @@ class ErrorsTest extends TestCase
                     ]
                 ]
             ]);
-            $this->assertNan($response);
+            $this->fail('Expected exception not thrown');
         } catch (\Zec\ZecError $e) {
-            $this->assertEquals($e->getMessage(), 'Multiple errors occurred');
-            $this->assertEquals($e->info(), $validErrorResponse);
+            $this->assertEquals('Multiple errors occurred', $e->getMessage(), 'Error message is not equal');
+            $this->assertEquals($validErrorResponse, $e->info(), 'Info message are not equal');
         }
     }
-    public function testOptionsNestedEachNestedOptions() {
+    public function testOptionsNestedEachNestedOptions()
+    {
         $parser = z()->options([
             'area' => z()->string()->min([
                 'min' => 30,
@@ -288,16 +287,36 @@ class ErrorsTest extends TestCase
             ]
         ];
         try {
-            $response = $parser->parseOrThrow([
+            $parser->parseOrThrow([
                 'area' => 'Area 51',
                 'metadata' => [
                     ['key' => 5, 'value' => 4]
                 ]
             ]);
-            $this->assertNan($response);
         } catch (\Zec\ZecError $e) {
-            $this->assertEquals($e->getMessage(), 'Multiple errors occurred');
-            $this->assertEquals($e->info(), $validErrorResponse);
+            $this->assertEquals('Multiple errors occurred', $e->getMessage(), 'Error message is not equal');
+            $this->assertEquals($validErrorResponse, $e->info(), 'Info message are not equal');
+        }
+    }
+    public function testError()
+    {
+        $parser = z()->string()->min([
+            'min' => 3,
+            'message' => 'Value must be at least 3 characters long'
+        ]);
+        $validErrorResponse = [
+            [
+                'parser' => 'min',
+                'value' => 'ab',
+                'min' => 3,
+                'message' => 'Value must be at least 3 characters long',
+            ]
+        ];
+        $response = $parser->parse('ab');
+        if ($response->isValid()) {
+            $this->fail('Expected exception');
+        } else {
+            $this->assertEquals($validErrorResponse, $response->error->info(), 'Error message is not equal');
         }
     }
 }

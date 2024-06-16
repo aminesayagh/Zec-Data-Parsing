@@ -41,7 +41,13 @@ if (!class_exists('Zec')) {
      */
     class Zec extends Parsers
     {
-        use ZecErrors, ZecPath, ZecConfigs, ZecUtils, ZecDefault, ZecValue, ZecParent;
+        use ZecErrors,
+            ZecPath,
+            ZecConfigs,
+            ZecUtils,
+            ZecDefault,
+            ZecValue,
+            ZecParent;
         public const VERSION = '1.0.0';
 
         /**
@@ -74,6 +80,21 @@ if (!class_exists('Zec')) {
                 }
                 return $parser->clone();
             });
+        }
+        public function __get($name): mixed
+        {
+
+            $value = $this->traitGetErrors($name);
+            if ($value !== null) {
+                return $value;
+            }
+            
+            $value = $this->traitGetValue($name);
+            if ($value !== null) {
+                return $value;
+            }
+
+            throw new \Exception("Property $name not found");
         }
         /**
          * Magic call method to handle dynamic method calls.
@@ -117,7 +138,7 @@ if (!class_exists('Zec')) {
         {
             // Init
             $this->clearErrors();
-            $this->setValue($value);
+            $this->value($value);
 
             foreach ($this->listParsers() as $parser) {
                 if (!is_a($parser, Parser::class)) {

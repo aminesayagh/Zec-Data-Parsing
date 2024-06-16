@@ -229,14 +229,14 @@ You can enhance the schema definition by incorporating additional validation opt
         echo 'User is valid.';
     } else {
         echo 'User is invalid. Errors: ';
-        var_dump($valid_user->getErrors());
+        var_dump($valid_user->errors());
     }
 
     if ($invalid_user->isValid()) {
         echo 'User is valid.';
     } else {
         echo 'User is invalid. Errors: ';
-        var_dump($invalid_user->getErrors());
+        var_dump($invalid_user->errors());
     }
 ```
 
@@ -346,7 +346,7 @@ This example demonstrates validating a user data structure that includes nested 
         var_dump($user->getValue()); // Outputs the validated data
     } else {
         echo 'User is invalid.';
-        var_dump($user->getErrors()); // Outputs validation errors
+        var_dump($user->errors()); // Outputs validation errors
     }
 ```
 
@@ -423,7 +423,7 @@ You can now use the custom `size` parser method in your schema definitions:
         echo 'All data is valid.';
     } else {
         echo 'Data validation failed. Errors: ';
-        var_dump($parsed_data->getErrors()); // Outputs validation errors
+        var_dump($parsed_data->errors()); // Outputs validation errors
     }
 ```
 

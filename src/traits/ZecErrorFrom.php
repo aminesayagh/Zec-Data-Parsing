@@ -16,11 +16,11 @@ if(!trait_exists('ZecErrorFrom')) {
                 throw new \Exception('No errors found');
             }
             if ($zec->countPublicErrors() === 1) {
-                $error = $zec->getErrors()[0];
+                $error = $zec->errors()[0];
                 return $error;
             }
             $error = ZecError::fromMessage('Multiple errors occurred');
-            $errors = $zec->getErrors();
+            $errors = $zec->errors();
             foreach ($errors as $err) {
                 $error->setError($err);
             }

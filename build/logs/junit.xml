@@ -1,15 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <testsuites>
-  <testsuite name="/root/git/lib/zod/phpunit.xml" tests="7" assertions="14" errors="0" failures="0" skipped="0" time="0.009725">
-    <testsuite name="My Test Suite" tests="7" assertions="14" errors="0" failures="0" skipped="0" time="0.009725">
-      <testsuite name="ErrorsTest" file="/root/git/lib/zod/__tests__/ErrorsTest.php" tests="7" assertions="14" errors="0" failures="0" skipped="0" time="0.009725">
-        <testcase name="testPrimaryErrors" file="/root/git/lib/zod/__tests__/ErrorsTest.php" line="12" class="ErrorsTest" classname="ErrorsTest" assertions="2" time="0.006865"/>
-        <testcase name="testEachErrors" file="/root/git/lib/zod/__tests__/ErrorsTest.php" line="36" class="ErrorsTest" classname="ErrorsTest" assertions="2" time="0.000630"/>
-        <testcase name="testOptionsSingleErrors" file="/root/git/lib/zod/__tests__/ErrorsTest.php" line="61" class="ErrorsTest" classname="ErrorsTest" assertions="2" time="0.000333"/>
-        <testcase name="testOptionsErrors" file="/root/git/lib/zod/__tests__/ErrorsTest.php" line="92" class="ErrorsTest" classname="ErrorsTest" assertions="2" time="0.000290"/>
-        <testcase name="testEachOnOptionErrors" file="/root/git/lib/zod/__tests__/ErrorsTest.php" line="135" class="ErrorsTest" classname="ErrorsTest" assertions="2" time="0.000817"/>
-        <testcase name="testOptionsNestedErrors" file="/root/git/lib/zod/__tests__/ErrorsTest.php" line="199" class="ErrorsTest" classname="ErrorsTest" assertions="2" time="0.000264"/>
-        <testcase name="testOptionsNestedEachNestedOptions" file="/root/git/lib/zod/__tests__/ErrorsTest.php" line="248" class="ErrorsTest" classname="ErrorsTest" assertions="2" time="0.000525"/>
+  <testsuite name="/root/git/lib/zod/phpunit.xml" tests="8" assertions="15" errors="0" failures="1" skipped="0" time="0.017701">
+    <testsuite name="My Test Suite" tests="8" assertions="15" errors="0" failures="1" skipped="0" time="0.017701">
+      <testsuite name="ErrorsTest" file="/root/git/lib/zod/__tests__/ErrorsTest.php" tests="8" assertions="15" errors="0" failures="1" skipped="0" time="0.017701">
+        <testcase name="testPrimaryErrors" file="/root/git/lib/zod/__tests__/ErrorsTest.php" line="12" class="ErrorsTest" classname="ErrorsTest" assertions="2" time="0.004263"/>
+        <testcase name="testEachErrors" file="/root/git/lib/zod/__tests__/ErrorsTest.php" line="36" class="ErrorsTest" classname="ErrorsTest" assertions="2" time="0.000292"/>
+        <testcase name="testOptionsSingleErrors" file="/root/git/lib/zod/__tests__/ErrorsTest.php" line="59" class="ErrorsTest" classname="ErrorsTest" assertions="2" time="0.000313"/>
+        <testcase name="testOptionsErrors" file="/root/git/lib/zod/__tests__/ErrorsTest.php" line="90" class="ErrorsTest" classname="ErrorsTest" assertions="2" time="0.000272"/>
+        <testcase name="testEachOnOptionErrors" file="/root/git/lib/zod/__tests__/ErrorsTest.php" line="133" class="ErrorsTest" classname="ErrorsTest" assertions="2" time="0.001011"/>
+        <testcase name="testOptionsNestedErrors" file="/root/git/lib/zod/__tests__/ErrorsTest.php" line="197" class="ErrorsTest" classname="ErrorsTest" assertions="2" time="0.000339"/>
+        <testcase name="testOptionsNestedEachNestedOptions" file="/root/git/lib/zod/__tests__/ErrorsTest.php" line="246" class="ErrorsTest" classname="ErrorsTest" assertions="2" time="0.000556"/>
+        <testcase name="testError" file="/root/git/lib/zod/__tests__/ErrorsTest.php" line="301" class="ErrorsTest" classname="ErrorsTest" assertions="1" time="0.010655">
+          <failure type="PHPUnit\Framework\ExpectationFailedException">ErrorsTest::testError
+Error message is not equal
+Failed asserting that two arrays are equal.
+--- Expected
++++ Actual
+@@ @@
+         'parser' =&gt; 'min'
+         'value' =&gt; 'ab'
+         'min' =&gt; 3
+-        'message' =&gt; 'Value must be at least 3 characters long'
++        'message' =&gt; 'Invalid value'
+     )
+ )
+
+/root/git/lib/zod/__tests__/ErrorsTest.php:319</failure>
+        </testcase>
       </testsuite>
     </testsuite>
   </testsuite>

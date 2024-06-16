@@ -11,19 +11,36 @@ use Exception;
 if (!trait_exists('ZecErrors')) {
     trait ZecErrors
     {
-        private array $errors = [];
+        private array $_errors = [];
         private function setError(ZecError $error): void
         {
-            foreach ($this->errors as $e) {
+            foreach ($this->_errors as $e) {
                 if ($e->message === $error->message && $e->path === $error->path) {
                     return;
                 }
             }
-            $this->errors[] = $error;
+            $this->_errors[] = $error;
         }
-        private function getErrors(): array
+        private function traitGetErrors(string $name) {
+            return match ($name) {
+                'errors' => $this->errors(),
+                'error' => $this->error(),
+                'hasErrors' => $this->hasErrors(),
+                'countErrors' => $this->countErrors(),
+                'countPublicErrors' => $this->countPublicErrors(),
+                default => null,
+            };
+        }
+        public function errors(): array
         {
-            return $this->errors;
+            return $this->_errors;
+        }
+        public function error(): ZecError|null
+        {
+            if (!$this->hasErrors()) {
+                return null;
+            }
+            return $this->_errors[0];
         }
         private function throwErrors(): void
         {
@@ -34,20 +51,20 @@ if (!trait_exists('ZecErrors')) {
         }
         private function clearErrors(): void
         {
-            $this->errors = [];
+            $this->_errors = [];
         }
         private function hasErrors(): bool
         {
-            return count($this->errors) > 0;
+            return count($this->_errors) > 0;
         }
         // count number of errors
         private function countErrors(): int
         {
-            return count($this->errors);
+            return count($this->_errors);
         }
         public function countPublicErrors(): int {
             $count = 0;
-            foreach ($this->errors as $error) {
+            foreach ($this->_errors as $error) {
                 if ($error->getAdminMeta(ZecError::PARSER_ACCEPT_LOG)) {
                     $count++;
                 }
@@ -56,8 +73,8 @@ if (!trait_exists('ZecErrors')) {
         }
         private function errorsExtend(Zec $zec): void
         {
-            $errors = $zec->getErrors();
-            foreach ($errors as $error) {
+            $_errors = $zec->errors();
+            foreach ($_errors as $error) {
                 $this->setError($error);
             }
             $this->sendErrorsToParent();
