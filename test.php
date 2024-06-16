@@ -8,7 +8,7 @@ $parser = z()->options([
     'name' => z()->string(),
     'age' => z()->number()->min([
         'min' => 18,
-        'message' => 'Value must be at least 18'
+        'mege' => 'Value must be at least 18'
     ]),
     'email' => z()->email(),
     'hobbies' => z()->each(z()->string()->min([

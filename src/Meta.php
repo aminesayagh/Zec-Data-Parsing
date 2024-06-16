@@ -56,6 +56,12 @@ if (!trait_exists('Meta')) {
                 $this->meta[$key] = new MetaValue($value);
             }
         }
+        public function traitGetMeta($name) {
+            if (array_key_exists($name, $this->meta)) {
+                return $this->meta[$name]->getValue();
+            }
+            return null;
+        }
         public function setMeta(string $key, mixed $value, bool $readonly = false, string $visibility = 'public'): self {
             // if value is a MetaValue object, set it directly
             if ($value instanceof MetaValue) {
@@ -75,7 +81,7 @@ if (!trait_exists('Meta')) {
             if (array_key_exists($key, $this->meta)) {
                 return $this->meta[$key]->getValue();
             }
-            return null;
+            throw new Exception("Metadata key '{$key}' not found");
         }
         public function getMetadata() {
             $meta = [];
@@ -91,19 +97,19 @@ if (!trait_exists('Meta')) {
             if (array_key_exists($key, $this->meta)) {
                 return $this->meta[$key]->getAdminValue();
             }
-            return null;
+            throw new Exception("Metadata key '{$key}' not found");
         }
         public function isReadonly(string $key): bool {
             if (array_key_exists($key, $this->meta)) {
                 return $this->meta[$key]->isReadonly();
             }
-            throw new Exception('Property not found');
+            throw new Exception("Metadata key '{$key}' not found");
         }
         public function getVisibility(string $key): string {
             if (array_key_exists($key, $this->meta)) {
                 return $this->meta[$key]->getVisibility();
             }
-            throw new Exception('Property not found');
+            throw new Exception("Metadata key '{$key}' not found");
         }
     }
 }

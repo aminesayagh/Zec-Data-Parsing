@@ -39,13 +39,14 @@ if (!trait_exists('ParserArgument')) {
         }
         public function getArgument(?Zec $owner = null): array {
             try{
-                $has_to_parse_argument = $owner == null ? false : !$owner->getConfig(CK::TRUST_ARGUMENTS);
+                $has_to_parse_argument = $owner == null ? false : $owner->getMeta(Zec::TRUST_ARGUMENTS);
                 if (!$has_to_parse_argument) {
-                    $this->setIsValidArgument();
+                    // $this->setIsValidArgument();
                 }
-                return $this->validArgument($owner);
+                // return $this->validArgument($owner);
+                return $this->mergeArgument();
             }catch(\Exception $err) {
-                throw new \Exception('Error on getArgument ' . json_encode($owner));
+                throw new \Exception('Error on getArgument ' . $err->getMessage());
             }
         }
         private function mergeArgument(): array {
@@ -54,12 +55,12 @@ if (!trait_exists('ParserArgument')) {
         private function validArgument(Zec $parent = null): array {
             $merged_argument = $this->mergeArgument();
             if (!$this->is_valid_argument) {
-                // $argument_zec_validator = call_user_func($this->parser_arguments, z([
-                //     CONFIG_KEY::TRUST_ARGUMENTS => true
-                // ]));
-                // $argument_zec_validator->parseOrThrow($merged_argument, [
-                //     'parent' => $parent,
-                // ]);
+                $z = \Zec\Utils\z();
+                
+                $argument_zec_validator = call_user_func($this->parser_arguments, $z);
+                $argument_zec_validator->parseOrThrow($merged_argument, [
+                    'parent' => $parent,
+                ]);
                 $this->setIsValidArgument();
             }
             return $merged_argument;
@@ -68,6 +69,7 @@ if (!trait_exists('ParserArgument')) {
             
             $this->arguments = $this->defaultArgumentHandler($argument);
             $this->is_valid_argument = false;
+            // $this->validArgument();
             return $this;
         }
         private function defaultArgumentHandler(mixed $argument): array {

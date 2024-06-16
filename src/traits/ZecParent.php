@@ -18,7 +18,7 @@ if(!trait_exists('ZecParent')) {
             $this->parent = $parent;
             $this->resetPath();
             $this->setPath($parent->getPath());
-            $this->configsExtend($parent);
+            // $this->configsExtend($parent); // TODO: Implement this
 
             return $this;
         }

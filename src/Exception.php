@@ -25,10 +25,18 @@ if (!class_exists('ZecError')) {
             $this->setMeta(ZecError::PARSER_VERSION, self::VERSION, true, 'private');
             $this->setMeta(ZecError::PARSER, null);
         }
-        public function __get(string $name) {
-            if (array_key_exists($name, $this->meta)) {
-                return $this->meta[$name];
+        public function __get($name) {
+            foreach (
+                array_filter(get_class_methods($this), function ($method) {
+                    return strpos($method, 'traitGet') === 0;
+                }) as $method
+            ) {
+                $value = $this->$method($name);
+                if ($value !== null) {
+                    return $value;
+                }
             }
+            
             return match ($name) {
                 'message' => $this->message,
                 'validation' => $this->validation,

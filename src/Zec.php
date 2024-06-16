@@ -15,6 +15,8 @@ use Zec\Traits\{
     ZecValue,
     ZecParent
 };
+use Zec\Meta;
+
 use function Zec\Utils\is_zec;
 use function Zec\bundler\bundler as bundler;
 
@@ -43,12 +45,15 @@ if (!class_exists('Zec')) {
     {
         use ZecErrors,
             ZecPath,
-            ZecConfigs,
+            // ZecConfigs,
             ZecUtils,
             ZecDefault,
             ZecValue,
-            ZecParent;
+            ZecParent,
+            Meta;
         public const VERSION = '1.0.0';
+        public const TRUST_ARGUMENTS = 'trust_arguments';
+        public const STRICT = 'strict';
 
         /**
          * Zec constructor.
@@ -64,7 +69,8 @@ if (!class_exists('Zec')) {
                 $this->cloneParent($parent);
             }
 
-            $this->initConfig($args);
+            $this->setMeta(Zec::TRUST_ARGUMENTS, false, true, 'public');
+            $this->setMeta(Zec::STRICT, false, false, 'private');
         }
         /**
          * Clone method to handle cloning of parsers.
@@ -83,17 +89,18 @@ if (!class_exists('Zec')) {
         }
         public function __get($name): mixed
         {
-
-            $value = $this->traitGetErrors($name);
-            if ($value !== null) {
-                return $value;
+            foreach (
+                array_filter(get_class_methods($this), function ($method) {
+                    return strpos($method, 'traitGet') === 0;
+                }) as $method
+            ) {
+                $value = $this->$method($name);
+                if ($value !== null) {
+                    return $value;
+                }
             }
-            
-            $value = $this->traitGetValue($name);
-            if ($value !== null) {
-                return $value;
-            }
 
+            // throw an error if the property is not found
             throw new \Exception("Property $name not found");
         }
         /**
