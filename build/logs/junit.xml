@@ -1,16 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <testsuites>
-  <testsuite name="/root/git/lib/zod/phpunit.xml" tests="8" assertions="15" errors="0" failures="0" skipped="0" time="0.007825">
-    <testsuite name="My Test Suite" tests="8" assertions="15" errors="0" failures="0" skipped="0" time="0.007825">
-      <testsuite name="ErrorsTest" file="/root/git/lib/zod/__tests__/ErrorsTest.php" tests="8" assertions="15" errors="0" failures="0" skipped="0" time="0.007825">
-        <testcase name="testPrimaryErrors" file="/root/git/lib/zod/__tests__/ErrorsTest.php" line="12" class="ErrorsTest" classname="ErrorsTest" assertions="2" time="0.004051"/>
-        <testcase name="testEachErrors" file="/root/git/lib/zod/__tests__/ErrorsTest.php" line="36" class="ErrorsTest" classname="ErrorsTest" assertions="2" time="0.000266"/>
-        <testcase name="testOptionsSingleErrors" file="/root/git/lib/zod/__tests__/ErrorsTest.php" line="59" class="ErrorsTest" classname="ErrorsTest" assertions="2" time="0.000251"/>
-        <testcase name="testOptionsErrors" file="/root/git/lib/zod/__tests__/ErrorsTest.php" line="90" class="ErrorsTest" classname="ErrorsTest" assertions="2" time="0.000244"/>
-        <testcase name="testEachOnOptionErrors" file="/root/git/lib/zod/__tests__/ErrorsTest.php" line="133" class="ErrorsTest" classname="ErrorsTest" assertions="2" time="0.001054"/>
-        <testcase name="testOptionsNestedErrors" file="/root/git/lib/zod/__tests__/ErrorsTest.php" line="197" class="ErrorsTest" classname="ErrorsTest" assertions="2" time="0.000743"/>
-        <testcase name="testOptionsNestedEachNestedOptions" file="/root/git/lib/zod/__tests__/ErrorsTest.php" line="246" class="ErrorsTest" classname="ErrorsTest" assertions="2" time="0.001049"/>
-        <testcase name="testError" file="/root/git/lib/zod/__tests__/ErrorsTest.php" line="301" class="ErrorsTest" classname="ErrorsTest" assertions="1" time="0.000166"/>
+  <testsuite name="/root/git/lib/zod/phpunit.xml" tests="9" assertions="27" errors="0" failures="0" skipped="0" time="0.008516">
+    <testsuite name="My Test Suite" tests="9" assertions="27" errors="0" failures="0" skipped="0" time="0.008516">
+      <testsuite name="ErrorsTest" file="/root/git/lib/zod/__tests__/ErrorsTest.php" tests="8" assertions="15" errors="0" failures="0" skipped="0" time="0.007138">
+        <testcase name="testPrimaryErrors" file="/root/git/lib/zod/__tests__/ErrorsTest.php" line="12" class="ErrorsTest" classname="ErrorsTest" assertions="2" time="0.003806"/>
+        <testcase name="testEachErrors" file="/root/git/lib/zod/__tests__/ErrorsTest.php" line="36" class="ErrorsTest" classname="ErrorsTest" assertions="2" time="0.000222"/>
+        <testcase name="testOptionsSingleErrors" file="/root/git/lib/zod/__tests__/ErrorsTest.php" line="59" class="ErrorsTest" classname="ErrorsTest" assertions="2" time="0.000283"/>
+        <testcase name="testOptionsErrors" file="/root/git/lib/zod/__tests__/ErrorsTest.php" line="90" class="ErrorsTest" classname="ErrorsTest" assertions="2" time="0.000278"/>
+        <testcase name="testEachOnOptionErrors" file="/root/git/lib/zod/__tests__/ErrorsTest.php" line="133" class="ErrorsTest" classname="ErrorsTest" assertions="2" time="0.001001"/>
+        <testcase name="testOptionsNestedErrors" file="/root/git/lib/zod/__tests__/ErrorsTest.php" line="197" class="ErrorsTest" classname="ErrorsTest" assertions="2" time="0.000538"/>
+        <testcase name="testOptionsNestedEachNestedOptions" file="/root/git/lib/zod/__tests__/ErrorsTest.php" line="246" class="ErrorsTest" classname="ErrorsTest" assertions="2" time="0.000825"/>
+        <testcase name="testError" file="/root/git/lib/zod/__tests__/ErrorsTest.php" line="301" class="ErrorsTest" classname="ErrorsTest" assertions="1" time="0.000185"/>
+      </testsuite>
+      <testsuite name="PrimitivesTest" file="/root/git/lib/zod/__tests__/PrimitivesTest.php" tests="1" assertions="12" errors="0" failures="0" skipped="0" time="0.001378">
+        <testcase name="testPrimitiveValues" file="/root/git/lib/zod/__tests__/PrimitivesTest.php" line="53" class="PrimitivesTest" classname="PrimitivesTest" assertions="12" time="0.001378"/>
       </testsuite>
     </testsuite>
   </testsuite>
